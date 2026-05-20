@@ -1,0 +1,7 @@
+#ignore file 
+
+**/password.txt 
+#glob pattern allow ignore of all password.txt files. 
+
+src/html/password.txt
+#explicit 
