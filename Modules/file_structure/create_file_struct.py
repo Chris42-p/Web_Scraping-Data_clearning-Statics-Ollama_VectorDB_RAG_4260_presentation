@@ -5,10 +5,15 @@
 # ====================================================
 from pathlib import Path
 
-class FileStructure:
+#=== class interface
+from .interface import Interface_FileStructure
+from .interface import CONSTS
+
+
+class FileStructure(Interface_FileStructure):
      #===== File names =====
-     inject_file_name="___ingest"
-     processed_file_name="___processed"
+     inject_file_name=CONSTS["INPUT_FILE_NAME"] 
+     processed_file_name=CONSTS["OUTPUT_FILE_NAME"]
 
      #== path exists 
      path_exists="path already exists. "
@@ -58,6 +63,5 @@ class FileStructure:
      def get_root_path(self):
           self.root_dir=self.parent_path.parent#.parent
           return self.root_dir
-     
 
-FileStructure()
+     
