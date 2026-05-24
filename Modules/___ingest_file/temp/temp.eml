@@ -1,0 +1,710 @@
+Delivered-To: cristilive6@gmail.com
+Received: by 2002:a05:7022:f014:b0:12c:13d2:2be2 with SMTP id rb20csp826014dlb;
+        Fri, 22 May 2026 02:06:02 -0700 (PDT)
+X-Received: by 2002:a05:690c:6d8a:b0:7c0:82ec:fe7e with SMTP id 00721157ae682-7d337fa2fe2mr32777287b3.4.1779440762647;
+        Fri, 22 May 2026 02:06:02 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779440762; cv=none;
+        d=google.com; s=arc-20240605;
+        b=DdQeBp193vhIXmuAvDiHJRz/fH8DQfyyrvS9AagNcMkS1q+zGfJuNXWvIuFPZ6Ftcq
+         4dtWL+AtUy1wKMyNN+jVnoxmUzsDNEu/fvqhco5A1UR+rz0Tg7X3wySsF/1JAr60CyD6
+         wpB1NPG1SMBUYyeL0dU1FZeFGJ4Y1B1ugj1a/A1AIOrmFsF1Reseuorazz5Bue7t20z2
+         unIDDQ37heaS/kiEs9YLoRjtonXXMUdDGMHLfFjrSneXk88m9LGPXyM+1XW+qdyCIyze
+         fVWkcvmzi7LDtkv5VfvqA5w8TAvU8iTgmHbeYsEVpuKVp5WJAnQj10GtuDFiiZLorAoL
+         EV5A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-id:list-unsubscribe-post:list-unsubscribe:reply-to:subject
+         :from:message-id:preheader:mime-version:date:to:dkim-signature;
+        bh=QCo2qQyCl9D4r8Xz8EVXeqL03ZV0RjVemMwUHzu5ZTQ=;
+        fh=okwZn6QRYUp3KiS72gfjpVIHxeLQR+zPk4hXwFGjOPE=;
+        b=Q3io55NxsHWXBuZ0ZmTDBZ7IPEn0KxSzfCfFz7N04L1Pbh76E1i9qlCtL4c3Air4a8
+         YuiagzMvEBWwyTHRtDD7MdjwkP0/cWQDtX8wxjaXalBVfUmr6S3vGUU8LeGkzD/QRNMq
+         kwF4c+DDJqBc72YLFjPWiNaBZLqwgkbnM1JJq4ajdWjT9c+Z1+iynsfQgqmW6NQxZwV8
+         d1FRF3NLWWPIKthDZu+vhLz0pa+hbt5HCQT/B0oDw36eph8TwqLitcefRb4CRJwReSgG
+         3xnGnFsPMkc2f82kHRi6zea7JbI9ANlU076L+J3mj23fLgRYvuBOB/J5sVIBkFa6znd9
+         L0Xw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@jobalert.indeed.com header.s=scph0126 header.b=ngOIhygt;
+       spf=pass (google.com: domain of msprvs1=20602oa5fjlwp=bounces-294276@bounces.indeed.com designates 156.70.53.27 as permitted sender) smtp.mailfrom="msprvs1=20602oA5fJlwP=bounces-294276@bounces.indeed.com";
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=jobalert.indeed.com
+Return-Path: <msprvs1=20602oA5fJlwP=bounces-294276@bounces.indeed.com>
+Received: from mta-70-53-27.indeed.com.sparkpostmail.com (mta-70-53-27.indeed.com.sparkpostmail.com. [156.70.53.27])
+        by mx.google.com with ESMTPS id 00721157ae682-7d389d12fabsi10705897b3.71.2026.05.22.02.06.02
+        for <cristilive6@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 22 May 2026 02:06:02 -0700 (PDT)
+Received-SPF: pass (google.com: domain of msprvs1=20602oa5fjlwp=bounces-294276@bounces.indeed.com designates 156.70.53.27 as permitted sender) client-ip=156.70.53.27;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@jobalert.indeed.com header.s=scph0126 header.b=ngOIhygt;
+       spf=pass (google.com: domain of msprvs1=20602oa5fjlwp=bounces-294276@bounces.indeed.com designates 156.70.53.27 as permitted sender) smtp.mailfrom="msprvs1=20602oA5fJlwP=bounces-294276@bounces.indeed.com";
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=jobalert.indeed.com
+Return-Path: <msprvs1=20602oA5fJlwP=bounces-294276@bounces.indeed.com>
+X-MSFBL: PuPkOpp1CHJkMJsyNs9GGy2pu4SQy0FynZBKlegvv6s=|eyJzdWJhY2NvdW50X2l
+	kIjoiMCIsInRlbmFudF9pZCI6InNwYyIsImN1c3RvbWVyX2lkIjoiMjk0Mjc2Iiw
+	iciI6ImNyaXN0aWxpdmU2QGdtYWlsLmNvbSIsIm1lc3NhZ2VfaWQiOiI2YTBkN2E
+	xYzEwNmEwYmMyMTYyYiJ9
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jobalert.indeed.com;
+	s=scph0126; t=1779440762; i=@jobalert.indeed.com;
+	bh=QCo2qQyCl9D4r8Xz8EVXeqL03ZV0RjVemMwUHzu5ZTQ=;
+	h=To:Date:Content-Type:Message-ID:From:Subject:List-Unsubscribe:
+	 List-Unsubscribe-Post:From:To:Cc:Subject;
+	b=ngOIhygtAAYdotLxEQG/9o5iu6CtkGJ35vwv2CIU9yD+Yn9HJhpvGgnEYPx2hQDGb
+	 Jjw78+K7Y5nrcfxPdW1lkdCX0+LRhlxznmjoYwS9qkra+NoTg5hywfYWzAugd4ehOM
+	 5kyO/OPPAdrqLMG2FmM/D9/6NMqZbAmOlOSmxNro=
+Received: from [10.90.7.82] ([10.90.7.82])
+	by i-0e6e599f9f6e2b385.mta1vrest.sd.prd.sparkpost (ecelerity 5.2.0.75900 r(msys-ecelerity:tags/5.2.0.29)) with REST
+	id B2/61-54742-A7C101A6; Fri, 22 May 2026 09:06:02 +0000
+To: <cristilive6@gmail.com>
+Date: Fri, 22 May 2026 09:06:02 +0000
+Content-Type: multipart/alternative; boundary="_----bAYyB1O3Zaz2M18ln55UmQ===_82/61-54742-A7C101A6"
+MIME-Version: 1.0
+Preheader: Apply to jobs at SewerVUE Technology Corp., Mastercard and Alexander College 
+Message-ID: <1jp7euep82389001.1779440762088.Railgunner@railgun--railgunner-jobsearchrailclipservice-84cf4f89bf-2xdpm>
+From: "Indeed" <donotreply@jobalert.indeed.com>
+Subject: SewerVUE Technology Corp. is hiring for Software Developer + 6 new web developer jobs in Burnaby, BC 
+Reply-To: Indeed <donotreply@jobalert.indeed.com>
+List-Unsubscribe: <mailto:unsubscribe@unsub.spmta.com?subject=unsubscribe:oUoBoIhohEvGFgcYO4qVLFF-05pCqxiIALKLeNohjNk~|eyAicmNwdF90byI6ICJjcmlzdGlsaXZlNkBnbWFpbC5jb20iLCAidGVuYW50X2lkIjogInNwYyIsICJjdXN0b21lcl9pZCI6ICIyOTQyNzYiLCAibWVzc2FnZV9pZCI6ICI2YTBkN2ExYzEwNmEwYmMyMTYyYiIsICJzdWJhY2NvdW50X2lkIjogIjAiIH0~>,<https://unsubscribe.spmta.com/u/LLH94vmAZ8xV6QkCqEGvIA~~/AAR9hBA~/XaxY_nDLvn0hDgRCgRIgyq6D47a2AdsfZw_DSDLKjgoaqRnyQG-2mBFhQwVD3xXGcm-c-c1B3a0DALegvDOpMQ~~>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+List-Id: <spc.294276.0.sparkpostmail.com>
+
+--_----bAYyB1O3Zaz2M18ln55UmQ===_82/61-54742-A7C101A6
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
+
+Indeed Job Alert=0A6 new web developer opportunities in Burnaby, BC=0A=0AJo=
+bs 1-5 of 6 new jobs=0ASee matching results on Indeed: https://ca.indeed.co=
+m/jobs=3Fq=3Dweb+developer&hl=3Den&from=3Dja&l=3DBurnaby%2C+BC&radius=3D50&=
+alid=3D660f13aa25173b62e49d70da&tmtk=3D1jp7euep82389001&utm_campaign=3Djob_=
+alerts&utm_medium=3Demail&utm_source=3Djobseeker_emails&of=3D1&fr=3Dt=0A=0A=
+=0ASoftware Developer=0ASewerVUE Technology Corp. - Coquitlam, BC=0A$70,000=
+ - $120,000 a year=0AEasily apply=0AThe developer will help optimize data a=
+nalysis processes and contribute to innovation in pipeline inspection techn=
+ology. Familiarity with networking is a must!=0AJust posted=0Ahttps://ca.in=
+deed.com/rc/clk/dl=3Fjk=3D18efcd91e6fec4ac&from=3Dja&qd=3DRnZhMybXSk4M3QtTV=
+GXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01f=
+YXav0Q_RgNx1fzk&rd=3DAbLHrm6GRQMtYBMzyEs2L1_MKnaSAFGAsD6kfERFt3g&tk=3D1jp7e=
+uep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-3DpryzQ3dsm4vR-j9Em3=
+7xwLH_u-SdbyUZMAOyX3NmtEMBAdhm8b9JjUpNDnwTH4sobv_rZEwgxtvV-ULHjyTfB549wLPYG=
+gFcpJMRdC-dp9qAtGtBGXxVlGsgzXxgm_SxuJ-zb7Jm0_if5w%3D%3D&g1tAS=3Dtrue=0A=0AW=
+eb Developer / Ecommerce=0AGreenTee Golf Shop - Coquitlam, BC=0A$55,000 - $=
+65,000 a year=0AEasily apply=0AJK World Group specializes in golf retail an=
+d sporting goods, passionately serving golf enthusiasts with quality produc=
+ts and expert advice.=0A2 days ago=0Ahttps://ca.indeed.com/pagead/clk/dl=3F=
+mo=3Dr&ad=3D-6NYlbfkN0ATpH47ub97hdPiZyrQKlM16Uldmtdoh7uVYxlDr6Fn4ymMxLtkn1a=
+smpHXW0-EKgH2gRVHuHK_vYt_r5OoXrmjHR9UdozcO3XfcIGobGCHww_3dLhBARCwDfnFXsaT1t=
+o22yQP-l2b1IHk-wofAhtbve9M7As_Xf0COHBbhUM7abBYNnYJnrnVCTjxA5KpQu12FMjAsLOBZ=
+x5y15pK4zorB_CbXPQAWIa2rxbYFmJDPTu9TcmSK9e7gufmxnXh8A3ewPKSxBGah60Yv6dIKlt9=
+HG6cB9iiKrKGqRdZfb8LA2SAgIzMdjG4yXnoZ7MKkzk9hy1B5SMXh5Iymz18_ysGRQZ5x4dMJjm=
+QvR_I5B23fo0dJ4OvQsc_hYWK41Jmw2bKJgYO3rltjcPFFLnGwbtL39qb8WSiamp58m33pHhZbq=
+j7Y0RF0pKXtHRsfBTRckvsp59VTRqvI1iIaYcCZrfkJg1F3sGAvVeJ1T0hbleSm91VwcaC3_LyJ=
+dgGoroaO44U4rAyoJYDjvOZgMuLKPsLPizZHxRfuFVx1RvYgo8HEUaKVPkwB5Ai4mH9RRgOrumB=
+C4Rng56Jdpntx6DquKdU_DPZVaqYR5gFfbDFdM9wr_kKHJmUWyK0sSVB_Z4pxLov_q5WJtzJKVi=
+suZesjKa3qpPcbknPuVLHnWfMLxnASdsZFJlrgWYt8Fjf734hQXQ7CrZf886lUbXeagtfQlbf7L=
+pyt50q5jaJwLUFgjIGqQ%3D%3D&xkcb=3DSoAs6_M3jnV2Ph6brR0LbzkdCdPP&camk=3DC3EPS=
+zFlQw9lws-R2oWFdw%3D%3D&p=3D0&jsa=3D1677&rjs=3D1&tmtk=3D1jp7euep82389001&gd=
+fvj=3D1&plid=3Dindeed-jobalert&alid=3D660f13aa25173b62e49d70da&fvj=3D1&g1tA=
+S=3Dtrue=0A=0ASoftware Engineer - II (SDET)=0AMastercard - Vancouver, BC=0A=
+$91,000 - $140,000 a year=0AOur patented Java-based platform processes bill=
+ions of transactions per month in tens of milliseconds using a multi-tiered=
+, message-oriented approach for high=E2=80=A6=0A3 days ago=0Ahttps://ca.ind=
+eed.com/rc/clk/dl=3Fjk=3D1f2cf87a1680da12&from=3Dja&qd=3DRnZhMybXSk4M3QtTVG=
+XWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fY=
+Xav0Q_RgNx1fzk&rd=3DFzlTg_mIv5FOCOtUGrVy1F_MKnaSAFGAsD6kfERFt3g&tk=3D1jp7eu=
+ep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-3DpryzQ3dsm4vR-j9Em37=
+xwLH_oMsFXq-p-5O0jklBVxnYI2viTSNyV3-HUOaWo4D3rrFth6_trCwKXgqDxrLZ-hEfZOW88h=
+aGmt1BJhEaeB6SCNG4eLMGw7DpNW1oklqkmUJYeA_FnlvdsA%3D%3D&g1tAS=3Dtrue=0A=0AFu=
+ll Stack Developer (AI-Enabled)=0AAlexander College - Vancouver, BC=0A$70,0=
+00 - $80,000 a year=0AEasily apply=0AYou=E2=80=99ll use modern tooling (inc=
+luding AI assistants like Copilot/Claude/ChatGPT) to speed up development w=
+hile applying strong engineering judgment, testing, and=E2=80=A6=0AJust pos=
+ted=0Ahttps://ca.indeed.com/rc/clk/dl=3Fjk=3Da85f6585460cb5c0&from=3Dja&qd=
+=3DRnZhMybXSk4M3QtTVGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu=
+6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx1fzk&rd=3DjsmukDLNB-vgMHfRjq5BnHEwqdD0vnOb9P=
+51Phyha6c&tk=3D1jp7euep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-=
+3DpryzQ3dsm4vR-j9Em37xwLH_Zt_jNWwuAxmeOVXAI8h91n_D59Iw36cDtpZODcwLbA7ZF9Tie=
+migwA5kguZptHp_yS_SM_crUw19LsLQ4_c0SjdnOE9vI3daVZb0cl0zurVkEjyN1H5kkQ%3D%3D=
+&g1tAS=3Dtrue=0A=0ASenior Frontend Developer=0AScalePad - Vancouver, BC=0A$=
+115,000 - $140,000 a year=0AEasily apply=0AYou=E2=80=99ll work across produ=
+ct, design, and backend engineering to build intuitive, reliable, and scala=
+ble interfaces that help our partners understand risk, plan=E2=80=A6=0AJust=
+ posted=0Ahttps://ca.indeed.com/rc/clk/dl=3Fjk=3D318bae58dc319ad7&from=3Dja=
+&qd=3DRnZhMybXSk4M3QtTVGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11=
+jGu6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx1fzk&rd=3D_v8aDZhdxx5w13Md6Mkg88_GpDQUpdP=
+T4XwZZ0YIiXc&tk=3D1jp7euep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DQzt=
+akcAHPNEaZesQ0ryZrUzhyuW1Kn45kY_yhK0R08zajXAqHWZ4-_is92XJOz2x7GiYbiLzQSEq_s=
+zqHBG_S30qo4BMVwF5Cbt36rI5ehp54x7JVHCD9lE4bJee1bHOqaro5Ihaq6D27471hEWygw%3D=
+%3D&g1tAS=3Dtrue=0A=0AEngineer, Application Development - 6 Month Contract=
+=0ARaymond James Financial, Inc. - Vancouver, BC=0A$90,000 - $100,000 a yea=
+r=0AThese tools help us review applications efficiently, but they do not re=
+place human decision-making. Under the direction of the Manager of Systems =
+Development,=E2=80=A6=0AJust posted=0Ahttps://ca.indeed.com/rc/clk/dl=3Fjk=
+=3D07aa2758ee4cb60f&from=3Dja&qd=3DRnZhMybXSk4M3QtTVGXWoe0my6wfEJ5VJElH4OwY=
+L1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx1fzk&rd=3Dea=
+vxBocA1KKXTkYJKc4ML8_GpDQUpdPT4XwZZ0YIiXc&tk=3D1jp7euep82389001&alid=3D660f=
+13aa25173b62e49d70da&bb=3DQztakcAHPNEaZesQ0ryZrUzhyuW1Kn45iYJa749xCz9KoNesQ=
+CwP_qfbLE24MAgcaapMXKxC4OQmCIbBQ9GCEykE2AvHg6p4AKCan8dZ2v2C-bh94U5UeZOKU9zu=
+ZqsA-51fbxPC8r_bYdBs85eCPw%3D%3D&g1tAS=3Dtrue=0A=0A=0A=0ADo not share this =
+email=0AThis email contains secure links that are personalized to you. Plea=
+se do not share this email or links with others.=0A=0ASalaries estimated if=
+ unavailable. When a job posting doesn't include a salary, we estimate it b=
+y looking at similar jobs. Estimated salaries are not endorsed by the compa=
+nies offering those positions and may vary from actual salaries.=0A=0A=C2=
+=A9 2026 Indeed Ireland Operations, Ltd. =0AIndeed Ireland Operations Limit=
+ed, Block B, Capital Dock, 80 Sir John Rogerson's Quay, Grand Canal Dock, D=
+ublin, 2, D02 HE36 =0APrivacy Policy: https://ca.indeed.com/legal=3Fhl=3Den=
+#privacy =0ATerms: https://ca.indeed.com/legal=3Fhl=3Den =0AHelp Centre: ht=
+tps://support.indeed.com/hc/en-ca =0AManage job alerts: https://subscriptio=
+ns.indeed.com=3Ftoken=3DCkBQ1vBNXKuysuKAyFwqvBnKDo4awHdB4SP6TEo1Dadc7HaecYt=
+o3Cqz2d1x2H1d6fro6YX_e5wyX1fnIk_juM2bEiAtxFNmKUbVv30xqMxHA2pUFS4CG_6JFbBgUa=
+fartHZMhoQ9o_VT66Y1vjJNFJN6CvDqQ%3D%3D&co=3DCA&hl=3Den&tmtk=3D1jp7euep82389=
+001&from=3Dja =0AUnsubscribe from this job alert: https://subscriptions.ind=
+eed.com/alerts/cancel=3Ftoken=3DCkBQ1vBNXKuysuKAyFwqvBnKDo4awHdB4SP6TEo1Dad=
+c7HaecYto3Cqz2d1x2H1d6fro6YX_e5wyX1fnIk_juM2bEiAtxFNmKUbVv30xqMxHA2pUFS4CG_=
+6JFbBgUafartHZMhoQ9o_VT66Y1vjJNFJN6CvDqQ%3D%3D&co=3DCA&hl=3Den&tmtk=3D1jp7e=
+uep82389001&subId=3D660f13aa25173b62e49d70da&rgtk=3D1jp7eueq6n5qc800&from=
+=3Dja
+--_----bAYyB1O3Zaz2M18ln55UmQ===_82/61-54742-A7C101A6
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset="UTF-8"
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.=
+w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">=0A    <html lang=3D"en" xmln=
+s=3D"http://www.w3.org/1999/xhtml" xmlns:v=3D"urn:schemas-microsoft-com:vml=
+" xmlns:o=3D"urn:schemas-microsoft-com:office:office"><head><title>Indeed J=
+ob Alerts Email</title><meta http-equiv=3D"Content-Type" content=3D"text/ht=
+ml; charset=3Dutf-8"/><meta name=3D"viewport" content=3D"width=3Ddevice-wid=
+th, initial-scale=3D1"/><meta http-equiv=3D"X-UA-Compatible" content=3D"IE=
+=3Dedge"/><style type=3D"text/css">=0A    /* CLIENT-SPECIFIC STYLES */=0A  =
+  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust=
+: 100%;}=0A    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }=
+=0A    img { -ms-interpolation-mode: bicubic; }=0A=0A    /* RESET STYLES */=
+=0A    img { border: 0; height: auto; line-height: 100%; outline: none; tex=
+t-decoration: none; }=0A    body { height: 100% !important; Margin: 0 !impo=
+rtant; padding: 0 !important; width: 100% !important; }=0A=0A    table, td,=
+ .notice, .downshift-link {=0A        font-family:'Noto Sans', Helvetica, A=
+rial, sans-serif !important;=0A    }=0A=0A    .terms-link {=0A        color=
+: #004fcb !important;=0A        font-size: 12px !important;=0A    }=0A    .=
+footer-box a {=0A        font-size:12px !important;=0A    }=0A=0A    .cta a=
+ {=0A        width:298px !important;=0A    }=0A=0A    @media only screen an=
+d (max-width:530px) {=0A        =0A    .indeed-logo .jecl-Icon-img {=0A    =
+    width: 84px !important;=0A    }=0A        =0A        =0A    .r-v {=0A  =
+      line-height: 26px !important;=0A        font-size: 20px !important;=
+=0A    }=0A        =0A        .r-0 {=0A            display: block !importan=
+t;=0A            padding: 0 !important;=0A            Margin: 0px 0 0 !impo=
+rtant;=0A        }=0A        .r-1, .r-2, .r-3, .r-4 {=0A            display=
+: block !important;=0A            padding: 0 !important;=0A            Marg=
+in: 32px 0 0 !important;=0A        }=0A        .r-5 {=0A            display=
+: none !important;=0A        }=0A        .r-6 br {=0A            display: n=
+one !important;=0A        }=0A    =0A        =0A        =0A    .r-a {=0A   =
+     padding: 24px 0 0 !important;=0A    }=0A        =0A    .r-x {=0A      =
+  padding: 0 16px 32px !important;=0A    }=0A        =0A    .r-w {=0A      =
+  padding: 24px 16px 16px !important;=0A    }=0A        =0A        =0A    .=
+r-m {=0A        padding: 0px 0px 24px !important;=0A    }=0A        =0A    =
+.r-l {=0A        font-size: 16px !important;=0A    }=0A    =0A=0A    }=0A=
+=0A    @media only screen and (max-width:530px) {=0A        #responsive_css=
+_ping {=0A            background-image: url(https://subscriptions.indeed.co=
+m/imgping=3Faluidhash=3D646087781319e0c8291e67b40d1ab11e&alert=3D660f13aa25=
+173b62e49d70da&tk=3D1jp7euep82389001&type=3Djaresponsive);=0A        }=0A=
+=0A        .outer-box {=0A            padding:0 8px !important;=0A        }=
+=0A=0A        .content-box {=0A            padding:32px 16px 0 !important;=
+=0A        }=0A=0A        .has-downshift-content-box {=0A            paddin=
+g:16px 16px 0px !important;=0A        }=0A=0A        .cta a, .prominent-pro=
+mo a {=0A            width:100% !important;=0A            box-sizing:border=
+-box !important;=0A        }=0A=0A        .show-when-mobile {=0A           =
+ display: block!important;=0A            max-height:none !important;=0A    =
+    }=0A=0A        .prominent-promo-container {=0A            padding-botto=
+m: 0 !important;=0A        }=0A        .prominent-promo {=0A            dis=
+play: block !important;=0A            width: 100% !important;=0A           =
+ padding: 0 0 16px !important;=0A        }=0A=0A        .prominent-promo a =
+{=0A            display: block !important;=0A        }=0A        /* Targeti=
+ng Gmail/Inbox */=0A        u + #body a {=0A            color: inherit;=0A =
+           text-decoration: none;=0A        }=0A    }=0A=0A    @media only =
+screen and (max-width: 414px) {=0A        u ~ div .main {=0A            min=
+-width: 100vw;=0A        }=0A    }=0A    =0A    @media only screen and (min=
+-width:530px) {=0A        .hide-when-desktop {=0A            display:none !=
+important;=0A        }=0A    }=0A    =0A    </style><!--[if gte mso 9]><xml=
+> <o:OfficeDocumentSettings> <o:AllowPNG/> <o:PixelsPerInch>96</o:PixelsPer=
+Inch> </o:OfficeDocumentSettings> </xml><![endif]--> <!--[if !mso]> <!---->=
+<style type=3D"text/css">@import url('https://fonts.googleapis.com/css2=3Ff=
+amily=3DNoto+Sans:wght@400;700&display=3Dswap')</style><!-- <![endif]--><st=
+yle type=3D"text/css">@import url('https://prod.statics.indeed.com/ds/asset=
+s/typography/indeedsans/v1/indeedsans.css')</style></head><body id=3D"body"=
+ class=3D"body" style=3D"background-color:#F3F2F1;Margin:0;padding:0"><div =
+style=3D"display:none;max-height:0px;overflow:hidden">Apply to jobs at Sewe=
+rVUE Technology Corp., Mastercard and Alexander College </div><div style=3D=
+"display:none;max-height:0px;overflow:hidden">=C2=A0=E2=80=8C=C2=A0=E2=80=
+=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=
+=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C =C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=
+=80=8C=C2=A0=E2=80=8C=C2=A0=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=
+=A0=E2=80=8C=C2=A0 =E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=
+=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=
+=C2=A0 =C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=
+=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C =C2=
+=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=C2=A0=E2=80=
+=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0 =E2=80=8C=C2=A0=E2=
+=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=
+=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0 =C2=A0=E2=80=8C=C2=A0=E2=80=8C=
+=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=
+=C2=A0=E2=80=8C=C2=A0=E2=80=8C =C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=
+=8C=C2=A0=E2=80=8C=C2=A0=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=
+=E2=80=8C=C2=A0 =E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=
+=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=
+=A0 =E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=
+=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0 =E2=80=
+=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=
+=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0 =E2=80=8C=C2=A0=E2=
+=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0=E2=
+=80=8C=C2=A0=E2=80=8C=C2=A0=E2=80=8C=C2=A0</div><div id=3D"responsive_css_p=
+ing"></div><div class=3D"full-wrap" style=3D"font-family:'Noto Sans', Helve=
+tica, Arial, sans-serif;direction:ltr"><img alt=3D"" src=3D"https://subscri=
+ptions.indeed.com/imgping=3Ftype=3Dja&tk=3D1jp7euep82389001&&aluidhash=3D66=
+0f13aa25173b62e49d70da" style=3D"height:1.25rem;width:1px"/><table class=3D=
+"main" width=3D"100%" cellPadding=3D"0" cellSpacing=3D"0" style=3D"backgrou=
+nd-color:#F3F2F1" border=3D"0" role=3D"none"><tr><td class=3D"outer-box" st=
+yle=3D"background-color:#F3F2F1;padding:0 8px" align=3D"center"><!--[if (gt=
+e mso 9)|(IE)]> <table width=3D"600" border=3D"0" cellspacing=3D"0" cellpad=
+ding=3D"0"> <tr> <td> <![endif]--><table width=3D"100%" cellPadding=3D"0" c=
+ellSpacing=3D"0" style=3D"max-width:600px;padding:0 0 15px 0;Margin-top:24p=
+x;border:0" role=3D"none"><tr><td align=3D"LEFT" style=3D"padding:0 0 13px =
+0" class=3D"indeed-logo-left jecl-Icon-wrapper"><a href=3D"https://clk.inde=
+ed.com/hp=3Fco=3DCA&utm_campaign=3Djob_alerts&utm_medium=3Demail&utm_source=
+=3Djobseeker_emails&from=3Dja&tk=3D1jp7euep82389001"><img class=3D"jecl-Ico=
+n-img" src=3D"https://subscriptions.indeed.com/static/images/logos/indeed_r=
+etina@2x.png" alt=3D"Indeed homepage" width=3D"100" style=3D"display:block"=
+/></a></td><td class=3D"r-y" style=3D"width:44px"><a href=3D"https://clk.in=
+deed.com/messages=3Ftk=3D1jp7euep82389001&co=3DCA&hl=3Den"><img style=3D"wi=
+dth:44px" src=3D"https://subscriptions.indeed.com/static/images/ja/icon-mes=
+sages-aurora-updated.png" alt=3D"see messages" width=3D"44"/></a></td><td c=
+lass=3D"r-z" style=3D"padding:0 0 0 10px;width:44px"><a href=3D"https://clk=
+.indeed.com/notifications=3Ffrom=3Dja&tk=3D1jp7euep82389001&co=3DCA&hl=3De=
+n"><img style=3D"width:44px" src=3D"https://subscriptions.indeed.com/static=
+/images/ja/icon-notification-aurora.png" alt=3D"see notifications" width=3D=
+"44"/></a></td></tr></table><table class=3D"width-600" style=3D"max-width:6=
+00px;background-color:#FFFFFF" width=3D"100%" cellPadding=3D"0" cellSpacing=
+=3D"0" border=3D"0" role=3D"none"><tr><td class=3D"content-box" style=3D"pa=
+dding:50px 50px 0"><table width=3D"100%" cellPadding=3D"0" cellSpacing=3D"0=
+" border=3D"0" role=3D"none"><tr><td><table class=3D"job-alerts" width=3D"1=
+00%" cellPadding=3D"0" cellSpacing=3D"0"><tr><td class=3D"section-header"><=
+table width=3D"100%" cellPadding=3D"0" cellSpacing=3D"0"><tr><td><table wid=
+th=3D"100%" cellPadding=3D"0" cellSpacing=3D"0"><tr><td><h1 align=3D"center=
+" style=3D"align:center;color:#2D2D2D;font-family:'Noto Sans', Helvetica, A=
+rial, sans-serif;font-size:28px;font-weight:bold;line-height:36px;Margin:0"=
+ class=3D"r-v">6 new web developer opportunities in Burnaby, BC</h1></td></=
+tr><tr><td style=3D"padding:16px 0 24px"><p class=3D"r-11" align=3D"center"=
+ style=3D"font-family:'Noto Sans', Helvetica, Arial, sans-serif;font-size:1=
+4px;line-height:20px;color:#767676;Margin:0">These job ads match your saved=
+ job alert &sup1;</p></td></tr><tr><td style=3D"border-bottom:1px solid #E4=
+E2E0;font-size:1px;Margin:0">&nbsp;</td></tr></table></td></tr></table></td=
+></tr></table></td></tr></table></td></tr><tr><td class=3D"r-w" style=3D"pa=
+dding:24px 50px 16px"><table width=3D"100%" cellPadding=3D"0" cellSpacing=
+=3D"0" role=3D"presentation" border=3D"0"><tr><td align=3D"left" valign=3D"=
+top" class=3D"pb-24" style=3D"padding:0 0 32px"><a href=3D"https://ca.indee=
+d.com/rc/clk/dl=3Fjk=3D18efcd91e6fec4ac&from=3Dja&qd=3DRnZhMybXSk4M3QtTVGXW=
+oe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fYXa=
+v0Q_RgNx1fzk&rd=3DAbLHrm6GRQMtYBMzyEs2L1_MKnaSAFGAsD6kfERFt3g&tk=3D1jp7euep=
+82389001&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-3DpryzQ3dsm4vR-j9Em37xw=
+LH_u-SdbyUZMAOyX3NmtEMBAdhm8b9JjUpNDnwTH4sobv_rZEwgxtvV-ULHjyTfB549wLPYGgFc=
+pJMRdC-dp9qAtGtBGXxVlGsgzXxgm_SxuJ-zb7Jm0_if5w%3D%3D&g1tAS=3Dtrue" style=3D=
+"display:block;text-decoration:none"><table cellPadding=3D"0" cellSpacing=
+=3D"0" border=3D"0" align=3D"left" width=3D"100%" role=3D"presentation"><tr=
+><td align=3D"left" valign=3D"top"><h2 style=3D"color:#2d2d2d;font-family:'=
+Indeed Sans', 'Noto Sans', Helvetica, Arial, sans-serif;font-size:16px;font=
+-weight:bold;line-height:24px;Margin:0;padding:0"><a href=3D"https://ca.ind=
+eed.com/rc/clk/dl=3Fjk=3D18efcd91e6fec4ac&from=3Dja&qd=3DRnZhMybXSk4M3QtTVG=
+XWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fY=
+Xav0Q_RgNx1fzk&rd=3DAbLHrm6GRQMtYBMzyEs2L1_MKnaSAFGAsD6kfERFt3g&tk=3D1jp7eu=
+ep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-3DpryzQ3dsm4vR-j9Em37=
+xwLH_u-SdbyUZMAOyX3NmtEMBAdhm8b9JjUpNDnwTH4sobv_rZEwgxtvV-ULHjyTfB549wLPYGg=
+FcpJMRdC-dp9qAtGtBGXxVlGsgzXxgm_SxuJ-zb7Jm0_if5w%3D%3D&g1tAS=3Dtrue" style=
+=3D"color:#2d2d2d;font-weight:bold;text-decoration:underline" class=3D"stro=
+ng-text-link">Software Developer</a></h2></td></tr><tr><td align=3D"left" v=
+align=3D"top"><table cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" role=
+=3D"presentation"><tr><td style=3D"padding:0 12px 0 0;color:#2d2d2d;font-si=
+ze:14px;line-height:21px">SewerVUE Technology Corp.</td></tr></table></td><=
+/tr><tr><td align=3D"left" valign=3D"top" style=3D"color:#2d2d2d;font-size:=
+14px;line-height:21px">Coquitlam, BC</td></tr><tr><td align=3D"left" valign=
+=3D"top" style=3D"padding:8px 0 0"><table cellPadding=3D"0" cellSpacing=3D"=
+0" border=3D"0" align=3D"left" style=3D"border-radius:8px;display:inline-bl=
+ock" bgcolor=3D"#f3f2f1" role=3D"presentation"><tr><td align=3D"center" val=
+ign=3D"top" style=3D"padding:3px 8px 3px 8px;color:#595959;font-size:14px;l=
+ine-height:21px"><strong>$70,000 - $120,000 a year</strong></td></tr></tabl=
+e></td></tr><tr><td align=3D"left" valign=3D"top" style=3D"padding:8px 0px"=
+><table cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" align=3D"left" sty=
+le=3D"Margin:4px 4px 0 0;float:left" role=3D"presentation"><tr><td width=3D=
+"24" valign=3D"middle" align=3D"left"><img src=3D"https://prod.statics.inde=
+ed.com/eml/assets/images/icons/Plane_primary_whitebg.png" alt=3D" " width=
+=3D"20" style=3D"vertical-align:middle"/></td><td style=3D"color:#2d2d2d;fo=
+nt-size:14px;line-height:21px">Easily apply</td></tr></table></td></tr><tr>=
+<td align=3D"left" valign=3D"top" style=3D"padding:0;color:#767676;font-siz=
+e:14px;line-height:21px">The developer will help optimize data analysis pro=
+cesses and contribute to innovation in pipeline inspection technology. Fami=
+liarity with networking is a must!</td></tr><tr><td align=3D"left" valign=
+=3D"top" style=3D"padding:8px 0 0;color:#767676;font-size:12px;line-height:=
+18px">Just posted</td></tr></table></a></td></tr><tr><td align=3D"left" val=
+ign=3D"top" class=3D"pb-24" style=3D"padding:0 0 32px"><a href=3D"https://c=
+a.indeed.com/pagead/clk/dl=3Fmo=3Dr&ad=3D-6NYlbfkN0ATpH47ub97hdPiZyrQKlM16U=
+ldmtdoh7uVYxlDr6Fn4ymMxLtkn1asmpHXW0-EKgH2gRVHuHK_vYt_r5OoXrmjHR9UdozcO3Xfc=
+IGobGCHww_3dLhBARCwDfnFXsaT1to22yQP-l2b1IHk-wofAhtbve9M7As_Xf0COHBbhUM7abBY=
+NnYJnrnVCTjxA5KpQu12FMjAsLOBZx5y15pK4zorB_CbXPQAWIa2rxbYFmJDPTu9TcmSK9e7guf=
+mxnXh8A3ewPKSxBGah60Yv6dIKlt9HG6cB9iiKrKGqRdZfb8LA2SAgIzMdjG4yXnoZ7MKkzk9hy=
+1B5SMXh5Iymz18_ysGRQZ5x4dMJjmQvR_I5B23fo0dJ4OvQsc_hYWK41Jmw2bKJgYO3rltjcPFF=
+LnGwbtL39qb8WSiamp58m33pHhZbqj7Y0RF0pKXtHRsfBTRckvsp59VTRqvI1iIaYcCZrfkJg1F=
+3sGAvVeJ1T0hbleSm91VwcaC3_LyJdgGoroaO44U4rAyoJYDjvOZgMuLKPsLPizZHxRfuFVx1Rv=
+Ygo8HEUaKVPkwB5Ai4mH9RRgOrumBC4Rng56Jdpntx6DquKdU_DPZVaqYR5gFfbDFdM9wr_kKHJ=
+mUWyK0sSVB_Z4pxLov_q5WJtzJKVisuZesjKa3qpPcbknPuVLHnWfMLxnASdsZFJlrgWYt8Fjf7=
+34hQXQ7CrZf886lUbXeagtfQlbf7Lpyt50q5jaJwLUFgjIGqQ%3D%3D&xkcb=3DSoAs6_M3jnV2=
+Ph6brR0LbzkdCdPP&camk=3DC3EPSzFlQw9lws-R2oWFdw%3D%3D&p=3D0&jsa=3D1677&rjs=
+=3D1&tmtk=3D1jp7euep82389001&gdfvj=3D1&plid=3Dindeed-jobalert&alid=3D660f13=
+aa25173b62e49d70da&fvj=3D1&g1tAS=3Dtrue" style=3D"display:block;text-decora=
+tion:none"><table cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" align=3D=
+"left" width=3D"100%" role=3D"presentation"><tr><td align=3D"left" valign=
+=3D"top"><h2 style=3D"color:#2d2d2d;font-family:'Indeed Sans', 'Noto Sans',=
+ Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:2=
+4px;Margin:0;padding:0"><a href=3D"https://ca.indeed.com/pagead/clk/dl=3Fmo=
+=3Dr&ad=3D-6NYlbfkN0ATpH47ub97hdPiZyrQKlM16Uldmtdoh7uVYxlDr6Fn4ymMxLtkn1asm=
+pHXW0-EKgH2gRVHuHK_vYt_r5OoXrmjHR9UdozcO3XfcIGobGCHww_3dLhBARCwDfnFXsaT1to2=
+2yQP-l2b1IHk-wofAhtbve9M7As_Xf0COHBbhUM7abBYNnYJnrnVCTjxA5KpQu12FMjAsLOBZx5=
+y15pK4zorB_CbXPQAWIa2rxbYFmJDPTu9TcmSK9e7gufmxnXh8A3ewPKSxBGah60Yv6dIKlt9HG=
+6cB9iiKrKGqRdZfb8LA2SAgIzMdjG4yXnoZ7MKkzk9hy1B5SMXh5Iymz18_ysGRQZ5x4dMJjmQv=
+R_I5B23fo0dJ4OvQsc_hYWK41Jmw2bKJgYO3rltjcPFFLnGwbtL39qb8WSiamp58m33pHhZbqj7=
+Y0RF0pKXtHRsfBTRckvsp59VTRqvI1iIaYcCZrfkJg1F3sGAvVeJ1T0hbleSm91VwcaC3_LyJdg=
+GoroaO44U4rAyoJYDjvOZgMuLKPsLPizZHxRfuFVx1RvYgo8HEUaKVPkwB5Ai4mH9RRgOrumBC4=
+Rng56Jdpntx6DquKdU_DPZVaqYR5gFfbDFdM9wr_kKHJmUWyK0sSVB_Z4pxLov_q5WJtzJKVisu=
+ZesjKa3qpPcbknPuVLHnWfMLxnASdsZFJlrgWYt8Fjf734hQXQ7CrZf886lUbXeagtfQlbf7Lpy=
+t50q5jaJwLUFgjIGqQ%3D%3D&xkcb=3DSoAs6_M3jnV2Ph6brR0LbzkdCdPP&camk=3DC3EPSzF=
+lQw9lws-R2oWFdw%3D%3D&p=3D0&jsa=3D1677&rjs=3D1&tmtk=3D1jp7euep82389001&gdfv=
+j=3D1&plid=3Dindeed-jobalert&alid=3D660f13aa25173b62e49d70da&fvj=3D1&g1tAS=
+=3Dtrue" style=3D"color:#2d2d2d;font-weight:bold;text-decoration:underline"=
+ class=3D"strong-text-link">Web Developer / Ecommerce</a></h2></td></tr><tr=
+><td align=3D"left" valign=3D"top"><table cellPadding=3D"0" cellSpacing=3D"=
+0" border=3D"0" role=3D"presentation"><tr><td style=3D"padding:0 12px 0 0;c=
+olor:#2d2d2d;font-size:14px;line-height:21px">GreenTee Golf Shop</td><td st=
+yle=3D"color:#2d2d2d;font-size:16px;line-height:24px"><strong>1</strong></t=
+d><td style=3D"padding:2px 0 0 2px"><img width=3D"20" alt=3D"1/5 rating" sr=
+c=3D"https://prod.statics.indeed.com/eml/assets/images/icons/Star_neutral_w=
+hitebg.png"/></td></tr></table></td></tr><tr><td align=3D"left" valign=3D"t=
+op" style=3D"color:#2d2d2d;font-size:14px;line-height:21px">Coquitlam, BC</=
+td></tr><tr><td align=3D"left" valign=3D"top" style=3D"padding:8px 0 0"><ta=
+ble cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" align=3D"left" style=
+=3D"border-radius:8px;display:inline-block" bgcolor=3D"#f3f2f1" role=3D"pre=
+sentation"><tr><td align=3D"center" valign=3D"top" style=3D"padding:3px 8px=
+ 3px 8px;color:#595959;font-size:14px;line-height:21px"><strong>$55,000 - $=
+65,000 a year</strong></td></tr></table></td></tr><tr><td align=3D"left" va=
+lign=3D"top" style=3D"padding:8px 0px"><table cellPadding=3D"0" cellSpacing=
+=3D"0" border=3D"0" align=3D"left" style=3D"Margin:4px 4px 0 0;float:left" =
+role=3D"presentation"><tr><td width=3D"24" valign=3D"middle" align=3D"left"=
+><img src=3D"https://prod.statics.indeed.com/eml/assets/images/icons/Plane_=
+primary_whitebg.png" alt=3D" " width=3D"20" style=3D"vertical-align:middle"=
+/></td><td style=3D"color:#2d2d2d;font-size:14px;line-height:21px">Easily a=
+pply</td></tr></table></td></tr><tr><td align=3D"left" valign=3D"top" style=
+=3D"padding:0;color:#767676;font-size:14px;line-height:21px">JK World Group=
+ specializes in golf retail and sporting goods, passionately serving golf e=
+nthusiasts with quality products and expert advice.</td></tr><tr><td align=
+=3D"left" valign=3D"top" style=3D"padding:8px 0 0;color:#767676;font-size:1=
+2px;line-height:18px">2 days ago</td></tr></table></a></td></tr><tr><td ali=
+gn=3D"left" valign=3D"top" class=3D"pb-24" style=3D"padding:0 0 32px"><a hr=
+ef=3D"https://ca.indeed.com/rc/clk/dl=3Fjk=3D1f2cf87a1680da12&from=3Dja&qd=
+=3DRnZhMybXSk4M3QtTVGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu=
+6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx1fzk&rd=3DFzlTg_mIv5FOCOtUGrVy1F_MKnaSAFGAsD=
+6kfERFt3g&tk=3D1jp7euep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-=
+3DpryzQ3dsm4vR-j9Em37xwLH_oMsFXq-p-5O0jklBVxnYI2viTSNyV3-HUOaWo4D3rrFth6_tr=
+CwKXgqDxrLZ-hEfZOW88haGmt1BJhEaeB6SCNG4eLMGw7DpNW1oklqkmUJYeA_FnlvdsA%3D%3D=
+&g1tAS=3Dtrue" style=3D"display:block;text-decoration:none"><table cellPadd=
+ing=3D"0" cellSpacing=3D"0" border=3D"0" align=3D"left" width=3D"100%" role=
+=3D"presentation"><tr><td align=3D"left" valign=3D"top"><h2 style=3D"color:=
+#2d2d2d;font-family:'Indeed Sans', 'Noto Sans', Helvetica, Arial, sans-seri=
+f;font-size:16px;font-weight:bold;line-height:24px;Margin:0;padding:0"><a h=
+ref=3D"https://ca.indeed.com/rc/clk/dl=3Fjk=3D1f2cf87a1680da12&from=3Dja&qd=
+=3DRnZhMybXSk4M3QtTVGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu=
+6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx1fzk&rd=3DFzlTg_mIv5FOCOtUGrVy1F_MKnaSAFGAsD=
+6kfERFt3g&tk=3D1jp7euep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-=
+3DpryzQ3dsm4vR-j9Em37xwLH_oMsFXq-p-5O0jklBVxnYI2viTSNyV3-HUOaWo4D3rrFth6_tr=
+CwKXgqDxrLZ-hEfZOW88haGmt1BJhEaeB6SCNG4eLMGw7DpNW1oklqkmUJYeA_FnlvdsA%3D%3D=
+&g1tAS=3Dtrue" style=3D"color:#2d2d2d;font-weight:bold;text-decoration:unde=
+rline" class=3D"strong-text-link">Software Engineer - II (SDET)</a></h2></t=
+d></tr><tr><td align=3D"left" valign=3D"top"><table cellPadding=3D"0" cellS=
+pacing=3D"0" border=3D"0" role=3D"presentation"><tr><td style=3D"padding:0 =
+12px 0 0;color:#2d2d2d;font-size:14px;line-height:21px">Mastercard</td><td =
+style=3D"color:#2d2d2d;font-size:16px;line-height:24px"><strong>4</strong><=
+/td><td style=3D"padding:2px 0 0 2px"><img width=3D"20" alt=3D"4/5 rating" =
+src=3D"https://prod.statics.indeed.com/eml/assets/images/icons/Star_neutral=
+_whitebg.png"/></td></tr></table></td></tr><tr><td align=3D"left" valign=3D=
+"top" style=3D"color:#2d2d2d;font-size:14px;line-height:21px">Vancouver, BC=
+</td></tr><tr><td align=3D"left" valign=3D"top" style=3D"padding:8px 0 0"><=
+table cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" align=3D"left" style=
+=3D"border-radius:8px;display:inline-block" bgcolor=3D"#f3f2f1" role=3D"pre=
+sentation"><tr><td align=3D"center" valign=3D"top" style=3D"padding:3px 8px=
+ 3px 8px;color:#595959;font-size:14px;line-height:21px"><strong>$91,000 - $=
+140,000 a year</strong></td></tr></table></td></tr><tr><td align=3D"left" v=
+align=3D"top" style=3D"padding:0;color:#767676;font-size:14px;line-height:2=
+1px">Our patented Java-based platform processes billions of transactions pe=
+r month in tens of milliseconds using a multi-tiered, message-oriented appr=
+oach for high=E2=80=A6</td></tr><tr><td align=3D"left" valign=3D"top" style=
+=3D"padding:8px 0 0;color:#767676;font-size:12px;line-height:18px">3 days a=
+go</td></tr></table></a></td></tr><tr><td align=3D"left" valign=3D"top" cla=
+ss=3D"pb-24" style=3D"padding:0 0 32px"><a href=3D"https://ca.indeed.com/rc=
+/clk/dl=3Fjk=3Da85f6585460cb5c0&from=3Dja&qd=3DRnZhMybXSk4M3QtTVGXWoe0my6wf=
+EJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx=
+1fzk&rd=3DjsmukDLNB-vgMHfRjq5BnHEwqdD0vnOb9P51Phyha6c&tk=3D1jp7euep82389001=
+&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-3DpryzQ3dsm4vR-j9Em37xwLH_Zt_jN=
+WwuAxmeOVXAI8h91n_D59Iw36cDtpZODcwLbA7ZF9TiemigwA5kguZptHp_yS_SM_crUw19LsLQ=
+4_c0SjdnOE9vI3daVZb0cl0zurVkEjyN1H5kkQ%3D%3D&g1tAS=3Dtrue" style=3D"display=
+:block;text-decoration:none"><table cellPadding=3D"0" cellSpacing=3D"0" bor=
+der=3D"0" align=3D"left" width=3D"100%" role=3D"presentation"><tr><td align=
+=3D"left" valign=3D"top"><h2 style=3D"color:#2d2d2d;font-family:'Indeed San=
+s', 'Noto Sans', Helvetica, Arial, sans-serif;font-size:16px;font-weight:bo=
+ld;line-height:24px;Margin:0;padding:0"><a href=3D"https://ca.indeed.com/rc=
+/clk/dl=3Fjk=3Da85f6585460cb5c0&from=3Dja&qd=3DRnZhMybXSk4M3QtTVGXWoe0my6wf=
+EJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx=
+1fzk&rd=3DjsmukDLNB-vgMHfRjq5BnHEwqdD0vnOb9P51Phyha6c&tk=3D1jp7euep82389001=
+&alid=3D660f13aa25173b62e49d70da&bb=3DMLrKV-3DpryzQ3dsm4vR-j9Em37xwLH_Zt_jN=
+WwuAxmeOVXAI8h91n_D59Iw36cDtpZODcwLbA7ZF9TiemigwA5kguZptHp_yS_SM_crUw19LsLQ=
+4_c0SjdnOE9vI3daVZb0cl0zurVkEjyN1H5kkQ%3D%3D&g1tAS=3Dtrue" style=3D"color:#=
+2d2d2d;font-weight:bold;text-decoration:underline" class=3D"strong-text-lin=
+k">Full Stack Developer (AI-Enabled)</a></h2></td></tr><tr><td align=3D"lef=
+t" valign=3D"top"><table cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" r=
+ole=3D"presentation"><tr><td style=3D"padding:0 12px 0 0;color:#2d2d2d;font=
+-size:14px;line-height:21px">Alexander College</td><td style=3D"color:#2d2d=
+2d;font-size:16px;line-height:24px"><strong>3.7</strong></td><td style=3D"p=
+adding:2px 0 0 2px"><img width=3D"20" alt=3D"3.7/5 rating" src=3D"https://p=
+rod.statics.indeed.com/eml/assets/images/icons/Star_neutral_whitebg.png"/><=
+/td></tr></table></td></tr><tr><td align=3D"left" valign=3D"top" style=3D"c=
+olor:#2d2d2d;font-size:14px;line-height:21px">Vancouver, BC</td></tr><tr><t=
+d align=3D"left" valign=3D"top" style=3D"padding:8px 0 0"><table cellPaddin=
+g=3D"0" cellSpacing=3D"0" border=3D"0" align=3D"left" style=3D"border-radiu=
+s:8px;display:inline-block" bgcolor=3D"#f3f2f1" role=3D"presentation"><tr><=
+td align=3D"center" valign=3D"top" style=3D"padding:3px 8px 3px 8px;color:#=
+595959;font-size:14px;line-height:21px"><strong>$70,000 - $80,000 a year</s=
+trong></td></tr></table></td></tr><tr><td align=3D"left" valign=3D"top" sty=
+le=3D"padding:8px 0px"><table cellPadding=3D"0" cellSpacing=3D"0" border=3D=
+"0" align=3D"left" style=3D"Margin:4px 4px 0 0;float:left" role=3D"presenta=
+tion"><tr><td width=3D"24" valign=3D"middle" align=3D"left"><img src=3D"htt=
+ps://prod.statics.indeed.com/eml/assets/images/icons/Plane_primary_whitebg.=
+png" alt=3D" " width=3D"20" style=3D"vertical-align:middle"/></td><td style=
+=3D"color:#2d2d2d;font-size:14px;line-height:21px">Easily apply</td></tr></=
+table></td></tr><tr><td align=3D"left" valign=3D"top" style=3D"padding:0;co=
+lor:#767676;font-size:14px;line-height:21px">You=E2=80=99ll use modern tool=
+ing (including AI assistants like Copilot/Claude/ChatGPT) to speed up devel=
+opment while applying strong engineering judgment, testing, and=E2=80=A6</t=
+d></tr><tr><td align=3D"left" valign=3D"top" style=3D"padding:8px 0 0;color=
+:#767676;font-size:12px;line-height:18px">Just posted</td></tr></table></a>=
+</td></tr><tr><td align=3D"left" valign=3D"top" class=3D"pb-24" style=3D"pa=
+dding:0 0 32px"><a href=3D"https://ca.indeed.com/rc/clk/dl=3Fjk=3D318bae58d=
+c319ad7&from=3Dja&qd=3DRnZhMybXSk4M3QtTVGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lM=
+b7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx1fzk&rd=3D_v8aDZhdxx5w13=
+Md6Mkg88_GpDQUpdPT4XwZZ0YIiXc&tk=3D1jp7euep82389001&alid=3D660f13aa25173b62=
+e49d70da&bb=3DQztakcAHPNEaZesQ0ryZrUzhyuW1Kn45kY_yhK0R08zajXAqHWZ4-_is92XJO=
+z2x7GiYbiLzQSEq_szqHBG_S30qo4BMVwF5Cbt36rI5ehp54x7JVHCD9lE4bJee1bHOqaro5Iha=
+q6D27471hEWygw%3D%3D&g1tAS=3Dtrue" style=3D"display:block;text-decoration:n=
+one"><table cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" align=3D"left"=
+ width=3D"100%" role=3D"presentation"><tr><td align=3D"left" valign=3D"top"=
+><h2 style=3D"color:#2d2d2d;font-family:'Indeed Sans', 'Noto Sans', Helveti=
+ca, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:24px;Marg=
+in:0;padding:0"><a href=3D"https://ca.indeed.com/rc/clk/dl=3Fjk=3D318bae58d=
+c319ad7&from=3Dja&qd=3DRnZhMybXSk4M3QtTVGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lM=
+b7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01fYXav0Q_RgNx1fzk&rd=3D_v8aDZhdxx5w13=
+Md6Mkg88_GpDQUpdPT4XwZZ0YIiXc&tk=3D1jp7euep82389001&alid=3D660f13aa25173b62=
+e49d70da&bb=3DQztakcAHPNEaZesQ0ryZrUzhyuW1Kn45kY_yhK0R08zajXAqHWZ4-_is92XJO=
+z2x7GiYbiLzQSEq_szqHBG_S30qo4BMVwF5Cbt36rI5ehp54x7JVHCD9lE4bJee1bHOqaro5Iha=
+q6D27471hEWygw%3D%3D&g1tAS=3Dtrue" style=3D"color:#2d2d2d;font-weight:bold;=
+text-decoration:underline" class=3D"strong-text-link">Senior Frontend Devel=
+oper</a></h2></td></tr><tr><td align=3D"left" valign=3D"top"><table cellPad=
+ding=3D"0" cellSpacing=3D"0" border=3D"0" role=3D"presentation"><tr><td sty=
+le=3D"padding:0 12px 0 0;color:#2d2d2d;font-size:14px;line-height:21px">Sca=
+lePad</td><td style=3D"color:#2d2d2d;font-size:16px;line-height:24px"><stro=
+ng>4.8</strong></td><td style=3D"padding:2px 0 0 2px"><img width=3D"20" alt=
+=3D"4.8/5 rating" src=3D"https://prod.statics.indeed.com/eml/assets/images/=
+icons/Star_neutral_whitebg.png"/></td></tr></table></td></tr><tr><td align=
+=3D"left" valign=3D"top" style=3D"color:#2d2d2d;font-size:14px;line-height:=
+21px">Vancouver, BC</td></tr><tr><td align=3D"left" valign=3D"top" style=3D=
+"padding:8px 0 0"><table cellPadding=3D"0" cellSpacing=3D"0" border=3D"0" a=
+lign=3D"left" style=3D"border-radius:8px;display:inline-block" bgcolor=3D"#=
+f3f2f1" role=3D"presentation"><tr><td align=3D"center" valign=3D"top" style=
+=3D"padding:3px 8px 3px 8px;color:#595959;font-size:14px;line-height:21px">=
+<strong>$115,000 - $140,000 a year</strong></td></tr></table></td></tr><tr>=
+<td align=3D"left" valign=3D"top" style=3D"padding:8px 0px"><table cellPadd=
+ing=3D"0" cellSpacing=3D"0" border=3D"0" align=3D"left" style=3D"Margin:4px=
+ 4px 0 0;float:left" role=3D"presentation"><tr><td width=3D"24" valign=3D"m=
+iddle" align=3D"left"><img src=3D"https://prod.statics.indeed.com/eml/asset=
+s/images/icons/Plane_primary_whitebg.png" alt=3D" " width=3D"20" style=3D"v=
+ertical-align:middle"/></td><td style=3D"color:#2d2d2d;font-size:14px;line-=
+height:21px">Easily apply</td></tr></table></td></tr><tr><td align=3D"left"=
+ valign=3D"top" style=3D"padding:0;color:#767676;font-size:14px;line-height=
+:21px">You=E2=80=99ll work across product, design, and backend engineering =
+to build intuitive, reliable, and scalable interfaces that help our partner=
+s understand risk, plan=E2=80=A6</td></tr><tr><td align=3D"left" valign=3D"=
+top" style=3D"padding:8px 0 0;color:#767676;font-size:12px;line-height:18px=
+">Just posted</td></tr></table></a></td></tr><tr><td align=3D"left" valign=
+=3D"top" class=3D"pb-24" style=3D"padding:0 0 32px"><a href=3D"https://ca.i=
+ndeed.com/rc/clk/dl=3Fjk=3D07aa2758ee4cb60f&from=3Dja&qd=3DRnZhMybXSk4M3QtT=
+VGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01=
+fYXav0Q_RgNx1fzk&rd=3DeavxBocA1KKXTkYJKc4ML8_GpDQUpdPT4XwZZ0YIiXc&tk=3D1jp7=
+euep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DQztakcAHPNEaZesQ0ryZrUzhy=
+uW1Kn45iYJa749xCz9KoNesQCwP_qfbLE24MAgcaapMXKxC4OQmCIbBQ9GCEykE2AvHg6p4AKCa=
+n8dZ2v2C-bh94U5UeZOKU9zuZqsA-51fbxPC8r_bYdBs85eCPw%3D%3D&g1tAS=3Dtrue" styl=
+e=3D"display:block;text-decoration:none"><table cellPadding=3D"0" cellSpaci=
+ng=3D"0" border=3D"0" align=3D"left" width=3D"100%" role=3D"presentation"><=
+tr><td align=3D"left" valign=3D"top"><h2 style=3D"color:#2d2d2d;font-family=
+:'Indeed Sans', 'Noto Sans', Helvetica, Arial, sans-serif;font-size:16px;fo=
+nt-weight:bold;line-height:24px;Margin:0;padding:0"><a href=3D"https://ca.i=
+ndeed.com/rc/clk/dl=3Fjk=3D07aa2758ee4cb60f&from=3Dja&qd=3DRnZhMybXSk4M3QtT=
+VGXWoe0my6wfEJ5VJElH4OwYL1eGcva_p7lMb7hhhZHmZf1d7by11jGu6Gz1T2ZewlCFWcUhn01=
+fYXav0Q_RgNx1fzk&rd=3DeavxBocA1KKXTkYJKc4ML8_GpDQUpdPT4XwZZ0YIiXc&tk=3D1jp7=
+euep82389001&alid=3D660f13aa25173b62e49d70da&bb=3DQztakcAHPNEaZesQ0ryZrUzhy=
+uW1Kn45iYJa749xCz9KoNesQCwP_qfbLE24MAgcaapMXKxC4OQmCIbBQ9GCEykE2AvHg6p4AKCa=
+n8dZ2v2C-bh94U5UeZOKU9zuZqsA-51fbxPC8r_bYdBs85eCPw%3D%3D&g1tAS=3Dtrue" styl=
+e=3D"color:#2d2d2d;font-weight:bold;text-decoration:underline" class=3D"str=
+ong-text-link">Engineer, Application Development - 6 Month Contract</a></h2=
+></td></tr><tr><td align=3D"left" valign=3D"top"><table cellPadding=3D"0" c=
+ellSpacing=3D"0" border=3D"0" role=3D"presentation"><tr><td style=3D"paddin=
+g:0 12px 0 0;color:#2d2d2d;font-size:14px;line-height:21px">Raymond James F=
+inancial, Inc.</td><td style=3D"color:#2d2d2d;font-size:16px;line-height:24=
+px"><strong>3.8</strong></td><td style=3D"padding:2px 0 0 2px"><img width=
+=3D"20" alt=3D"3.8/5 rating" src=3D"https://prod.statics.indeed.com/eml/ass=
+ets/images/icons/Star_neutral_whitebg.png"/></td></tr></table></td></tr><tr=
+><td align=3D"left" valign=3D"top" style=3D"color:#2d2d2d;font-size:14px;li=
+ne-height:21px">Vancouver, BC</td></tr><tr><td align=3D"left" valign=3D"top=
+" style=3D"padding:8px 0 0"><table cellPadding=3D"0" cellSpacing=3D"0" bord=
+er=3D"0" align=3D"left" style=3D"border-radius:8px;display:inline-block" bg=
+color=3D"#f3f2f1" role=3D"presentation"><tr><td align=3D"center" valign=3D"=
+top" style=3D"padding:3px 8px 3px 8px;color:#595959;font-size:14px;line-hei=
+ght:21px"><strong>$90,000 - $100,000 a year</strong></td></tr></table></td>=
+</tr><tr><td align=3D"left" valign=3D"top" style=3D"padding:0;color:#767676=
+;font-size:14px;line-height:21px">These tools help us review applications e=
+fficiently, but they do not replace human decision-making. Under the direct=
+ion of the Manager of Systems Development,=E2=80=A6</td></tr><tr><td align=
+=3D"left" valign=3D"top" style=3D"padding:8px 0 0;color:#767676;font-size:1=
+2px;line-height:18px">Just posted</td></tr></table></a></td></tr></table></=
+td></tr><tr><td class=3D"r-x" style=3D"padding:0 50px 32px"><table cellPadd=
+ing=3D"0" cellSpacing=3D"0" style=3D"width:100%;border:0;border-spacing:0">=
+<tr><td valign=3D"top"><table cellPadding=3D"0" cellSpacing=3D"0" border=3D=
+"0" align=3D"center" width=3D"100%" role=3D"presentation"><tr><td align=3D"=
+center" style=3D"padding:0"><table class=3D"width-100" cellPadding=3D"0" ce=
+llSpacing=3D"0" border=3D"0" align=3D"center" role=3D"presentation"><tr><td=
+ align=3D"center" class=3D"stack cta center-align-text" style=3D"border-rad=
+ius:12px;border:1px solid #004fcb"><a href=3D"https://ca.indeed.com/jobs=3F=
+q=3Dweb+developer&hl=3Den&from=3Dja&l=3DBurnaby%2C+BC&radius=3D50&alid=3D66=
+0f13aa25173b62e49d70da&tmtk=3D1jp7euep82389001&utm_campaign=3Djob_alerts&ut=
+m_medium=3Demail&utm_source=3Djobseeker_emails&of=3D1&fr=3Dt" class=3D"prim=
+ary-button" style=3D"background-color:#004fcb;font-size:16px;font-family:'I=
+ndeed Sans', 'Noto Sans', Helvetica, Arial, sans-serif;font-weight:bold;tex=
+t-decoration:none;padding:12px 16px;color:#ffffff;display:block;border-radi=
+us:12px;min-width:200px;width:auto;mso-padding-alt:0;text-underline-color:#=
+2557a7" data-eml-test-id=3D"view-all-button"><!--[if mso]>=0A        <i sty=
+le=3D"mso-font-width:100%;mso-text-raise:150%" hidden=3D"">&emsp;&#8203;</i=
+>=0A        <![endif]-->=0A<span style=3D"mso-text-raise:75%">View all jobs=
+<!--[if mso]>=0A        <i style=3D"mso-font-width:100%" hidden=3D"">&emsp;=
+&#8203;</i>=0A        <![endif]-->=0A</span></a></td></tr></table></td></tr=
+></table></td></tr><tr><td class=3D"r-a" style=3D"padding:24px 48px 0"><p a=
+lign=3D"center" style=3D"font-size:14px;color:#2D2D2D;Margin:0">View jobs: =
+<a href=3D"https://ca.indeed.com/jobs=3Fq=3Dweb+developer&hl=3Den&from=3Dja=
+&l=3DBurnaby%2C+BC&radius=3D50&alid=3D660f13aa25173b62e49d70da&tmtk=3D1jp7e=
+uep82389001&utm_campaign=3Djob_alerts&utm_medium=3Demail&utm_source=3Djobse=
+eker_emails&of=3D1&fr=3Db&fromage=3D1" style=3D"color:#2557A7;font-size:14p=
+x;font-weight:normal;text-decoration:underline">since yesterday</a> - <a hr=
+ef=3D"https://ca.indeed.com/jobs=3Fq=3Dweb+developer&hl=3Den&from=3Dja&l=3D=
+Burnaby%2C+BC&radius=3D50&alid=3D660f13aa25173b62e49d70da&tmtk=3D1jp7euep82=
+389001&utm_campaign=3Djob_alerts&utm_medium=3Demail&utm_source=3Djobseeker_=
+emails&of=3D1&fr=3Db&fromage=3D7" style=3D"color:#2557A7;font-size:14px;fon=
+t-weight:normal;text-decoration:underline">for last 7 days</a></p></td></tr=
+></table></td></tr></table><table role=3D"none"><tr><td><table class=3D"hid=
+e-when-desktop" width=3D"100%" cellPadding=3D"0" cellSpacing=3D"0" role=3D"=
+presentation" border=3D"0"><tbody><tr><td style=3D"max-width:600px;backgrou=
+nd-color:#FFFFFF"><table role=3D"none"><tbody><tr><td style=3D"padding:32px=
+"><table role=3D"none"><tbody><tr><td style=3D"vertical-align:top"><img wid=
+th=3D"83" height=3D"66" src=3D"https://subscriptions.indeed.com/static/imag=
+es/ja/magua_device_usage1.png" alt=3D"" aria-hidden=3D"true"/></td><td styl=
+e=3D"padding-left:28px;color:#2D2D2D"><table role=3D"none"><tbody><tr><td s=
+tyle=3D"font-weight:700;font-size:20px" aria-level=3D"2" role=3D"heading">D=
+on=E2=80=99t miss out on important job updates with the app</td></tr><tr><t=
+d style=3D"font-weight:400;font-size:16px;color:#595959">The Indeed mobile =
+app makes your job search easier with timely notifications and personalized=
+ recommendations.</td></tr><tr><td><table role=3D"none"><tbody><tr><td styl=
+e=3D"padding-top:16px"><table role=3D"none"><tbody><tr><td><a href=3D"https=
+://indeed.onelink.me/oo1Z=3Faf_xp=3Dcustom&pid=3Demail&c=3Djobalerts&af_ads=
+et=3D%23B4:magua_jobalerts_app_promo_tst1&utm_source=3Djobalerts&utm_medium=
+=3Demail&utm_campaign=3D%23B4:magua_jobalerts_app_promo_tst1&targetUrl=3Dht=
+tps%3A%2F%2Fwww.indeed.com%2Fm%3Futm_source%3Djobalerts%26utm_medium%3Demai=
+l%26utm_campaign%3D%2523B4%3Amagua_jobalerts_app_promo_tst1"><img width=3D"=
+132" height=3D"44" src=3D"https://subscriptions.indeed.com/static/images/ja=
+/magua_app_store.png" alt=3D"Download on the App Store"/></a></td><td style=
+=3D"padding-left:12px"><a href=3D"https://indeed.onelink.me/oo1Z=3Faf_xp=3D=
+custom&pid=3Demail&c=3Djobalerts&af_adset=3D%23B4:magua_jobalerts_app_promo=
+_tst1&utm_source=3Djobalerts&utm_medium=3Demail&utm_campaign=3D%23B4:magua_=
+jobalerts_app_promo_tst1&targetUrl=3Dhttps%3A%2F%2Fwww.indeed.com%2Fm%3Futm=
+_source%3Djobalerts%26utm_medium%3Demail%26utm_campaign%3D%2523B4%3Amagua_j=
+obalerts_app_promo_tst1"><img width=3D"149" height=3D"44" src=3D"https://su=
+bscriptions.indeed.com/static/images/ja/magua_google_play.png" alt=3D"Get i=
+t on Google Play"/></a></td></tr></tbody></table></td></tr></tbody></table>=
+</td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></tab=
+le></td></tr></tbody></table></td></tr></table><table class=3D"width-550" w=
+idth=3D"100%" cellPadding=3D"0" cellSpacing=3D"0" style=3D"max-width:550px;=
+background-color:#F2F2F2;border:0" role=3D"none"><tr><td class=3D"footer-bo=
+x" style=3D"padding:24px 4px"><table cellPadding=3D"0" cellSpacing=3D"0" st=
+yle=3D"max-width:425px;border:0" align=3D"center" role=3D"none"><tr><td ali=
+gn=3D"center"><a href=3D"https://subscriptions.indeed.com/update/660f13aa25=
+173b62e49d70da=3Ftoken=3DCkBQ1vBNXKuysuKAyFwqvBnKDo4awHdB4SP6TEo1Dadc7HaecY=
+to3Cqz2d1x2H1d6fro6YX_e5wyX1fnIk_juM2bEiAtxFNmKUbVv30xqMxHA2pUFS4CG_6JFbBgU=
+afartHZMhoQ9o_VT66Y1vjJNFJN6CvDqQ%3D%3D&co=3DCA&hl=3Den&tmtk=3D1jp7euep8238=
+9001&from=3DjaEditAlert" style=3D"align:CENTER;color:#2557A7;font-family:'N=
+oto Sans', Helvetica, Arial, sans-serif;font-size:12px;font-weight:normal;l=
+etter-spacing:-0.12px;line-height:36px;padding:0 0 20px;text-decoration:und=
+erline">Edit this job alert</a></td></tr><tr><td class=3D"jecl-Disclaimer-t=
+ext" align=3D"center" style=3D"font-family:'Noto Sans', Helvetica, Arial, s=
+ans-serif;font-size:12px;line-height:16px;color:#424242;padding:32px 0 0;Ma=
+rgin:0 auto"><strong role=3D"heading" aria-level=3D"3">Do not share this em=
+ail</strong></td></tr><tr><td class=3D"jecl-Disclaimer-text" align=3D"cente=
+r" style=3D"font-family:'Noto Sans', Helvetica, Arial, sans-serif;font-size=
+:12px;line-height:16px;color:#424242;padding:0;Margin:0 auto">This email co=
+ntains secure links that are personalized to you. Please do not share this =
+email or links with others.</td></tr><tr><td class=3D"jecl-Disclaimer-text"=
+ align=3D"center" style=3D"font-family:'Noto Sans', Helvetica, Arial, sans-=
+serif;font-size:12px;line-height:16px;color:#424242;padding:32px 0 0;Margin=
+:0 auto">Salaries estimated if unavailable. When a job posting doesn't incl=
+ude a salary, we estimate it by looking at similar jobs. Estimated salaries=
+ are not endorsed by the companies offering those positions and may vary fr=
+om actual salaries.</td></tr><tr><td class=3D"jecl-Disclaimer-text" align=
+=3D"center" style=3D"font-family:'Noto Sans', Helvetica, Arial, sans-serif;=
+font-size:12px;line-height:16px;color:#424242;padding:32px 0 0;Margin:0 aut=
+o">&sup1; Displayed here are Job Ads that match the Job Alert query you sav=
+ed. Indeed may be compensated by these employers, helping keep Indeed free =
+for job seekers. Indeed ranks Job Ads based on a combination of employer bi=
+ds and relevance, such as your search terms and other activity on Indeed. F=
+or more information, see the <a class=3D"terms-link" href=3D"https://ca.ind=
+eed.com/legal=3Fhl=3Den">Indeed Terms of Service</a></td></tr></table><tabl=
+e class=3D"jecl-Footer" width=3D"100%" cellPadding=3D"0" cellSpacing=3D"0" =
+style=3D"font-size:12px;color:#424242;line-height:22px;Margin:0 auto;border=
+:0" role=3D"none" data-testid=3D"footer"><tr><td class=3D"r-7" lang=3D"en" =
+align=3D"center" style=3D"padding:48px 0px 0px">=C2=A9 2026 Indeed Ireland =
+Operations, Ltd.</td></tr><tr><td class=3D"r-8" lang=3D"en" align=3D"center=
+" style=3D"padding:0px">Indeed Ireland Operations Limited, Block B, Capital=
+ Dock, 80 Sir John Rogerson's Quay, Grand Canal Dock, Dublin, 2, D02 HE36</=
+td></tr><tr><td class=3D"r-6" align=3D"center" style=3D"padding:48px 0px 64=
+px" role=3D"list"><span role=3D"listitem"><a href=3D"https://ca.indeed.com/=
+legal=3Fhl=3Den#privacy" title=3D"Privacy Policy" style=3D"color:#2557A7;te=
+xt-decoration:underline" class=3D"r-0">Privacy Policy</a><span class=3D"r-5=
+"> | </span></span><span role=3D"listitem"><a href=3D"https://ca.indeed.com=
+/legal=3Fhl=3Den" title=3D"Terms" style=3D"color:#2557A7;text-decoration:un=
+derline" class=3D"r-1">Terms</a><span class=3D"r-5"> | </span></span><span =
+role=3D"listitem"><a href=3D"https://support.indeed.com/hc/en-ca" title=3D"=
+Help Centre" style=3D"color:#2557A7;text-decoration:underline" class=3D"r-2=
+">Help Centre</a></span><span role=3D"listitem"><br/><a href=3D"https://sub=
+scriptions.indeed.com=3Ftoken=3DCkBQ1vBNXKuysuKAyFwqvBnKDo4awHdB4SP6TEo1Dad=
+c7HaecYto3Cqz2d1x2H1d6fro6YX_e5wyX1fnIk_juM2bEiAtxFNmKUbVv30xqMxHA2pUFS4CG_=
+6JFbBgUafartHZMhoQ9o_VT66Y1vjJNFJN6CvDqQ%3D%3D&co=3DCA&hl=3Den&tmtk=3D1jp7e=
+uep82389001&from=3Dja" title=3D"Manage job alerts" style=3D"color:#2557A7;t=
+ext-decoration:underline" class=3D"r-3">Manage job alerts</a></span><span r=
+ole=3D"listitem"><span class=3D"r-5"> | </span><a href=3D"https://subscript=
+ions.indeed.com/alerts/cancel=3Ftoken=3DCkBQ1vBNXKuysuKAyFwqvBnKDo4awHdB4SP=
+6TEo1Dadc7HaecYto3Cqz2d1x2H1d6fro6YX_e5wyX1fnIk_juM2bEiAtxFNmKUbVv30xqMxHA2=
+pUFS4CG_6JFbBgUafartHZMhoQ9o_VT66Y1vjJNFJN6CvDqQ%3D%3D&co=3DCA&hl=3Den&tmtk=
+=3D1jp7euep82389001&subId=3D660f13aa25173b62e49d70da&rgtk=3D1jp7eueq6n5qc80=
+0&from=3Dja" title=3D"Unsubscribe from this job alert" style=3D"color:#2557=
+A7;text-decoration:underline" class=3D"r-4">Unsubscribe from this job alert=
+</a></span></td></tr></table></td></tr></table><!--[if (gte mso 9)|(IE)]> <=
+/td> </tr> </table> <![endif]--></td></tr></table><img alt=3D"" src=3D"http=
+s://subscriptions.indeed.com/imgping=3Ftype=3Djafull&tk=3D1jp7euep82389001&=
+aluidhash=3D660f13aa25173b62e49d70da&clipped=3Dfalse" style=3D"height:1.25r=
+em;width:1px"/></div></body></html>
+--_----bAYyB1O3Zaz2M18ln55UmQ===_82/61-54742-A7C101A6--
+
