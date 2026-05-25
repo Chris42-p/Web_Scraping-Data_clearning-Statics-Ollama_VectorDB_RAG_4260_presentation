@@ -1,0 +1,5 @@
+pypdf
+python-docx
+spire.presentation
+mail-parser
+ollama
