@@ -17,10 +17,19 @@ injestion engine -- stage 2
    - backend: catch the query and send it to the database. return obj.
 
 ## 2026/05/24
-## Docker Setup
-- Dockerfile located in sample_files/
-- Build: `docker build -t 4260-presentation -f sample_files/Dockerfile .`
-- Run: `docker run 4260-presentation`
+### Requirements
+- Docker Desktop installed and running
+
+### Build
+docker build -t 4260-presentation -f sample_files/Dockerfile .
+
+### Run
+docker run 4260-presentation
+
+### Run with persistent files
+docker run -v $(pwd)/__ingest_file:/app/__ingest_file \
+           -v $(pwd)/__processed_file:/app/__processed_file \
+           4260-presentation
 
 ## Bug Fixes (yung branch)
 - Fixed DocxReader → Document (python-docx correct import)
