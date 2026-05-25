@@ -5,3 +5,10 @@
 
 src/html/password.txt
 #explicit 
+
+__pycache__/
+*.pyc
+*.ipynb
+*.ipynb_checkpoints/
+.env
+sample_files/
