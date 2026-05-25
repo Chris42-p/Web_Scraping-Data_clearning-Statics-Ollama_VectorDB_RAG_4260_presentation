@@ -17,11 +17,12 @@ from pathlib import Path
 import subprocess
 import ollama                              #https://github.com/ollama/ollama-python
 from pypdf import PdfReader                #sudo apt install python3-pypdf 
-from docx import DocxReader                #sudo apt install python3-docx 
+from docx import Document               #sudo apt install python3-docx 
 import spire.presentation                  #pip3 install spire.presentation --break-system-packages
 import mailparser                          #pip install mail-parser --break-system-packages
 import csv
 import zipfile  
+import hashlib
 
 #=== local imports
 from .injest_interface import Interface_InjestionEngine
@@ -120,12 +121,12 @@ class Injest_Engine(Interface_InjestionEngine):
           if doc_type ==".PDF":
                #ref: https://www.geeksforgeeks.org/python/working-with-pdf-files-in-python/
 
-               reader= PdfReader(docuemnt) 
+               reader= PdfReader(str(docuemnt)) 
 
                #Read text on page
                doc_content=""          
                num_pages=len(reader.pages)     
-               for page in num_pages:
+               for page in range(num_pages):
                     doc_content+=f"{page}: {reader.pages[page].extract_text()}"
           
                #OCR images?
@@ -140,7 +141,7 @@ class Injest_Engine(Interface_InjestionEngine):
           elif doc_type == ".DOCX": 
                #ref: https://pytutorial.com/python-docx-tutorial-read-parse-docx-content/
 
-               doc=DocxReader(docuemnt)
+               doc=Document(docuemnt)
                #read headers and footer. 
                for section in doc.sections:
                     header= section.header
@@ -175,13 +176,13 @@ class Injest_Engine(Interface_InjestionEngine):
 
                pass
           elif doc_type ==".CSV": #output is cast to string
-               doc_content=None
+               doc_content=""
 
                #open csv with content
-               with open('Giants.csv', mode ='r') as file:    
-                    csvFile = csv.DictReader(docuemnt)
+               with open(docuemnt, mode ='r') as file:    
+                    csvFile = csv.DictReader(file)
                     for lines in csvFile:
-                         doc_content+= str(lines)  
+                         doc_content += str(lines)
 
 
                #TEAM: find meta data on the file and the other properties of the object 
@@ -189,7 +190,7 @@ class Injest_Engine(Interface_InjestionEngine):
                read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
                pass
           elif doc_type ==".TXT":
-               doc_content=None
+               doc_content=""
                #TEAM: metadata please
 
                with open(docuemnt,"r") as file:
@@ -201,7 +202,7 @@ class Injest_Engine(Interface_InjestionEngine):
           elif doc_type ==".PPTX":
                # ref: https://medium.com/@alice.yang_10652/extract-text-from-powerpoint-ppt-or-pptx-with-python-shapes-tables-notes-smartart-and-more-18e1381018e0
 
-               doc_content=None
+               doc_content=""
                #TEAM: metadata please
                
 
@@ -214,7 +215,7 @@ class Injest_Engine(Interface_InjestionEngine):
           elif doc_type ==".ZIP":
                #ref: https://www.geeksforgeeks.org/python/working-zip-files-python/
 
-               doc_content=None
+               doc_content=""
                #TEAM: metadata please
 
                #read zip files. 
@@ -245,7 +246,7 @@ class Injest_Engine(Interface_InjestionEngine):
                print(mail.attachments)   # all attachments
 
 
-               doc_content=None
+               doc_content=""
                #TEAM: metadata please
 
                read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
@@ -266,7 +267,8 @@ class Injest_Engine(Interface_InjestionEngine):
                mode=CONST["MODEL_NAME"],               
                messages=[{
                     "role":"user",
-                    "content": f"{CONST["PROMPT"]} \n {document}"
+                    "content": f"{CONST['PROMPT']} \n {document}"
+                    
                     }]
                )
 
@@ -285,10 +287,9 @@ class Injest_Engine(Interface_InjestionEngine):
           self.__ocr_my_pdf()
 
           #=== injest documents
-          for key, value in self.files_grouped_typ_type:
-               doc_str=self.__read_a_document(key, value)
-               return 
-               self.__call_ollama_on_a_file(doc_str)          
+          for key, value in self.files_grouped_typ_type.items():
+               for file in value:
+                    doc_str = self.__read_a_document(key, file)       
 
      #===== Utility
 
@@ -308,7 +309,9 @@ class Injest_Engine(Interface_InjestionEngine):
           #== hahses 
           doc_hash=None
 
-          def __init__(self, title,paragaphs,header_footer,table_content,author,time_creation,modified_date,file_computer_id):
+          def __init__(self, title=None, paragaphs=None, header_footer=None, 
+                              table_content=None, author=None, time_creation=None, 
+                              modified_date=None, file_computer_id=None):
                self.title=title
                self.paragaphs=paragaphs 
                self.header_footer=header_footer 
@@ -320,13 +323,14 @@ class Injest_Engine(Interface_InjestionEngine):
                self.modified_date=modified_date
                self.file_computer_id=file_computer_id
 
-          def get_object():
+          def get_object(self):
                return {} #create the object later 
 
-          def hash_document(self,doc_hash):
+          def hash_document(self):
                #hash the title, and author? -- quick look up?
 
-               self.doc_hash=doc_hash
+               content = str(self.paragaphs) + str(self.title)
+               self.doc_hash = hashlib.md5(content.encode()).hexdigest()
 
 
 
