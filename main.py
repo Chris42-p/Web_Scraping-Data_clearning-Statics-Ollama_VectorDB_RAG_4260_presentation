@@ -19,8 +19,9 @@ def create_file_structure():
      return input_files_path,output_files_path
 
 def injest_files(input_files_path,output_files_path):
-     injester=Injest_Engine(input_files_path,output_files_path)
+     processed_doc_obj=Injest_Engine(input_files_path,output_files_path)
      
+     print(processed_doc_obj)
      # need to trigger file_structure engine to move the files to _processed_files ... maybe after they are injested into the db?
 
 
