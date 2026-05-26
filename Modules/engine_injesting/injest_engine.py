@@ -228,14 +228,18 @@ class Injest_Engine(Interface_InjestionEngine):
                #read zip files. 
 
                with zipfile.ZipFile(docuemnt, "r") as zip_ref:
-                    files_in_zip=zip_ref.printdir()
+                    files_in_zip = zip_ref.namelist()
                
                
                for file in files_in_zip:
-                    #read documents in a zip file. 
+                    # read documents in a zip file.
                     with zipfile.ZipFile(docuemnt, "r") as zipf:
                          content = zipf.read(file)
-                         doc_content=content.decode()
+                         try:
+                              doc_content += content.decode('utf-8')
+                         except UnicodeDecodeError:
+                              print(f"Skipping binary file in zip: {file}")
+                              continue
 
 
                read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
@@ -287,7 +291,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     content=f"{CONST['PROMPT']} \n {document}"
                     # print(f" {content}\n\n")
                     response=ollama.chat(
-                         model=CONST["MODEL_NAME"],               
+                         model="llama3",               
                          messages=[{
                               "role":"user",
                               "content": content,
@@ -356,7 +360,7 @@ class Injest_Engine(Interface_InjestionEngine):
           #      return 
 
           #=== Dev/Debug area.  #-- the following files were tested and work
-          root="/home/chris/Desktop/4260_presentation/Modules/___ingest_file/"
+          root=str(self.input_files_path) + "/"
           doc_metadata= self.__read_a_document(".PDF",root+"temp.pdf")
           # doc_metadata= self.__read_a_document(".DOCX",root+"temp.docx")
           # doc_metadata= self.__read_a_document(".CSV",root+"temp.csv")
@@ -456,7 +460,7 @@ class Injest_Engine(Interface_InjestionEngine):
 
           def __init__(self,
                     #    doc_obj:Processed_Document_Obj
-                       doc_obj,ai_summary, ai_description, ai_send_reason, ai_keywords, ai_topics, ai_entities, ai_document_type, ai_sentiment, ai_language, ai_date_references):
+                         doc_obj,ai_summary, ai_description, ai_send_reason, ai_keywords, ai_topics, ai_entities, ai_document_type, ai_sentiment, ai_language, ai_date_references):
                
                #the book document it self
                self.doc_obj= doc_obj
@@ -476,9 +480,7 @@ class Injest_Engine(Interface_InjestionEngine):
      
           def to_json(self):
                return {
-                    "document_object":{
-                         self.doc_obj.to_json()
-                    },
+                    "document_object":self.doc_obj,
                     "ai_metadata": {
                          "summary":          self.ai_summary,
                          "description":      self.ai_description,
