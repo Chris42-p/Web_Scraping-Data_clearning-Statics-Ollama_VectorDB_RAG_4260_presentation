@@ -31,12 +31,3 @@ docker run -v $(pwd)/__ingest_file:/app/__ingest_file \
            -v $(pwd)/__processed_file:/app/__processed_file \
            4260-presentation
 
-## Bug Fixes (yung branch)
-- Fixed DocxReader → Document (python-docx correct import)
-- Fixed f-string with nested quotes in __call_ollama_on_a_file
-- Fixed .items() on dictionary iteration in controller()
-- Fixed range(num_pages) for PDF page loop
-- Fixed Processed_Document_Obj parameters now optional (=None)
-- Fixed hash_document() calculates hash internally using hashlib
-- Fixed CSV file path hardcoded 'Giants.csv' → use docuemnt parameter
-- Fixed doc_content initialized as "" instead of None for CSV
