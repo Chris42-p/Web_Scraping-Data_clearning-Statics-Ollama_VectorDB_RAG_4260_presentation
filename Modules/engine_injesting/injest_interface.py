@@ -18,9 +18,10 @@ CONST={
           ".PDF":[],
           ".DOCX":[],
           ".CSV":[],
-          ".EML":[],
           ".TXT":[],
           ".PPTX":[],
+
+          ".EML":[],
           ".ZIP":[],
           # "":[],
      },
@@ -28,22 +29,21 @@ CONST={
      #===== AI instructions
      "MODEL_NAME":"deepseek-r1:14b",
      "PROMPT": """
-          read the following document and generate SEO meta tags for it. 
-          Return ONLY JSON OBJECTS with the fileds:
-          
-               -1_Title: under 50 word. 
-               -2_Summary: 100 word summary of the document's content.     
-               -3_Description: up to 300 word description of the content. 
-               -4_Why was the communication sent: use up to 150 words to describe why the communication was sent. 
-               -5_Keywords: list up to 15 relevant key words. 
-               -6_Meta Data: who sent it, when,, when was the doucment created  
+Read the following document and return ONLY a raw JSON object (no markdown, no backticks, no explanation).
 
-               -7_original document title: include the document's original title in the response. 
-               -8_original doucment description: include the document's original description in the response. 
+Required fields:
+- "summary":          100 words max. Overview of the document content.
+- "description":      300 words max. Detailed description of the content.
+- "send_reason":      150 words max. Why this communication was sent.
+- "keywords":         List of up to 15 relevant keywords (array of strings).
+- "topics":           List of up to 5 broad topic categories (array of strings).
+- "entities":         Named entities found in the document (people, orgs, places, dates).
+- "document_type":    Single label e.g. "invoice", "legal", "email", "report".
+- "sentiment":        Overall tone: "positive", "neutral", or "negative".
+- "language":         Language the document is written in e.g. "en", "fr".
+- "date_references":  Any dates mentioned or implied in the document (array of strings).
 
-          ONLY JSON OBJECTS will be accepted. 
-               
-          Document:                         
+Document:
      """,
      
 }
