@@ -268,9 +268,17 @@ class Injest_Engine(Interface_InjestionEngine):
           return read_doc_obj
 
      def __unzip_zip_files(self):
-          #get list of files, 
-          # path(for file in files).suffix() =="zip" : cmd= "unzip to __injest"
-          pass
+          entries = Path(str(self.input_files_path)).iterdir()
+          
+          for item in entries:
+               if item.suffix.lower() == ".zip":
+                    print(f"Unzipping: {item}")
+                    try:
+                         with zipfile.ZipFile(item, "r") as zip_ref:
+                              zip_ref.extractall(self.input_files_path)
+                         print(f"Extracted: {item}")
+                    except Exception as e:
+                         print(f"{self.err_text}: Failed to unzip {item}: {e}")
 
 
      #========== Call out to model to get metadata tags. 
