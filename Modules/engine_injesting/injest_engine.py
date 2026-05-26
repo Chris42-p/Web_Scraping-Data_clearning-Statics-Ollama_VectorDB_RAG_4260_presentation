@@ -304,7 +304,7 @@ class Injest_Engine(Interface_InjestionEngine):
 
                except Exception as e:
                     crashes+=1
-                    print(f"{CONST["ERR_TXT"]}: Ollama call:  {e}"  )
+                    print(f"{CONST['ERR_TXT']}: Ollama call:  {e}"  )
                     print("Model Crashed")               
 
           return response     
