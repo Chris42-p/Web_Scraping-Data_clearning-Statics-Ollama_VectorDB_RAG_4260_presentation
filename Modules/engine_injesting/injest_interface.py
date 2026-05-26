@@ -12,7 +12,8 @@ CONST={
      #==== Error codes
      "ERR_CODE":-1,
      "ERR_TXT":"Error occured", 
-     
+     "MODEL_CRASH_RETRY":3,
+
      #==== Document type supported
      "DOCUMENT_TYPES":{
           ".PDF":[],
@@ -27,7 +28,7 @@ CONST={
      },
 
      #===== AI instructions
-     "MODEL_NAME":"deepseek-r1:14b",
+     "MODEL_NAME":"deepseek-r1:latest",
      "PROMPT": """
 Read the following document and return ONLY a raw JSON object (no markdown, no backticks, no explanation).
 

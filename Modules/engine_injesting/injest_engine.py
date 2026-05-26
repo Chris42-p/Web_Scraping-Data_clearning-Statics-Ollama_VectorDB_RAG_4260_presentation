@@ -35,6 +35,7 @@ class Injest_Engine(Interface_InjestionEngine):
      #=== Meta Data ====
      err_text=CONST["ERR_TXT"]
      err_code=CONST["ERR_CODE"]
+     err_model_crash=CONST["MODEL_CRASH_RETRY"]
 
      #=== File locations ====
      input_files_path=None
@@ -269,14 +270,17 @@ class Injest_Engine(Interface_InjestionEngine):
 
 
      #========== Call out to model to get metadata tags. 
-     def __call_ollama_on_a_file(self, document, ollama_off, model_crash):       #private method
+     def __call_ollama_on_a_file(self, document, ollama_off):       #private method
           if ollama_off ==True:
+               #Ollama is offline-- boot it. 
+               #check if ollama is running -- start otherwise.  
+               #check if computer has enough ram to boot ollama 14b param 
                #activate ollama 
                first_run=False     
 
           crashes=0
           response=""
-          while crashes<model_crash:
+          while crashes<self.err_model_crash:
                try:
                     print("sending request to model ")
 
@@ -284,16 +288,25 @@ class Injest_Engine(Interface_InjestionEngine):
                          model=CONST["MODEL_NAME"],               
                          messages=[{
                               "role":"user",
-                              # "content": f"{CONST['PROMPT']} \n {document}"
                               "content": f"{CONST['PROMPT']} \n {document}"
-                              }]
+                              # "content": f"how are you doing today?"
+                              }],
+                              stream= True
                          )
+
+                    full_response = ""
+                    for chunk in response:
+                         token = chunk['message']['content']
+                         # print(token, end='', flush=True)
+                         full_response += token
+
+                    return full_response
+
                except Exception as e:
                     crashes+=1
                     print(f"{CONST["ERR_TXT"]}: Ollama call:  {e}"  )
                     print("Model Crashed")               
 
-          print(response)
           return response     
 
 
@@ -316,10 +329,8 @@ class Injest_Engine(Interface_InjestionEngine):
 
           # #=== Send the object to ollama to read over.
           ollama_off=0 
-          model_crash_retry=3
           # for processed_document in processed_doc_objs:
           #      self.__call_ollama_on_a_file(processed_document)
-
 
 
           #=== Dev/Debug area.  #-- the following files were tested and work
@@ -329,7 +340,9 @@ class Injest_Engine(Interface_InjestionEngine):
           # doc_metadata= self.__read_a_document(".CSV",root+"temp.csv")
           # doc_metadata= self.__read_a_document(".TXT",root+"ppt_x.txt")
           x=doc_metadata.to_json()
-          self.__call_ollama_on_a_file(x, ollama_off, model_crash_retry) 
+          response_obj=self.__call_ollama_on_a_file(x, ollama_off) 
+
+          print(response_obj)
 
           # print(x)
 
