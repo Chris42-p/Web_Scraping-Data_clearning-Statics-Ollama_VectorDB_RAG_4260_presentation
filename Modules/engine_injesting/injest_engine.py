@@ -24,6 +24,7 @@ import csv
 import zipfile  
 import hashlib
 import re
+import json
 
 #=== local imports
 from .injest_interface import Interface_InjestionEngine
@@ -149,8 +150,7 @@ class Injest_Engine(Interface_InjestionEngine):
                for section in doc.sections:
                     header= section.header
                     for paragraph in header.paragraphs:
-                         header+=paragraph.text
-
+                         header=paragraph.text
 
                #read tables. 
                all_row_data=""
@@ -174,7 +174,7 @@ class Injest_Engine(Interface_InjestionEngine):
                # print(f"Created: {props.created}")
                # print(f"Modified: {props.modified}")
 
-               print("1111"+doc_content)
+               # print("1111"+doc_content)
 
                read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
 
@@ -270,25 +270,27 @@ class Injest_Engine(Interface_InjestionEngine):
 
 
      #========== Call out to model to get metadata tags. 
-     def __call_ollama_on_a_file(self, document, ollama_off):       #private method
-          if ollama_off ==True:
+     def __call_ollama_on_a_file(self, document):       #private method
+          # if ollama_off ==True:
                #Ollama is offline-- boot it. 
                #check if ollama is running -- start otherwise.  
                #check if computer has enough ram to boot ollama 14b param 
                #activate ollama 
-               first_run=False     
+               # first_run=False     
 
           crashes=0
           response=""
           while crashes<self.err_model_crash:
                try:
                     print("sending request to model ")
-
+                    
+                    content=f"{CONST['PROMPT']} \n {document}"
+                    # print(f" {content}\n\n")
                     response=ollama.chat(
                          model=CONST["MODEL_NAME"],               
                          messages=[{
                               "role":"user",
-                              "content": f"{CONST['PROMPT']} \n {document}"
+                              "content": content,
                               # "content": f"how are you doing today?"
                               }],
                               stream= True
@@ -309,6 +311,26 @@ class Injest_Engine(Interface_InjestionEngine):
 
           return response     
 
+     def __ollama_parse_response_into_object(self, ollama_response,book_obj ):
+          ollama_response= json.loads(ollama_response)
+          # print("\n\n\n\n")
+          # print(ollama_response)
+          # print("\n\n\n\n")
+
+          return self.AI_Processed_Document_Obj(
+          doc_obj=book_obj, #the the document's content itself. 
+
+          ai_summary =ollama_response["summary"] ,
+          ai_description =ollama_response["description"] ,
+          ai_send_reason =ollama_response["send_reason"] ,
+          ai_keywords =ollama_response["keywords"] ,
+          ai_topics =ollama_response["topics"] ,
+          ai_entities =ollama_response["entities"] ,
+          ai_document_type =ollama_response["document_type"] ,
+          ai_sentiment =ollama_response["sentiment"] ,
+          ai_language =ollama_response["language"] ,
+          ai_date_references =ollama_response["date_references"] ,
+          )
 
      #=== Meta ===
      def controller(self):  #TEAM: can we please order the methods in the same sequence as we see here?
@@ -321,17 +343,17 @@ class Injest_Engine(Interface_InjestionEngine):
           self.__group_files_by_ext()
           self.__ocr_my_pdf() 
 
-          # #=== Read the documents
-          # processed_doc_objs=[]
-          # for key, value in self.files_grouped_typ_type.items():
-          #      for file in value:
-                    # processed_doc_objs+= self.__read_a_document(key, file).to_json()
+          #=== Read the documents
+          processed_doc_objs=[]
+          for key, value in self.files_grouped_typ_type.items():
+               for file in value:
+                    processed_doc_objs+= self.__read_a_document(key, file).to_json()
 
           # #=== Send the object to ollama to read over.
-          ollama_off=0 
           # for processed_document in processed_doc_objs:
-          #      self.__call_ollama_on_a_file(processed_document)
-
+          #      response=self.__call_ollama_on_a_file(processed_document)
+          #      self.__ollama_parse_response_into_object(response,processed_document)
+          #      return 
 
           #=== Dev/Debug area.  #-- the following files were tested and work
           root="/home/chris/Desktop/4260_presentation/Modules/___ingest_file/"
@@ -340,11 +362,10 @@ class Injest_Engine(Interface_InjestionEngine):
           # doc_metadata= self.__read_a_document(".CSV",root+"temp.csv")
           # doc_metadata= self.__read_a_document(".TXT",root+"ppt_x.txt")
           x=doc_metadata.to_json()
-          response_obj=self.__call_ollama_on_a_file(x, ollama_off) 
+          response_obj=self.__call_ollama_on_a_file(x, ) 
+          parsed_obj=self.__ollama_parse_response_into_object(response_obj , processed_doc_objs[0]) 
 
-          print(response_obj)
-
-          # print(x)
+          return parsed_obj.to_json()
 
 
 
@@ -436,7 +457,10 @@ class Injest_Engine(Interface_InjestionEngine):
           def __init__(self,
                     #    doc_obj:Processed_Document_Obj
                        doc_obj,ai_summary, ai_description, ai_send_reason, ai_keywords, ai_topics, ai_entities, ai_document_type, ai_sentiment, ai_language, ai_date_references):
+               
+               #the book document it self
                self.doc_obj= doc_obj
+
                self.ai_summary=ai_summary
                self.ai_description=ai_description
                self.ai_send_reason=ai_send_reason
@@ -449,6 +473,27 @@ class Injest_Engine(Interface_InjestionEngine):
                self.ai_date_references=ai_date_references
 
                pass
+     
+          def to_json(self):
+               return {
+                    "document_object":{
+                         self.doc_obj.to_json()
+                    },
+                    "ai_metadata": {
+                         "summary":          self.ai_summary,
+                         "description":      self.ai_description,
+                         "send_reason":      self.ai_send_reason,
+                         "keywords":         self.ai_keywords,
+                         "topics":           self.ai_topics,
+                         "entities":         self.ai_entities,
+                         "document_type":    self.ai_document_type,
+                         "sentiment":        self.ai_sentiment,
+                         "language":         self.ai_language,
+                         "date_references":  self.ai_date_references,
+                    }
+
+               }
+
           
 
 
