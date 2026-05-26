@@ -44,6 +44,14 @@ Required fields:
 - "language":         Language the document is written in e.g. "en", "fr".
 - "date_references":  Any dates mentioned or implied in the document (array of strings).
 
+Rules:
+- Output must be valid JSON only.
+- Do not wrap in markdown code blocks.
+- Do not use ```json or ``` anywhere in your response.
+- Do not prefix lines with # or any other character.
+- Do not include any text before or after the JSON.
+- Your response must start with { and end with }
+
 Document:
      """,
      
