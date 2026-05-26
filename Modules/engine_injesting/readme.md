@@ -20,14 +20,13 @@ injestion engine -- stage 2
 ### Requirements
 - Docker Desktop installed and running
 
-### Build
-docker build -t 4260-presentation -f sample_files/Dockerfile .
+### First Time Setup
+docker-compose build
+docker-compose run ollama pull llama3
 
 ### Run
-docker run 4260-presentation
+docker-compose up
 
-### Run with persistent files
-docker run -v $(pwd)/__ingest_file:/app/__ingest_file \
-           -v $(pwd)/__processed_file:/app/__processed_file \
-           4260-presentation
+### Stop
+docker-compose down
 
