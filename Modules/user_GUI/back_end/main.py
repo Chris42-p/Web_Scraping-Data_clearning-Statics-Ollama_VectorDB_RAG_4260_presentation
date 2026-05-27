@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import json
 from pathlib import Path
+import json
 
-app = FastAPI()
+app = FastAPI(title="Document Backend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,11 +13,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-data_file = Path(__file__).parent / "documents.json"
+DATA_FILE = Path(__file__).parent / "documents.json"
 
+
+def load_documents():
+    if not DATA_FILE.exists():
+        return []
+    try:
+        return json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return []
+
+
+@app.get("/documents")
 @app.get("/Documents")
 def get_documents():
-    if not data_file.exists():
-        return {"documents": []}
-    with open(data_file, "r") as f:
-        return json.load(f)
+    return {"documents": load_documents()}
