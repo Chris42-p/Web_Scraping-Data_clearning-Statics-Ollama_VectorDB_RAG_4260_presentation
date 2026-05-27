@@ -13,11 +13,17 @@ This is a repo for Big Data class. We're going to demo a vector database.
 
 The demo documents should be updated with tables, and images to ensure we can catch all the forms of data. 
 
+# todo: Refactor
+- in the __init__.py we need to change exporting of objects to exporting of interfaces, dont want the user calling class.objs ()
+
 
 # arch
 
      document needs to have a docker image to run this in, or a virtual env. 
           self contained code that's scalable. --professional ;)
+
+## using an intermediate database .
+     this is to increase job reliance. 
 
 
 ## Vector databases 

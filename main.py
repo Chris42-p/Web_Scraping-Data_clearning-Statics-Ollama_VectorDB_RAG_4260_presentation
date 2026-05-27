@@ -2,8 +2,8 @@
 
 
 from Modules.file_structure import FileStructure
-
 from Modules.engine_injesting import Injest_Engine
+import json
 
 #==== File Structure ====
 def create_file_structure():
@@ -20,8 +20,12 @@ def create_file_structure():
 
 def injest_files(input_files_path,output_files_path):
      processed_doc_obj=Injest_Engine(input_files_path,output_files_path)
-     
-     print(processed_doc_obj)
+     return processed_doc_obj
+
+     print("+++++++++++")
+     print(json.dumps(processed_doc_obj, default=str))
+
+
      # need to trigger file_structure engine to move the files to _processed_files ... maybe after they are injested into the db?
 
 

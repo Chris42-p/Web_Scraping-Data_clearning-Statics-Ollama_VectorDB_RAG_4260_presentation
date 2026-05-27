@@ -15,9 +15,9 @@
 #=== libraries===
 from pathlib import Path
 import subprocess
-import ollama                              #https://github.com/ollama/ollama-python
+import ollama                              # pip3 install ollama --break-system-packages 
 from pypdf import PdfReader                #sudo apt install python3-pypdf 
-from docx import Document               #sudo apt install python3-docx 
+from docx import Document                  #sudo apt install python3-docx 
 import spire.presentation                  #pip3 install spire.presentation --break-system-packages
 import mailparser                          #pip install mail-parser --break-system-packages
 import csv
@@ -29,6 +29,10 @@ import json
 #=== local imports
 from .injest_interface import Interface_InjestionEngine
 from .injest_interface import CONST
+from .data_base.my_sql_db import SQL_DataBase
+
+
+
 
 
 
@@ -89,7 +93,6 @@ class Injest_Engine(Interface_InjestionEngine):
                     return f"File not processed, add extension to interface:  {file}"               
 
           # print(self.files_grouped_typ_type)
-
 
      #OCR my PDF -- make the text readable to machines.  
      def __ocr_my_pdf(self): #optical character recognition. #---- there is a bug  
@@ -264,6 +267,9 @@ class Injest_Engine(Interface_InjestionEngine):
 
                read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
                pass
+          else:
+               print( CONST["ERR_TXT"])
+               return CONST["ERR_CODE"]
 
           return read_doc_obj
 
@@ -281,15 +287,10 @@ class Injest_Engine(Interface_InjestionEngine):
                          print(f"{self.err_text}: Failed to unzip {item}: {e}")
 
 
-     #========== Call out to model to get metadata tags. 
+     #====== AI section
+     #-- Call out to model to get metadata tags. 
      def __call_ollama_on_a_file(self, document):       #private method
-          # if ollama_off ==True:
-               #Ollama is offline-- boot it. 
-               #check if ollama is running -- start otherwise.  
-               #check if computer has enough ram to boot ollama 14b param 
-               #activate ollama 
-               # first_run=False     
-
+          #ref: https://github.com/ollama/ollama-python
           crashes=0
           response=""
           while crashes<self.err_model_crash:
@@ -297,9 +298,8 @@ class Injest_Engine(Interface_InjestionEngine):
                     print("sending request to model ")
                     
                     content=f"{CONST['PROMPT']} \n {document}"
-                    # print(f" {content}\n\n")
                     response=ollama.chat(
-                         model="llama3",               
+                         model=CONST["MODEL_NAME"],               
                          messages=[{
                               "role":"user",
                               "content": content,
@@ -321,31 +321,39 @@ class Injest_Engine(Interface_InjestionEngine):
                     print(f"{CONST['ERR_TXT']}: Ollama call:  {e}"  )
                     print("Model Crashed")               
 
-          return response     
+          return self.__ollama_parse_response_into_object(response) # returns json
 
-     def __ollama_parse_response_into_object(self, ollama_response,book_obj ):
+     def __ollama_parse_response_into_object(self, ollama_response ):
           ollama_response= json.loads(ollama_response)
-          # print("\n\n\n\n")
-          # print(ollama_response)
-          # print("\n\n\n\n")
-
           return self.AI_Processed_Document_Obj(
-          doc_obj=book_obj, #the the document's content itself. 
+               ai_summary =ollama_response["summary"] ,
+               ai_description =ollama_response["description"] ,
+               ai_send_reason =ollama_response["send_reason"] ,
+               ai_keywords =ollama_response["keywords"] ,
+               ai_topics =ollama_response["topics"] ,
+               ai_entities =ollama_response["entities"] ,
+               ai_document_type =ollama_response["document_type"] ,
+               ai_sentiment =ollama_response["sentiment"] ,
+               ai_language =ollama_response["language"] ,
+               ai_date_references =ollama_response["date_references"] ,
+          ).to_json()
 
-          ai_summary =ollama_response["summary"] ,
-          ai_description =ollama_response["description"] ,
-          ai_send_reason =ollama_response["send_reason"] ,
-          ai_keywords =ollama_response["keywords"] ,
-          ai_topics =ollama_response["topics"] ,
-          ai_entities =ollama_response["entities"] ,
-          ai_document_type =ollama_response["document_type"] ,
-          ai_sentiment =ollama_response["sentiment"] ,
-          ai_language =ollama_response["language"] ,
-          ai_date_references =ollama_response["date_references"] ,
-          )
+     def __start_ollama(self):
+          pass
+
+     #====== Save processed data
+     def __save_processed_doc_to_sql(self, og_doc, ai_doc, og_doc_hash): #send one doc at a time 
+          db=SQL_DataBase()
+          db.insert_document(og_doc, ai_doc)
+          print(f"successfuly wrote obj: {db.get_document(og_doc_hash)}")          
+
+          # db.DEV_drop_db_table()
 
      #=== Meta ===
      def controller(self):  #TEAM: can we please order the methods in the same sequence as we see here?
+          #== Ai 
+          self.__start_ollama()
+          
           #== Pre Processing
           #change document names to have _ for processing sake. 
           self.__unzip_zip_files() #find zip files and open unzip them. 
@@ -355,30 +363,34 @@ class Injest_Engine(Interface_InjestionEngine):
           self.__group_files_by_ext()
           self.__ocr_my_pdf() 
 
-          #=== Read the documents
-          processed_doc_objs=[]
-          for key, value in self.files_grouped_typ_type.items():
-               for file in value:
-                    processed_doc_objs+= self.__read_a_document(key, file).to_json()
+          # #=== Read the documents
+          # processed_doc_objs=[]
+          # for key, value in self.files_grouped_typ_type.items():
+          #      for file in value:
+          #           processed_doc_objs+= self.__read_a_document(key, file)
 
           # #=== Send the object to ollama to read over.
           # for processed_document in processed_doc_objs:
           #      response=self.__call_ollama_on_a_file(processed_document)
           #      self.__ollama_parse_response_into_object(response,processed_document)
-          #      return 
+
+          #== save the documents 
+
 
           #=== Dev/Debug area.  #-- the following files were tested and work
           root=str(self.input_files_path) + "/"
-          doc_metadata= self.__read_a_document(".PDF",root+"temp.pdf")
+          processed_doc_obj= self.__read_a_document(".PDF",root+"temp_ocr.pdf")
+          ai_processed_doc=self.__call_ollama_on_a_file(processed_doc_obj.to_json() )
+          self.__save_processed_doc_to_sql(processed_doc_obj.to_json_no_paragraphs(), ai_processed_doc, processed_doc_obj.get_hash())
+          
+
+          #== dev util 
           # doc_metadata= self.__read_a_document(".DOCX",root+"temp.docx")
           # doc_metadata= self.__read_a_document(".CSV",root+"temp.csv")
           # doc_metadata= self.__read_a_document(".TXT",root+"ppt_x.txt")
-          x=doc_metadata.to_json()
-          response_obj=self.__call_ollama_on_a_file(x, ) 
-          parsed_obj=self.__ollama_parse_response_into_object(response_obj , processed_doc_objs[0]) 
-
-          return parsed_obj.to_json()
-
+          
+          # print(f"\n\n{processed_doc_obj.to_json_no_paragraphs()} \n\n")
+          # print(f"{ai_processed_doc}") 
 
 
      #===== Utility
@@ -433,9 +445,9 @@ class Injest_Engine(Interface_InjestionEngine):
                if self.__hash_document == "":
                     self.__hash_document()
 
-               return {
+               tmp={
                     "title": self.standardize_text( "title"),
-                    "paragraphs":self.standardize_text ("paragaphs"),  
+                    "paragraphs":self.standardize_text ("paragaphs"),   #using AI to summarize this
                     "header_footer":self.standardize_text ("header_footer"),
                     "table_content":self.standardize_text ("table_content"),
                     "author":self.standardize_text ("author"),
@@ -445,14 +457,40 @@ class Injest_Engine(Interface_InjestionEngine):
                     "doc_hash":self.standardize_text ("doc_hash"),
                }
 
+               self.__hash_document()
+
+               return tmp
+
+          def get_hash(self):
+               return self.doc_hash
+
+          def to_json_no_paragraphs(self):
+               # ensure hash is up to date
+               if self.__hash_document == "":
+                    self.__hash_document()
+
+               return {
+                    "title": self.standardize_text( "title"),
+                    # "paragraphs":self.standardize_text ("paragaphs"),   #using AI to summarize this
+                    "header_footer":self.standardize_text ("header_footer"),
+                    "table_content":self.standardize_text ("table_content"),
+                    "author":self.standardize_text ("author"),
+                    "time_creation":self.standardize_text ("time_creation"),
+                    "modified_date":self.standardize_text ("modified_date"),
+                    "file_computer_id":self.standardize_text ("file_computer_id"),
+                    "doc_hash":self.standardize_text ("doc_hash"),
+               }
+
+
           def __hash_document(self):
                #hash the title, and author? -- quick look up?
                content = str(self.author) + str(self.title)
                self.doc_hash = hashlib.md5(content.encode()).hexdigest()
 
+
+
      class AI_Processed_Document_Obj:
           #== Inheretence
-          doc_obj="" #processed_doc_obj -- instances. 
 
           #AI processed objects. 
           ai_summary=""
@@ -466,13 +504,7 @@ class Injest_Engine(Interface_InjestionEngine):
           ai_language=""
           ai_date_references=""
 
-          def __init__(self,
-                    #    doc_obj:Processed_Document_Obj
-                         doc_obj,ai_summary, ai_description, ai_send_reason, ai_keywords, ai_topics, ai_entities, ai_document_type, ai_sentiment, ai_language, ai_date_references):
-               
-               #the book document it self
-               self.doc_obj= doc_obj
-
+          def __init__(self,ai_summary, ai_description, ai_send_reason, ai_keywords, ai_topics, ai_entities, ai_document_type, ai_sentiment, ai_language, ai_date_references):
                self.ai_summary=ai_summary
                self.ai_description=ai_description
                self.ai_send_reason=ai_send_reason
@@ -484,11 +516,9 @@ class Injest_Engine(Interface_InjestionEngine):
                self.ai_language=ai_language
                self.ai_date_references=ai_date_references
 
-               pass
      
           def to_json(self):
                return {
-                    "document_object":self.doc_obj,
                     "ai_metadata": {
                          "summary":          self.ai_summary,
                          "description":      self.ai_description,
@@ -501,11 +531,9 @@ class Injest_Engine(Interface_InjestionEngine):
                          "language":         self.ai_language,
                          "date_references":  self.ai_date_references,
                     }
-
                }
 
           
-
 
 
 
