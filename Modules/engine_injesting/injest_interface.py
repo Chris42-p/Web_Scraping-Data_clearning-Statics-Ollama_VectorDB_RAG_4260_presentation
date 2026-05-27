@@ -3,18 +3,18 @@
 
 
 #=========== Libraries and install code
-# pip3 install ollama --break-system-packages 
 
 
 from abc import ABC, abstractmethod
 
 CONST={
      #==== Error codes
-     "ERR_CODE":-1,
-     "ERR_TXT":"Error occured", 
+     "ERR_CODE":2,
+     "ERR_TXT":"Err in Injestion engine ", 
      "MODEL_CRASH_RETRY":3,
 
-     #==== Document type supported
+     #==== Document processing. 
+     #-- docs supported
      "DOCUMENT_TYPES":{
           ".PDF":[],
           ".DOCX":[],
@@ -24,11 +24,12 @@ CONST={
 
           ".EML":[],
           ".ZIP":[],
-          # "":[],
+
      },
 
      #===== AI instructions
-     "MODEL_NAME":"deepseek-r1:latest",
+     # "MODEL_NAME":"deepseek-r1:latest", #prod AI  
+     "MODEL_NAME":"llama3.2:latest", #dev AI 
      "PROMPT": """
 Read the following document and return ONLY a raw JSON object (no markdown, no backticks, no explanation).
 
