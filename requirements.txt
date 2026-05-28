@@ -4,3 +4,5 @@ python-pptx
 spire.presentation
 mail-parser
 ollama
+fastapi
+uvicorn
