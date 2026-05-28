@@ -16,15 +16,18 @@ injestion engine -- stage 2
    - front end: let the user send a query
    - backend: catch the query and send it to the database. return obj.
 
-## 2026/05/24
+## 2026/05/27
 ### Requirements
 - Docker Desktop installed and running
 
 ### First Time Setup
 docker-compose build
-docker-compose run ollama pull llama3
+docker-compose exec ollama ollama pull llama3.2
 
-### Run
+### Run (first time or after code changes)
+docker-compose up --build
+
+### Run (no code changes)
 docker-compose up
 
 ### Stop
