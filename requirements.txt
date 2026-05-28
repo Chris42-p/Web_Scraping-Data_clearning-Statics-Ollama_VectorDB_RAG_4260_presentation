@@ -1,5 +1,6 @@
 pypdf
 python-docx
+python-pptx
 spire.presentation
 mail-parser
 ollama

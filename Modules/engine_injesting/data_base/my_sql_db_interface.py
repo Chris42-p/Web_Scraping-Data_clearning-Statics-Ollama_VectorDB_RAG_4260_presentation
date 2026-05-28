@@ -8,7 +8,7 @@ CONST={
 
 
 #=== DB 
-     "DB_PATH":"./data_base/4260_BigData_db.db",
+     "DB_PATH":"/app/data_base/4260_BigData_db.db",
 
 
      "CREATE_TABLE_SQL":                         #-- Create sql table

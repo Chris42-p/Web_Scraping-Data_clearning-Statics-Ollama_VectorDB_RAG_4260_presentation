@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
+# Create database directory
+RUN mkdir -p /app/data_base
+
 # Copy and install Python packages first
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

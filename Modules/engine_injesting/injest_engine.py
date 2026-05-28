@@ -72,7 +72,7 @@ class Injest_Engine(Interface_InjestionEngine):
                if item.is_dir() and (item not in self.dir_in_dir):
                     self.dir_in_dir.append(str(item))
                elif (item not in self.files_in_dir): #the item is a file 
-                   self.files_in_dir.append(str(item))
+                    self.files_in_dir.append(str(item))
 
           #recurrsion to get a list of all the files
           while self.dir_in_dir:
@@ -141,7 +141,26 @@ class Injest_Engine(Interface_InjestionEngine):
                #Who made it, at what time?
                #does it have creaters computer ID?
 
-               read_doc_obj= self.Processed_Document_Obj(paragaphs=doc_content[0]["text"]) #TEAM: please fill it in. 
+               # === Metadata ===
+               meta = reader.metadata
+               title = meta.title if meta.title else None
+               author = meta.author if meta.author else None
+               time_creation = str(meta.creation_date) if meta.creation_date else None
+               modified_date = str(meta.modification_date) if meta.modification_date else None
+               file_computer_id = meta.creator if meta.creator else None
+
+               # combine all pages into one string
+               all_text = " ".join([page["text"] for page in doc_content])
+
+               read_doc_obj = self.Processed_Document_Obj(
+               title=title,
+               paragaphs=all_text,
+               author=author,
+               time_creation=time_creation,
+               modified_date=modified_date,
+               file_computer_id=file_computer_id
+               )
+
           elif doc_type == ".DOCX": 
                #ref: https://pytutorial.com/python-docx-tutorial-read-parse-docx-content/
 
@@ -179,9 +198,18 @@ class Injest_Engine(Interface_InjestionEngine):
 
                # print("1111"+doc_content)
 
-               read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
+               # === Metadata ===
+               props = doc.core_properties
+               read_doc_obj = self.Processed_Document_Obj(
+               title=props.title if props.title else None,
+               paragaphs=doc_content,
+               author=props.author if props.author else None,
+               time_creation=str(props.created) if props.created else None,
+               modified_date=str(props.modified) if props.modified else None,
+               file_computer_id=props.last_modified_by if props.last_modified_by else None
+               )
 
-               pass
+               
           elif doc_type ==".CSV": #output is cast to string
                doc_content=""
 
@@ -194,8 +222,16 @@ class Injest_Engine(Interface_InjestionEngine):
 
                #TEAM: find meta data on the file and the other properties of the object 
                #who made, it at what time, computer ID, title of document... ctrl+hover over obj to see fileds
-               read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
-               pass
+               # === Metadata ===
+               import os
+               file_stat = os.stat(docuemnt)
+               read_doc_obj = self.Processed_Document_Obj(
+               title=os.path.basename(docuemnt),
+               paragaphs=doc_content,
+               time_creation=str(file_stat.st_ctime),
+               modified_date=str(file_stat.st_mtime),
+               )
+               
           elif doc_type ==".TXT":
                doc_content=""
                #TEAM: metadata please
@@ -204,20 +240,39 @@ class Injest_Engine(Interface_InjestionEngine):
                     doc_content=file.read() #reutrns string 
                     file.close() 
 
-               read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
-               pass
+               # === Metadata ===
+               import os
+               file_stat = os.stat(docuemnt)
+               read_doc_obj = self.Processed_Document_Obj(
+               title=os.path.basename(docuemnt),
+               paragaphs=doc_content,
+               time_creation=str(file_stat.st_ctime),
+               modified_date=str(file_stat.st_mtime),
+               )
+               
           elif doc_type ==".PPTX":
                # ref: https://medium.com/@alice.yang_10652/extract-text-from-powerpoint-ppt-or-pptx-with-python-shapes-tables-notes-smartart-and-more-18e1381018e0
+               from pptx import Presentation
 
-               doc_content=""
-               #TEAM: metadata please
+               prs = Presentation(docuemnt)
 
-               #if i want to get the OCRed images out then i need to convert pptx to pdf then ocr pdf : soffice --headless --convert-to pdf slide.pptx && ocrmypdf --force-ocr slide.pdf slide_ocr.pdf
+               # === Read content ===
+               doc_content = ""
+               for slide in prs.slides:
+                    for shape in slide.shapes:
+                         if hasattr(shape, "text"):
+                              doc_content += shape.text + " "
 
-
-
-               read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
-               pass
+               # === Metadata ===
+               props = prs.core_properties
+               read_doc_obj = self.Processed_Document_Obj(
+                    title=props.title if props.title else None,
+                    paragaphs=doc_content,
+                    author=props.author if props.author else None,
+                    time_creation=str(props.created) if props.created else None,
+                    modified_date=str(props.modified) if props.modified else None,
+                    file_computer_id=props.last_modified_by if props.last_modified_by else None
+               )
 
 
           #==== Recurrsion for document files. 
@@ -321,7 +376,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     print(f"{CONST['ERR_TXT']}: Ollama call:  {e}"  )
                     print("Model Crashed")               
 
-          return self.__ollama_parse_response_into_object(response) # returns json
+          return "" #return empty string if the model keeps crashing.
 
      def __ollama_parse_response_into_object(self, ollama_response ):
           ollama_response= json.loads(ollama_response)
@@ -431,6 +486,9 @@ class Injest_Engine(Interface_InjestionEngine):
                s=getattr(self, value)
 
                #clean the attribute
+               if s is None:
+                    return ""
+               s = str(s)
                s = s.lower()
                s = re.sub(r'[\t\n]+', ' ', s)                      # replace tabs/newlines with space
                s = re.sub(r'[!@#$%^&*()_}{:\'".,?\-+]+', ' ', s)   # remove listed punctuation
