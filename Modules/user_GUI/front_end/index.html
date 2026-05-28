@@ -170,6 +170,38 @@
       color: var(--text-tertiary);
       margin-left: auto;
     }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .toolbar button {
+      border: 0.5px solid var(--border-hover);
+      background: var(--bg);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .toolbar button:hover {
+      background: var(--bg-hover);
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .status.error {
+      color: #a53a3a;
+    }
   </style>
 </head>
 <body>
@@ -185,6 +217,14 @@
       <p class="subtitle">Ask questions about your <em>documents</em> and extract information instantly</p>
     </div>
 
+    <div class="toolbar">
+      <button id="loadDocsBtn">Load Documents</button>
+      <button id="startSessionBtn">Start Session</button>
+      <button id="connectGmailBtn">Connect Gmail</button>
+    </div>
+
+    <div class="status" id="statusText">Ready to load documents...</div>
+
     <div class="search-wrap">
       <!-- search icon -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -198,24 +238,33 @@
     <div class="list-header">
       <!-- files icon -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V6.5L15.5 2z"/><path d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8"/><path d="M15 2v5h5"/></svg>
-      <span id="listCount">All Documents (6)</span>
+      <span id="listCount">All Documents (0)</span>
     </div>
 
     <div class="doc-list" id="docList"></div>
   </div>
 
   <script>
-    const docs = [
+    const API_BASE = "http://127.0.0.1:8000";
+    /*const docs = [
       { title: "Q3 Financial Report", type: "PDF", from: "finance@company.com", date: "May 20, 2026", snippet: "This document contains quarterly financial data and projections for the fiscal year ending December 2026." },
       { title: "Engineering Meeting Notes", type: "DOCX", from: "eng-team@company.com", date: "May 18, 2026", snippet: "Discussion on vector database architecture and embedding pipeline design for the AI retrieval system." },
       { title: "Product Roadmap 2026", type: "PPTX", from: "product@company.com", date: "May 15, 2026", snippet: "Strategic product initiatives for H2 2026 including AI-powered search and recommendation features." },
       { title: "Customer Data Export", type: "CSV", from: "data@company.com", date: "May 12, 2026", snippet: "Structured dataset with columns: customer_id, name, plan, revenue, signup_date, last_active." },
       { title: "Partnership Agreement Draft", type: "DOCX", from: "legal@company.com", date: "May 10, 2026", snippet: "Draft terms for the upcoming partnership proposal covering scope, responsibilities, and revenue sharing." },
       { title: "Server Logs Archive", type: "ZIP", from: "ops@company.com", date: "May 8, 2026", snippet: "Compressed archive of server logs from April 2026 including error reports and performance metrics." },
-    ];
+    ];*/
+    let docs = [];
 
-    function escapeHtml(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    // Fetch documents from backend
+    function setStatus(message, isError = false) {
+      const el = document.getElementById("statusText");
+      el.textContent = message;
+      el.className = isError ? "status error" : "status";
+    }
+
+    function escapeHtml(str = "") {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     function highlight(text, query) {
@@ -228,7 +277,29 @@
     const calIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>`;
     const userIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>`;
 
-    function render(list, query) {
+    // normalize document data from backend to ensure consistent fields for frontend rendering
+    function normalizeDoc(doc) {
+      const headerText = doc.header_footer || "";
+      const fromMatch = headerText.match(/From:\s*(.*)/i);
+      const dateMatch = headerText.match(/Date:\s*(.*)/i);
+
+      return {
+        title: doc.title || "Untitled document",
+        type: detectType(doc),
+        from: doc.author || (fromMatch ? fromMatch[1].trim() : "Unknown sender"),
+        date: doc.time_creation || (dateMatch ? dateMatch[1].trim() : "Unknown date"),
+        snippet: doc.paragraphs || doc.paragaphs || "No preview available"
+      };
+    }
+
+    // simple heuristic to determine document type based on header content
+    function detectType(doc) {
+      const header = (doc.header_footer || "").toLowerCase();
+      if (header.includes("message-id")) return "EMAIL";
+      return "DOC";
+    }
+    // render document list to UI
+    function render(list, query = "") {
       document.getElementById('listCount').textContent = query
         ? `Results for "${query}" (${list.length})`
         : `All Documents (${list.length})`;
@@ -251,6 +322,57 @@
       `).join('');
     }
 
+    // load documents from backend
+    async function loadDocuments() {
+      setStatus("Loading documents...");
+      try {
+        const response = await fetch(`${API_BASE}/documents`, {
+          method: "GET",
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const rawDocs = Array.isArray(data.documents) ? data.documents : [];
+        docs = rawDocs.map(normalizeDoc);
+        render(docs, "");
+        setStatus(`Loaded ${docs.length} documents.`);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Failed to load documents: ${error.message}`, true);
+        render([], "");
+      }
+    }
+
+    // start session (initialize backend resources, vector DB, etc.)
+    async function startSession() {
+      setStatus("Starting session...");
+      try {
+        const response = await fetch(`${API_BASE}/session/start`, {
+          method: "GET",
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        setStatus(data.message || "Session started.");
+      } catch (error) {
+        console.error(error);
+        setStatus(`Failed to start session: ${error.message}`, true);
+      }
+    }
+
+    // connect to Gmail (OAuth flow)
+    function connectGmail() {
+      window.location.href = `${API_BASE}/auth/google/login`;
+    }
+
     function handleSearch() {
       const q = document.getElementById('searchInput').value.trim();
       if (!q) { render(docs, ''); return; }
@@ -266,6 +388,10 @@
     document.getElementById('searchInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') handleSearch();
     });
+
+    document.getElementById("loadDocsBtn").addEventListener("click", loadDocuments);
+    document.getElementById("startSessionBtn").addEventListener("click", startSession);
+    document.getElementById("connectGmailBtn").addEventListener("click", connectGmail);
 
     render(docs, '');
   </script>
