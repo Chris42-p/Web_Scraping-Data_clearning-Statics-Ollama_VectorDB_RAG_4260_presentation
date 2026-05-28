@@ -4,7 +4,7 @@
 # take the file location, get the list of documents. 
 
 # run it via edr2pdf to make it readable 
-# check the type of doucment it is 
+# check the type of document it is 
 # open the document 
 
 # feed the document into LLM for meta data. 
@@ -25,6 +25,7 @@ import zipfile
 import hashlib
 import re
 import json
+from datetime import datetime
 
 #=== local imports
 from .injest_interface import Interface_InjestionEngine
@@ -42,23 +43,16 @@ class Injest_Engine(Interface_InjestionEngine):
      err_code=CONST["ERR_CODE"]
      err_model_crash=CONST["MODEL_CRASH_RETRY"]
 
-     #=== File locations ====
-     input_files_path=None
-     output_files_path=None
-     
-     #=== Items in the injest files ====
-     files_in_dir=[] #files in dir
-     dir_in_dir=[]   #directories in injest directory
-     files_grouped_typ_type=CONST["DOCUMENT_TYPES"] # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
 
+     def __init__(self, input_files_path, output_files_path):
+        #=== Items in the injest files ====
+        self.input_files_path = Path(input_files_path)
+        self.output_files_path = Path(output_files_path)
+        self.files_in_dir = [] #files in dir
+        self.dir_in_dir = [] #directories in injest directory
+        self.files_grouped_typ_type = {k: [] for k in 
+                                       CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
 
-
-     def __init__(self, input_files_path,output_files_path):
-          self.input_files_path=input_files_path
-          self.output_files_path=output_files_path
-          
-          #activate the class
-          self.controller()
 
      #======= Process files 
      #get the path of the files that're in the dir. 
@@ -67,12 +61,22 @@ class Injest_Engine(Interface_InjestionEngine):
                path= self.input_files_path
           
           #check that these are files. 
-          entries=Path(f"{path}").iterdir()
-          for item in entries:
-               if item.is_dir() and (item not in self.dir_in_dir):
-                    self.dir_in_dir.append(str(item))
-               elif (item not in self.files_in_dir): #the item is a file 
+
+          for item in Path(path).iterdir():
+               if item.is_dir():
+                    if str(item) not in self.dir_in_dir:
+                         self.dir_in_dir.append(str(item))
+               elif str(item) not in self.files_in_dir: #the item is a file
                     self.files_in_dir.append(str(item))
+
+          
+          #entries=Path(f"{path}").iterdir()
+          #for item in entries:
+          #     if item.is_dir() and (item not in self.dir_in_dir):
+          #          self.dir_in_dir.append(str(item))
+          #     elif (item not in self.files_in_dir): #the item is a file 
+          #         self.files_in_dir.append(str(item))
+
 
           #recurrsion to get a list of all the files
           while self.dir_in_dir:
@@ -98,19 +102,25 @@ class Injest_Engine(Interface_InjestionEngine):
      def __ocr_my_pdf(self): #optical character recognition. #---- there is a bug  
 
           for file in self.files_grouped_typ_type[".PDF"]:
-               if file.split(".")[1]=="pdf": 
+               if Path(file).suffix.lower() == ".pdf":
                     #has this file already been processed?  -- need to look at this one 
-                    path=Path(file).stem.lower()
-                    if ("_ocr" in path): #or (f"{file_name}_ocr" in path) : ##check if the file name with _ocr excists, if it does then the file has been processed skip it. 
+                    path=Path(file)
+                    if ("_ocr" in path.stem.lower()): #or (f"{file_name}_ocr" in path) : ##check if the file name with _ocr excists, if it does then the file has been processed skip it. 
                          print(f"skipping processed file: {file}")
-                         continue       
+                         continue     
 
-                    temp=file.split("/")
-                    output_dir= "/".join(temp[:len(temp)-1])
+                    output_file_name = path.with_name(f"{path.stem}_ocr.pdf")
+
+                    if output_file_name.exists():
+                         print(f"OCR output already exists: {output_file_name}")
+                         continue  
+
+                    #temp=file.split("/")
+                    #output_dir= "/".join(temp[:len(temp)-1])
 
                     #== File names
-                    file_name=temp[-1].split(".")[0]
-                    output_file_name="{0}/{1}_ocr.pdf".format(output_dir, file_name) 
+                    #file_name=temp[-1].split(".")[0]
+                    #output_file_name="{0}/{1}_ocr.pdf".format(output_dir, file_name) 
 
                     cmd="ocrmypdf --optimize 1 --force-ocr {0} {1}".format(str(file), str(output_file_name)) 
                     
@@ -123,11 +133,12 @@ class Injest_Engine(Interface_InjestionEngine):
 
      #open the file and read their content. 
      def __read_a_document(self,doc_type, docuemnt): #recurrsion on .zip & .eml
-          read_doc_obj=None   
+          read_doc_obj=None  
+          docuemnt = str(docuemnt) 
 
           if doc_type ==".PDF":
                #ref: https://www.geeksforgeeks.org/python/working-with-pdf-files-in-python/
-               reader= PdfReader(str(docuemnt)) 
+               reader= PdfReader(docuemnt) 
 
                #read text/OCR
                doc_content = []
@@ -135,6 +146,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     text = page.extract_text() or ""   # returns OCR text layer if present
                     doc_content.append({"page": i, "text": text})
                
+               joined_text = "\n".join([page["text"] for page in doc_content])
                #Tables being absorbed?
 
                #== Meta==
@@ -172,14 +184,15 @@ class Injest_Engine(Interface_InjestionEngine):
                for section in doc.sections:
                     header= section.header
                     for paragraph in header.paragraphs:
-                         header=paragraph.text
+                         header+=paragraph.text + "\n"
 
                #read tables. 
                all_row_data=""
                for i, table in enumerate(doc.tables):
                     print(f"Table {i+1}")
                     for row in table.rows:
-                         all_row_data+=[cell.text for cell in row.cells]
+                         row_data = [cell.text for cell in row.cells]
+                         all_row_data += " ".join(row_data) + "\n"
                          # print(row_data)
 
                #read paragraphs
@@ -236,9 +249,9 @@ class Injest_Engine(Interface_InjestionEngine):
                doc_content=""
                #TEAM: metadata please
 
-               with open(docuemnt,"r") as file:
+               with open(docuemnt,"r", encoding="utf-8") as file:
                     doc_content=file.read() #reutrns string 
-                    file.close() 
+                    #file.close() 
 
                # === Metadata ===
                import os
@@ -291,23 +304,22 @@ class Injest_Engine(Interface_InjestionEngine):
                
                for file in files_in_zip:
                     # read documents in a zip file.
-                    with zipfile.ZipFile(docuemnt, "r") as zipf:
-                         content = zipf.read(file)
+                    #with zipfile.ZipFile(docuemnt, "r") as zipf:
+                         content = zip_ref.read(file)
                          try:
-                              doc_content += content.decode('utf-8')
+                              doc_content += content.decode('utf-8') + " "
                          except UnicodeDecodeError:
                               print(f"Skipping binary file in zip: {file}")
                               continue
 
 
-               read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
+               read_doc_obj=self.Processed_Document_Obj(title=Path(docuemnt).stem,paragaphs=doc_content)
                pass
           elif doc_type ==".EML":
                print("TODO: File Reader: .EML")
                
                # ref: claude
 
-               import mailparser
 
                mail = mailparser.parse_from_file(docuemnt)
 
@@ -320,7 +332,7 @@ class Injest_Engine(Interface_InjestionEngine):
                doc_content=""
                #TEAM: metadata please
 
-               read_doc_obj=self.Processed_Document_Obj(paragaphs=doc_content)
+               read_doc_obj=self.Processed_Document_Obj(title=Path(docuemnt).stem,paragaphs=doc_content)
                pass
           else:
                print( CONST["ERR_TXT"])
@@ -418,11 +430,15 @@ class Injest_Engine(Interface_InjestionEngine):
           self.__group_files_by_ext()
           self.__ocr_my_pdf() 
 
-          # #=== Read the documents
-          # processed_doc_objs=[]
-          # for key, value in self.files_grouped_typ_type.items():
-          #      for file in value:
-          #           processed_doc_objs+= self.__read_a_document(key, file)
+          #=== Read the documents
+          processed_doc_objs=[]
+          for key, value in self.files_grouped_typ_type.items():
+               for file in value:
+                    doc_obj = self.__read_a_document(key, file)
+                    if doc_obj is not None:
+                         processed_doc_objs.append(doc_obj.to_json())
+
+          return processed_doc_objs
 
           # #=== Send the object to ollama to read over.
           # for processed_document in processed_doc_objs:
@@ -500,7 +516,8 @@ class Injest_Engine(Interface_InjestionEngine):
 
           def to_json(self):
                # ensure hash is up to date
-               if self.__hash_document == "":
+               #if self.__hash_document == "":
+               if self.doc_hash == "":
                     self.__hash_document()
 
                tmp={
