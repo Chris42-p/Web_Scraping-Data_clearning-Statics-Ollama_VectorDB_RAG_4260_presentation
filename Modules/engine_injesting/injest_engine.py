@@ -13,6 +13,8 @@
 #========================
 
 #=== libraries===
+import os
+import base64
 from pathlib import Path
 import subprocess
 import ollama                              # pip3 install ollama --break-system-packages 
@@ -27,14 +29,15 @@ import re
 import json
 from datetime import datetime
 
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+
 #=== local imports
 from .injest_interface import Interface_InjestionEngine
 from .injest_interface import CONST
 from .data_base.my_sql_db import SQL_DataBase
-
-
-
-
 
 
 class Injest_Engine(Interface_InjestionEngine):
@@ -44,7 +47,14 @@ class Injest_Engine(Interface_InjestionEngine):
      err_model_crash=CONST["MODEL_CRASH_RETRY"]
 
 
-     def __init__(self, input_files_path, output_files_path):
+     def __init__(
+               self, 
+               input_files_path, 
+               output_files_path,
+               credentials_path='credentials.json', 
+               token_path='token.json', 
+               ingest_dir='__ingest'
+          ):
         #=== Items in the injest files ====
         self.input_files_path = Path(input_files_path)
         self.output_files_path = Path(output_files_path)
@@ -52,9 +62,23 @@ class Injest_Engine(Interface_InjestionEngine):
         self.dir_in_dir = [] #directories in injest directory
         self.files_grouped_typ_type = {k: [] for k in 
                                        CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
+        
+        # Gmail ingestion state
+        self.credentials_path = credentials_path
+        self.token_path = token_path
+        self.ingest_dir = Path(ingest_dir)
+        self.service = None
 
+     SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
      #======= Process files 
+     def __reset_injest_state(self):
+          self.files_in_dir = [] #files in dir
+          self.dir_in_dir = [] #directories in injest directory
+          self.files_grouped_typ_type = {k: [] for k in 
+                                       CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
+          
+
      #get the path of the files that're in the dir. 
      def __get_files_in_injest_file(self,path= None):
           if path== None:
@@ -180,11 +204,11 @@ class Injest_Engine(Interface_InjestionEngine):
                doc=Document(docuemnt)
 
                #read headers and footer. 
-               header=""
+               header_text=""
                for section in doc.sections:
-                    header= section.header
-                    for paragraph in header.paragraphs:
-                         header+=paragraph.text + "\n"
+                    header_obj= section.header
+                    for paragraph in header_obj.paragraphs:
+                         header_text += paragraph.text + "\n"
 
                #read tables. 
                all_row_data=""
@@ -216,6 +240,8 @@ class Injest_Engine(Interface_InjestionEngine):
                read_doc_obj = self.Processed_Document_Obj(
                title=props.title if props.title else None,
                paragaphs=doc_content,
+               header_footer=header_text,
+               table_content=all_row_data,
                author=props.author if props.author else None,
                time_creation=str(props.created) if props.created else None,
                modified_date=str(props.modified) if props.modified else None,
@@ -416,29 +442,47 @@ class Injest_Engine(Interface_InjestionEngine):
 
           # db.DEV_drop_db_table()
 
+         # === Interface compliance: match abstract method names ===
+     def injest_gmail(self, max_emails: int = 10):
+          """Interface method spelling, delegates to ingest_gmail()."""
+          return self.ingest_gmail(max_emails=max_emails)
+
+     def injest_local_file(self):
+          """Interface method spelling, delegates to ingest_local_files()."""
+          return self.ingest_local_files()
+
      #=== Meta ===
-     def controller(self):  #TEAM: can we please order the methods in the same sequence as we see here?
+     def controller(self, use_local=True, use_gmail=False, max_emails=10):  #TEAM: can we please order the methods in the same sequence as we see here?
           #== Ai 
           self.__start_ollama()
           
           #== Pre Processing
           #change document names to have _ for processing sake. 
-          self.__unzip_zip_files() #find zip files and open unzip them. 
+          #self.__unzip_zip_files() #find zip files and open unzip them. 
 
           #=== Process the files
-          self.__get_files_in_injest_file()
-          self.__group_files_by_ext()
-          self.__ocr_my_pdf() 
+          #self.__get_files_in_injest_file()
+          #self.__group_files_by_ext()
+          #self.__ocr_my_pdf() 
 
-          #=== Read the documents
+          #== Pre Processing / Ingestion
           processed_doc_objs=[]
-          for key, value in self.files_grouped_typ_type.items():
-               for file in value:
-                    doc_obj = self.__read_a_document(key, file)
-                    if doc_obj is not None:
-                         processed_doc_objs.append(doc_obj.to_json())
 
-          return processed_doc_objs
+          #for key, value in self.files_grouped_typ_type.items():
+               #for file in value:
+                    #doc_obj = self.__read_a_document(key, file)
+                    #if doc_obj is not None:
+                         #processed_doc_objs.append(doc_obj.to_json())
+          if use_local:
+               processed_doc_objs.extend(self.ingest_local_files())
+          
+          if use_gmail:
+               gmail_docs = self.ingest_gmail(max_emails=max_emails)
+               for item in gmail_docs:
+                    if "parsed_email" in item:
+                         processed_doc_objs.append(item["parsed_email"])
+
+          #return processed_doc_objs
 
           # #=== Send the object to ollama to read over.
           # for processed_document in processed_doc_objs:
@@ -446,6 +490,18 @@ class Injest_Engine(Interface_InjestionEngine):
           #      self.__ollama_parse_response_into_object(response,processed_document)
 
           #== save the documents 
+
+          #=== Send documents to Ollama
+          ai_processed_doc_objs = []
+          for processed_document in processed_doc_objs:
+               response = self.__call_ollama_on_a_file(processed_document)
+               ai_doc = self.__ollama_parse_response_into_object(response)
+               ai_processed_doc_objs.append({
+                    "document": processed_document,
+                    "ai_metadata": ai_doc
+               })
+
+          return ai_processed_doc_objs
 
 
           #=== Dev/Debug area.  #-- the following files were tested and work
@@ -463,9 +519,148 @@ class Injest_Engine(Interface_InjestionEngine):
           # print(f"\n\n{processed_doc_obj.to_json_no_paragraphs()} \n\n")
           # print(f"{ai_processed_doc}") 
 
+     #====== Gmail section
+
+     def authenticate(self):
+          creds = None
+          if os.path.exists(self.token_path):
+               creds = Credentials.from_authorized_user_file(self.token_path, self.SCOPES)
+          if not creds or not creds.valid:
+               if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+               else:
+                    flow = InstalledAppFlow.from_client_secrets_file(self.credentials_path, self.SCOPES)
+                    creds = flow.run_local_server(port=0)
+               with open(self.token_path, 'w') as token:
+                    token.write(creds.to_json())
+          self.service = build('gmail', 'v1', credentials=creds)
+
+     # Helper functions to extract email data
+     def get_header_value(self, headers, header_name):
+          for header in headers:
+               if header.get("name", "").lower() == header_name.lower():
+                    return header.get("value", "")
+          return ""
+
+     # Helper function to decode base64 data, handling padding issues
+     def decode_base64_bytes(self, data):
+          if not data:
+               return ""
+          padding = len(data) % 4
+          if padding:
+               data += "=" * (4 - padding)  # Add necessary padding
+          return base64.urlsafe_b64decode(data)
+     
+     def decode_base64_text(self, data):
+          return self.decode_base64_bytes(data).decode("utf-8", errors="ignore")
+
+     # Extract the email body, handling both plain text and multipart emails
+     def extract_email_body(self, payload):
+          body = ""
+          if "parts" in payload:
+               for part in payload["parts"]:
+                    mime_type = part.get("mimeType", "")
+                    if mime_type == "text/plain":
+                         data = part.get("body", {}).get("data", "")
+                         body += self.decode_base64_text(data)
+                    elif "parts" in part:
+                         body += self.extract_email_body(part)  # Recursively extract from nested parts
+          else:
+               data = payload.get("body", {}).get("data", "")
+               body += self.decode_base64_text(data)
+          return body
+
+     # Convert Gmail API message to our processed document format
+     def parse_email_to_processed_object(self, message):
+          headers = message["payload"].get("headers", [])
+          subject = self.get_header_value(headers, "Subject")
+          sender = self.get_header_value(headers, "From")
+          date = self.get_header_value(headers, "Date")
+          message_id = message.get("id", "")
+          body = self.extract_email_body(message["payload"])
+
+          return self.Processed_Document_Obj(
+               title=subject,
+               paragaphs=body,
+               header_footer=f"From: {sender}\nDate: {date}\nMessage-ID: {message_id}",
+               table_content="",
+               author=sender,
+               time_creation=date,
+               modified_date="",
+               file_computer_id=message_id
+          )
+
+     # Fetch email message IDs from the user's inbox
+     def fetch_message_ids(self, max_results=10):
+          results = self.service.users().messages().list(
+               userId='me', 
+               labelIds=['INBOX'],
+               maxResults=max_results
+          ).execute()
+          return results.get('messages', [])
+     
+     # Fetch a single email message by ID, with specified format (default is 'full' for all metadata and body)
+     def fetch_message(self, message_id, fmt='full'):
+          return self.service.users().messages().get(
+               userId='me', 
+               id=message_id,
+               format=fmt
+          ).execute()
+     
+     # Save the raw email content to a file for reference, using the message ID as the filename
+     def save_raw_email(self, message_id):
+          raw_message = self.fetch_message(message_id, fmt='raw')
+          raw_data = raw_message.get("raw", "")
+          email_bytes = self.decode_base64_bytes(raw_data)
+          
+          self.ingest_dir.mkdir(parents=True, exist_ok=True)
+          output_path = self.ingest_dir / f"{message_id}.eml"
+
+          with open(output_path, "wb") as f:
+               f.write(email_bytes)
+
+          return output_path
+
+
+     def ingest_gmail(self, max_emails=10):
+          self.authenticate()
+          processed_documents = []
+
+          for msg in self.fetch_message_ids(max_results=max_emails):
+               message_id = msg["id"]
+               email_message = self.fetch_message(message_id)
+               processed_doc = self.parse_email_to_processed_object(email_message)
+               save_path = self.save_raw_email(message_id)
+
+               print(f"Saved raw email to: {save_path}")
+
+               processed_documents.append({
+                    "parsed_email": processed_doc.to_json(),
+                    "saved_to": str(save_path) if save_path else "Failed to save"
+               })
+
+          return processed_documents
+
+
+     def ingest_local_files(self):
+        self.__reset_injest_state()
+        self.__unzip_zip_files()
+        self.__get_files_in_injest_file()
+        self.__group_files_by_ext()
+        self.__ocr_my_pdf()
+
+        processed_doc_objs = []
+
+        for key, value in self.files_grouped_typ_type.items():
+            for file in value:
+                doc_obj = self.__read_a_document(key, file)
+                if doc_obj is not None and doc_obj != CONST["ERR_CODE"]:
+                    processed_doc_objs.append(doc_obj.to_json())
+
+        return processed_doc_objs
+
 
      #===== Utility
-
      class Processed_Document_Obj: # might need to set content size limits so model dosent crash
           #document itself #default "" since we're working with strings. 
           title =""
@@ -541,7 +736,7 @@ class Injest_Engine(Interface_InjestionEngine):
 
           def to_json_no_paragraphs(self):
                # ensure hash is up to date
-               if self.__hash_document == "":
+               if self.doc_hash == "":
                     self.__hash_document()
 
                return {
@@ -607,9 +802,4 @@ class Injest_Engine(Interface_InjestionEngine):
                          "date_references":  self.ai_date_references,
                     }
                }
-
           
-
-
-
-
