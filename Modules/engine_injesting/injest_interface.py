@@ -61,8 +61,19 @@ Document:
 
 
 
-class Interface_InjestionEngine():
-     pass
+class Interface_InjestionEngine(ABC):
+
+     @abstractmethod
+     def controller(self):
+         pass
+
+     @abstractmethod
+     def injest_local_file(self):
+         pass
+
+     @abstractmethod
+     def injest_gmail(self, max_emails=10):
+         pass
      #====== Getters ======
 
      #===== setters ====
