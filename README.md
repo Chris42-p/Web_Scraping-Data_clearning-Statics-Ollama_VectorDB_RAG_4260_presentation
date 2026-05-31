@@ -1,8 +1,16 @@
 # 4260_presentation
 This is a repo for Big Data class. We're going to demo a vector database.  
 
+# Installing dependenices. 
+- Make virtual Env for packages:~/Desktop/4260_presentation$ sudo python3 -m venv package_manager
+- Activate package manager: ~/Desktop/4260_presentation$ source ./package_manager/bin/activate
+- Deactivating the Env: (package_manager) chris@chris-DevBox:~/Desktop/4260_presentation$ deactivate
+- Installing dependences: pip install -r requirements.txt 
 
-# TODo 
+# Ollama install 
+curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION=0.3.14 sh
+
+# Todo 
 
 4260_presentation/Modules/engine_injesting/injest_engine.py: __read_a_document
      - we should save change the output to an object to get more data out of the files. 
@@ -12,6 +20,9 @@ This is a repo for Big Data class. We're going to demo a vector database.
           -Optical Character Recognition: OCR: used to turn pictures of letters into letters that the computer can read/find. 
 
 The demo documents should be updated with tables, and images to ensure we can catch all the forms of data. 
+
+
+
 
 # todo: Refactor
 - in the __init__.py we need to change exporting of objects to exporting of interfaces, dont want the user calling class.objs ()

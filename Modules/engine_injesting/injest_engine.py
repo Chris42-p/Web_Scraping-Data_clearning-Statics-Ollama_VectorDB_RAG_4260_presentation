@@ -28,6 +28,8 @@ import hashlib
 import re
 import json
 from datetime import datetime
+import httpx
+import time
 
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -40,17 +42,22 @@ from .injest_interface import CONST
 from .data_base.my_sql_db import SQL_DataBase
 
 
+
 class Injest_Engine(Interface_InjestionEngine):
      #=== Meta Data ====
      err_text=CONST["ERR_TXT"]
      err_code=CONST["ERR_CODE"]
      err_model_crash=CONST["MODEL_CRASH_RETRY"]
 
+     #Google API
+     SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+
 
      def __init__(
                self, 
                input_files_path, 
                output_files_path,
+
                credentials_path='credentials.json', 
                token_path='token.json', 
                ingest_dir='__ingest'
@@ -62,14 +69,14 @@ class Injest_Engine(Interface_InjestionEngine):
         self.dir_in_dir = [] #directories in injest directory
         self.files_grouped_typ_type = {k: [] for k in 
                                        CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
-        
+
+
         # Gmail ingestion state
         self.credentials_path = credentials_path
         self.token_path = token_path
         self.ingest_dir = Path(ingest_dir)
         self.service = None
 
-     SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
      #======= Process files 
      def __reset_injest_state(self):
@@ -431,18 +438,42 @@ class Injest_Engine(Interface_InjestionEngine):
                ai_date_references =ollama_response["date_references"] ,
           ).to_json()
 
-     def __start_ollama(self):
+     def __start_ollama(self, wait_to_boot=20):
           pass
+          if wait_to_boot <= 0:
+               print("Please bring up Ollama LLM manually")
+               return False
+          try:
+               #check model is awake 
+               r = httpx.get("http://localhost:11434")
+               return r.status_code == 200
+          except httpx.ConnectError:
+               #bring up model 
+               ollama.pull(CONST["MODEL_NAME"]) #download the model 
+               ollama.chat(
+                    model=CONST["MODEL_NAME"],               
+                    messages=[{
+                         "role":"user",
+                         "content": "Say 'hello' back",
+                         }],
+                    )
+               print(f"Starting AI, please wait: {wait_to_boot} seconds ")
+               time.sleep(wait_to_boot)
+
+               self.__start_ollama(wait_to_boot-10)
+
 
      #====== Save processed data
      def __save_processed_doc_to_sql(self, og_doc, ai_doc, og_doc_hash): #send one doc at a time 
           db=SQL_DataBase()
+
           db.insert_document(og_doc, ai_doc)
-          print(f"successfuly wrote obj: {db.get_document(og_doc_hash)}")          
+          # print(f"successfuly wrote obj: {db.get_document(og_doc_hash)}")          
 
           # db.DEV_drop_db_table()
 
          # === Interface compliance: match abstract method names ===
+     
      def injest_gmail(self, max_emails: int = 10):
           """Interface method spelling, delegates to ingest_gmail()."""
           return self.ingest_gmail(max_emails=max_emails)
@@ -458,67 +489,78 @@ class Injest_Engine(Interface_InjestionEngine):
           
           #== Pre Processing
           #change document names to have _ for processing sake. 
-          #self.__unzip_zip_files() #find zip files and open unzip them. 
+          self.__unzip_zip_files() #find zip files and open unzip them. 
 
           #=== Process the files
-          #self.__get_files_in_injest_file()
-          #self.__group_files_by_ext()
-          #self.__ocr_my_pdf() 
+          processed_files=self.__get_files_in_injest_file()
+          self.__group_files_by_ext()
+          self.__ocr_my_pdf() 
 
           #== Pre Processing / Ingestion
-          processed_doc_objs=[]
-
-          #for key, value in self.files_grouped_typ_type.items():
-               #for file in value:
-                    #doc_obj = self.__read_a_document(key, file)
-                    #if doc_obj is not None:
-                         #processed_doc_objs.append(doc_obj.to_json())
-          if use_local:
-               processed_doc_objs.extend(self.ingest_local_files())
-          
-          if use_gmail:
-               gmail_docs = self.ingest_gmail(max_emails=max_emails)
-               for item in gmail_docs:
-                    if "parsed_email" in item:
-                         processed_doc_objs.append(item["parsed_email"])
-
+          # processed_doc_objs=[]
+          # for key, value in self.files_grouped_typ_type.items():
+          #      for file in value:
+          #           doc_obj = self.__read_a_document(key, file)
+          #           if doc_obj is not None:
+          #                processed_doc_objs.append(doc_obj.to_json())
           #return processed_doc_objs
+
 
           # #=== Send the object to ollama to read over.
           # for processed_document in processed_doc_objs:
           #      response=self.__call_ollama_on_a_file(processed_document)
           #      self.__ollama_parse_response_into_object(response,processed_document)
 
-          #== save the documents 
+          # #== save the documents 
 
-          #=== Send documents to Ollama
-          ai_processed_doc_objs = []
-          for processed_document in processed_doc_objs:
-               response = self.__call_ollama_on_a_file(processed_document)
-               ai_doc = self.__ollama_parse_response_into_object(response)
-               ai_processed_doc_objs.append({
-                    "document": processed_document,
-                    "ai_metadata": ai_doc
-               })
-
-          return ai_processed_doc_objs
-
+          # #=== Send documents to Ollama
+          # ai_processed_doc_objs = []
+          # for processed_document in processed_doc_objs:
+          #      response = self.__call_ollama_on_a_file(processed_document)
+          #      ai_doc = self.__ollama_parse_response_into_object(response)
+          #      ai_processed_doc_objs.append({
+          #           "document": processed_document,
+          #           "ai_metadata": ai_doc
+          #      })
 
           #=== Dev/Debug area.  #-- the following files were tested and work
           root=str(self.input_files_path) + "/"
           processed_doc_obj= self.__read_a_document(".PDF",root+"temp_ocr.pdf")
           ai_processed_doc=self.__call_ollama_on_a_file(processed_doc_obj.to_json() )
-          self.__save_processed_doc_to_sql(processed_doc_obj.to_json_no_paragraphs(), ai_processed_doc, processed_doc_obj.get_hash())
+          ai_doc_obj=self.__ollama_parse_response_into_object(ai_processed_doc)
+          
+          # print(processed_doc_obj.to_json_no_paragraphs())
+          # print(ai_doc_obj)
+          self.__save_processed_doc_to_sql(processed_doc_obj.to_json_no_paragraphs(),ai_doc_obj, processed_doc_obj.get_hash() )
+
+          #return the documents that're processed to be moved to another folder
+          
+          return processed_files
+     
+          # -- Favour please make a seperate object for downloading emails,
+               # this object should be handling the processing of the email and feeding it into the AI
+          #   if use_local:
+          #      processed_doc_objs.extend(self.ingest_local_files())
+          
+          # if use_gmail:
+          #      gmail_docs = self.ingest_gmail(max_emails=max_emails)
+          #      for item in gmail_docs:
+          #           if "parsed_email" in item:
+          #                processed_doc_objs.append(item["parsed_email"])
+     
+
+
+          # self.__save_processed_doc_to_sql(processed_doc_obj.to_json_no_paragraphs(), ai_processed_doc, processed_doc_obj.get_hash())
           
 
           #== dev util 
           # doc_metadata= self.__read_a_document(".DOCX",root+"temp.docx")
           # doc_metadata= self.__read_a_document(".CSV",root+"temp.csv")
           # doc_metadata= self.__read_a_document(".TXT",root+"ppt_x.txt")
-          
-          # print(f"\n\n{processed_doc_obj.to_json_no_paragraphs()} \n\n")
-          # print(f"{ai_processed_doc}") 
-
+     
+     
+     
+     
      #====== Gmail section
 
      def authenticate(self):
@@ -621,7 +663,6 @@ class Injest_Engine(Interface_InjestionEngine):
 
           return output_path
 
-
      def ingest_gmail(self, max_emails=10):
           self.authenticate()
           processed_documents = []
@@ -640,7 +681,6 @@ class Injest_Engine(Interface_InjestionEngine):
                })
 
           return processed_documents
-
 
      def ingest_local_files(self):
         self.__reset_injest_state()
@@ -758,7 +798,6 @@ class Injest_Engine(Interface_InjestionEngine):
                self.doc_hash = hashlib.md5(content.encode()).hexdigest()
 
 
-
      class AI_Processed_Document_Obj:
           #== Inheretence
 
@@ -789,17 +828,15 @@ class Injest_Engine(Interface_InjestionEngine):
      
           def to_json(self):
                return {
-                    "ai_metadata": {
-                         "summary":          self.ai_summary,
-                         "description":      self.ai_description,
-                         "send_reason":      self.ai_send_reason,
-                         "keywords":         self.ai_keywords,
-                         "topics":           self.ai_topics,
-                         "entities":         self.ai_entities,
-                         "document_type":    self.ai_document_type,
-                         "sentiment":        self.ai_sentiment,
-                         "language":         self.ai_language,
-                         "date_references":  self.ai_date_references,
-                    }
+                    "summary":          self.ai_summary,
+                    "description":      self.ai_description,
+                    "send_reason":      self.ai_send_reason,
+                    "keywords":         self.ai_keywords,
+                    "topics":           self.ai_topics,
+                    "entities":         self.ai_entities,
+                    "document_type":    self.ai_document_type,
+                    "sentiment":        self.ai_sentiment,
+                    "language":         self.ai_language,
+                    "date_references":  self.ai_date_references,
                }
           

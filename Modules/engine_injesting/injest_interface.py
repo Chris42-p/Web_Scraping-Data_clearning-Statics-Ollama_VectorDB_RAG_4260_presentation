@@ -1,10 +1,4 @@
 #==== This is the interface for the injestion engine
-
-
-
-#=========== Libraries and install code
-
-
 from abc import ABC, abstractmethod
 
 CONST={
@@ -21,15 +15,16 @@ CONST={
           ".CSV":[],
           ".TXT":[],
           ".PPTX":[],
+          ".ZIP":[],
 
           ".EML":[],
-          ".ZIP":[],
 
      },
 
-     #===== AI instructions
-     # "MODEL_NAME":"deepseek-r1:latest", #prod AI  
-     "MODEL_NAME":"llama3.2:latest", #dev AI 
+     # #===== AI instructions
+     # "MODEL_NAME":"deepseek-r1:8b", #prod AI  
+     "MODEL_NAME":"llama3.2:latest", #dev AI  
+     
      "PROMPT": """
 Read the following document and return ONLY a raw JSON object (no markdown, no backticks, no explanation).
 
@@ -57,8 +52,6 @@ Document:
      """,
      
 }
-
-
 
 
 class Interface_InjestionEngine(ABC):

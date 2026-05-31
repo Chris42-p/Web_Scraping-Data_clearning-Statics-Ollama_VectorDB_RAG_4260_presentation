@@ -1,8 +1,29 @@
-pypdf
-python-docx
-python-pptx
-spire.presentation
-mail-parser
-ollama
-fastapi
-uvicorn
+# ============================================================
+# STANDARD LIBRARY - DO NOT pip install these
+# json, csv, zipfile, hashlib, re, datetime, os,
+# base64, subprocess, sqlite3, typing, contextlib, pathlib,
+# secrets
+# ============================================================
+
+#===== Document processeing 
+pypdf==6.12.2
+python-docx==1.2.0
+python-pptx==1.0.0
+spire.presentation==11.3.0
+
+# === AI / LLM
+ollama==0.6.2
+chromadb==1.5.9
+
+# === API / Server
+fastapi==0.136.3
+uvicorn==0.34.2
+
+# === Email
+mail-parser==4.1.4
+
+# === Google APIs
+google-api-python-client==2.169.0
+google-auth==2.40.2
+google-auth-oauthlib==1.2.2
+google-auth-httplib2==0.2.0
