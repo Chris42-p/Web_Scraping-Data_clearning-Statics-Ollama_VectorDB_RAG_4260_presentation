@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from Modules.user_GUI.back_end.service import load_documents
 from fastapi.responses import JSONResponse
+from Modules.user_GUI.back_end.service import load_documents
 from Modules.user_GUI.back_end.session_store import create_session, SESSION_STORE
 
 app = FastAPI()

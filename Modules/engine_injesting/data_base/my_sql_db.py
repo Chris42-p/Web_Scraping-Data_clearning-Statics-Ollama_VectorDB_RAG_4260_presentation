@@ -3,13 +3,15 @@ import json
 from typing import Optional, Dict, Any, List
 from contextlib import closing
 
+from pathlib import Path
 #=== Interface Import
 from .my_sql_db_interface import CONST
+
 
 class SQL_DataBase():
 
      #=== DB CONFIG 
-     DB_PATH=CONST["DB_PATH"]
+     DB_PATH=""
      CREATE_TABLE=CONST["CREATE_TABLE_SQL"]
      CREATE_TRIGGER=CONST["CREATE_TRIGGER_SQL"]
      JSON_FIELDS=CONST["JSON_FIELDS"]
@@ -25,6 +27,9 @@ class SQL_DataBase():
 
 
      def __init__(self):
+          base_path=Path(__file__).parent
+          self.DB_PATH=f"{base_path}/{CONST["DB_PATH"]}"
+
           self.__initialize()
 
 #== Create    

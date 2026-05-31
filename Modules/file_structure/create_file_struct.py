@@ -75,6 +75,11 @@ class FileStructure(Interface_FileStructure):
           return self.processed_file_path
 
 
+     #====== Move Processed files 
+     def move_processed_files(self, files_to_move):
+          #move the files
+          pass
+
      #=========== Paths ================
      def get_script_path(self): #path of this script
           self.script_path= Path(__file__).resolve()

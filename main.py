@@ -19,25 +19,28 @@ def create_file_structure():
      return input_files_path,output_files_path
 
 def injest_files(input_files_path,output_files_path):
-     processed_doc_obj=Injest_Engine(input_files_path,output_files_path)
-     return processed_doc_obj
+     return Injest_Engine(input_files_path,output_files_path).controller()
 
-     print("+++++++++++")
-     print(json.dumps(processed_doc_obj, default=str))
+def move_processed_files(files_to_move):
+     FileStructure().move_processed_files(files_to_move) #TODO: havent implemented
 
-
-     # need to trigger file_structure engine to move the files to _processed_files ... maybe after they are injested into the db?
-
-
+def embed_files():
+     pass
 
 
 
 #use this method to control the execution of the application. 
 def main():
+
+     #==== Get the documents and process them ====
      input_files_path,output_files_path= create_file_structure()
-     
-     injest_files (input_files_path,output_files_path)
-     
+     processed_doc=injest_files (input_files_path,output_files_path)
+     move_processed_files(processed_doc)
+
+     #
+     embed_files()
+
+
 
 
 main()
