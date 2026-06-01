@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   ollama:
     image: ollama/ollama
@@ -7,7 +6,6 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama # save ollama data in a named volume
-
   app:
     build: .
     depends_on:
@@ -24,7 +22,5 @@ services:
       - "8000:8000"
     depends_on:
       - ollama
-
 volumes:
   ollama_data:
-
