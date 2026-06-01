@@ -70,6 +70,7 @@ reason sent: {"".join(obj["send_reason"])}
                ids=[ hash ],
                documents=[query_text],
                metadatas=[{
+                    "title": obj.get("title", ""),
                     "header_footer": obj["header_footer"],
                     "table_content": obj["table_content"],
                     "author": obj["author"],
@@ -111,7 +112,7 @@ reason sent: {"".join(obj["send_reason"])}
                if unprocessed_obj == None:
                     break
                
-               print(f"embedding document titled:  {unprocessed_obj["title"]}")
+               print(f"embedding document titled:  {unprocessed_obj['title']}")
                hash=unprocessed_obj["doc_hash"]
                self.__create_chromaDB_entry(collection, unprocessed_obj,hash)
                self.__mark_db_obj_processed(hash)

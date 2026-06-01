@@ -470,6 +470,7 @@
             <span class="doc-title">${highlight(d.title, query)}</span>
             <span class="doc-badge">${d.type}</span>
             <span class="doc-date">${calIcon} ${d.date}</span>
+            ${d.score ? `<span class="score-badge">similarity: ${d.score}</span>` : ''}
           </div>
           <div class="doc-from">${userIcon} ${escapeHtml(d.from)}</div>
           <div class="doc-snippet">${highlight(d.snippet, query)}</div>
@@ -524,20 +525,42 @@
     }
 
     // connect to Gmail (OAuth flow)
-    function connectGmail() {
-      window.location.href = `${API_BASE}/auth/google/login`;
-    }
-
-    function handleSearch() {
+    async function handleSearch() {
       const q = document.getElementById('searchInput').value.trim();
       if (!q) { render(docs, ''); return; }
-      const ql = q.toLowerCase();
-      const filtered = docs.filter(d =>
-        d.title.toLowerCase().includes(ql) ||
-        d.snippet.toLowerCase().includes(ql) ||
-        d.type.toLowerCase().includes(ql)
-      );
-      render(filtered, q);
+
+      setStatus("Searching...");
+      try {
+        const res = await fetch(`${API_BASE}/search?query=${encodeURIComponent(q)}&num_results=5`, {
+          method: "GET",
+          credentials: "include"
+        });
+        const data = await res.json();
+
+        // ChromaDB returns: {ids, documents, metadatas, distances}
+        const results = data.results;
+        const mapped = results.ids[0].map((id, i) => ({
+          title: results.metadatas[0][i].title || id,
+          type: results.metadatas[0][i].document_type || "DOC",
+          from: results.metadatas[0][i].author || "Unknown",
+          date: results.metadatas[0][i].time_creation || "",
+          snippet: results.documents[0][i] || "",
+          score: (1 - results.distances[0][i]).toFixed(2) // cosine similarity
+        }));
+
+        render(mapped, q);
+        setStatus(`Found ${mapped.length} results for "${q}"`);
+      } catch (e) {
+        console.error(e);
+        // fallback to local search
+        const ql = q.toLowerCase();
+        const filtered = docs.filter(d =>
+          d.title.toLowerCase().includes(ql) ||
+          d.snippet.toLowerCase().includes(ql)
+        );
+        render(filtered, q);
+        setStatus("Vector search unavailable, using local search", true);
+      }
     }
 
     document.getElementById('searchInput').addEventListener('keydown', e => {

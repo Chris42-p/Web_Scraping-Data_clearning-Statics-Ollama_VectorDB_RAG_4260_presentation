@@ -28,7 +28,7 @@ class SQL_DataBase():
 
      def __init__(self):
           base_path=Path(__file__).parent
-          self.DB_PATH=f"{base_path}/{CONST["DB_PATH"]}"
+          self.DB_PATH=f"{base_path}/{CONST['DB_PATH']}"
 
           self.__initialize()
 
