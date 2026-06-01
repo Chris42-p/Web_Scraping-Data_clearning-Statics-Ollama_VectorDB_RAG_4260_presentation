@@ -11,3 +11,6 @@ FIFO DB
 
 
 there might be an issue with the db's get_first_item, when a new obj is created that'll be 0...
+
+
+TODO: Need to serialise and add the document into the database. 

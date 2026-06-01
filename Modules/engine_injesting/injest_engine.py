@@ -162,6 +162,11 @@ class Injest_Engine(Interface_InjestionEngine):
                     except subprocess.CalledProcessError as e:
                          print(f"{self.err_text}:injestion engine: {e.stdout} ")
 
+     def  __read_document_bytes(self, document):
+          with open(document, "rb") as f:
+               _bytes=f.read()
+          return _bytes
+     
      #open the file and read their content. 
      def __read_a_document(self,doc_type, docuemnt): #recurrsion on .zip & .eml
           read_doc_obj=None  
@@ -197,6 +202,7 @@ class Injest_Engine(Interface_InjestionEngine):
 
                read_doc_obj = self.Processed_Document_Obj(
                title=title,
+
                paragaphs=all_text,
                author=author,
                time_creation=time_creation,
@@ -255,7 +261,6 @@ class Injest_Engine(Interface_InjestionEngine):
                file_computer_id=props.last_modified_by if props.last_modified_by else None
                )
 
-               
           elif doc_type ==".CSV": #output is cast to string
                doc_content=""
 
@@ -320,7 +325,6 @@ class Injest_Engine(Interface_InjestionEngine):
                     file_computer_id=props.last_modified_by if props.last_modified_by else None
                )
 
-
           #==== Recurrsion for document files. 
           elif doc_type ==".ZIP":
                print("TODO: File Reader: Zip")
@@ -370,6 +374,10 @@ class Injest_Engine(Interface_InjestionEngine):
           else:
                print( CONST["ERR_TXT"])
                return CONST["ERR_CODE"]
+
+          #want to retrive whole document if needed. 
+          _bytes=self.__read_document_bytes(docuemnt)
+          read_doc_obj.set_docuemnt_bytes(_bytes)
 
           return read_doc_obj
 
@@ -466,14 +474,14 @@ class Injest_Engine(Interface_InjestionEngine):
      #====== Save processed data
      def __save_processed_doc_to_sql(self, og_doc, ai_doc, og_doc_hash): #send one doc at a time 
           db=SQL_DataBase()
-
           db.insert_document(og_doc, ai_doc)
-          # print(f"successfuly wrote obj: {db.get_document(og_doc_hash)}")          
-
+          # print(f"successfuly wrote obj: {db.get_document_by_hash(og_doc_hash)}")          
           # db.DEV_drop_db_table()
 
          # === Interface compliance: match abstract method names ===
      
+
+     #== Gmail API -- Favour this needs to be in its object, please. 
      def injest_gmail(self, max_emails: int = 10):
           """Interface method spelling, delegates to ingest_gmail()."""
           return self.ingest_gmail(max_emails=max_emails)
@@ -561,7 +569,7 @@ class Injest_Engine(Interface_InjestionEngine):
      
      
      
-     #====== Gmail section
+     #====== Gmail section --please move this into its own class. 
 
      def authenticate(self):
           creds = None
@@ -704,6 +712,7 @@ class Injest_Engine(Interface_InjestionEngine):
      class Processed_Document_Obj: # might need to set content size limits so model dosent crash
           #document itself #default "" since we're working with strings. 
           title =""
+          docuemnt_bytes=""
           paragaphs =""
           header_footer =""
           table_content =""
@@ -716,7 +725,7 @@ class Injest_Engine(Interface_InjestionEngine):
           #== hahses 
           doc_hash=""
 
-          def __init__(self, title="", paragaphs="", header_footer="", 
+          def __init__(self, title="",paragaphs="", header_footer="", 
                               table_content="", author="", time_creation="", 
                               modified_date="", file_computer_id=""):
                self.title=title
@@ -782,6 +791,7 @@ class Injest_Engine(Interface_InjestionEngine):
                return {
                     "title": self.standardize_text( "title"),
                     # "paragraphs":self.standardize_text ("paragaphs"),   #using AI to summarize this
+                    "document_bytes":self.docuemnt_bytes,
                     "header_footer":self.standardize_text ("header_footer"),
                     "table_content":self.standardize_text ("table_content"),
                     "author":self.standardize_text ("author"),
@@ -789,7 +799,15 @@ class Injest_Engine(Interface_InjestionEngine):
                     "modified_date":self.standardize_text ("modified_date"),
                     "file_computer_id":self.standardize_text ("file_computer_id"),
                     "doc_hash":self.standardize_text ("doc_hash"),
+                    
+                    # "free_field_1":"",
+                    # "free_field_2":"",
+                    # "free_field_3":"",
+                         
                }
+
+          def set_docuemnt_bytes(self, docuemnt_bytes):
+               self.docuemnt_bytes= docuemnt_bytes
 
 
           def __hash_document(self):

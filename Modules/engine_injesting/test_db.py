@@ -12,6 +12,6 @@ ai_doc={"summary": "Overview of document content", "description": "Detailed desc
 db=SQL_DataBase()
 # db.DEV_drop_db_table()
 
-db.insert_document(og_doc, ai_doc)
+# db.insert_document(og_doc, ai_doc)
 print(db.get_first_document())
 

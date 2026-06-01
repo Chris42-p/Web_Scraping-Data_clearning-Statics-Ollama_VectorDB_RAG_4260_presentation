@@ -50,7 +50,7 @@ class SQL_DataBase():
           
           self.get_conn = conn
 
-#== Write
+#== write
      def insert_document(self, og_doc: dict, ai_doc: dict) -> None:
           # serialize any list fields to JSON strings before storing
            # parse if passed in as a JSON string
@@ -59,7 +59,7 @@ class SQL_DataBase():
 
           ai_serialized = ai_doc.copy()
           
-          for field in ["keywords", "topics", "entities", "date_references"]:
+          for field in CONST["JSON_FIELDS"]:
                if field in ai_serialized and isinstance(ai_serialized[field], list):
                     ai_serialized[field] = json.dumps(ai_serialized[field])
 
@@ -69,6 +69,7 @@ class SQL_DataBase():
                conn.execute(self.AI_DOC, {"doc_hash": og_doc["doc_hash"], **ai_serialized})
                conn.commit()
 
+#== update
      def update_document(self, doc_hash: str, doc_updates: dict = None, ai_updates: dict = None) -> None:
           """Update fields in either or both tables by doc_hash."""
           with self.__get_conn() as conn:
@@ -95,6 +96,7 @@ class SQL_DataBase():
 
                conn.commit()
 
+#==delte
      def delete_document(self, doc_hash: str) -> None:
           """Delete a document and its ai_analysis by doc_hash."""
           with self.__get_conn() as conn:
@@ -102,7 +104,8 @@ class SQL_DataBase():
                conn.execute("DELETE FROM documents WHERE doc_hash = ?", (doc_hash,))
                conn.commit()
 
-     def get_document(self, doc_hash: str) -> dict | None:
+#== read
+     def get_document_by_hash(self, doc_hash: str) -> dict | None:
           """Get a single document joined with its ai_analysis by doc_hash."""
           sql = """
                SELECT d.*, a.summary, a.description, a.send_reason, a.keywords,
@@ -116,22 +119,32 @@ class SQL_DataBase():
                row = conn.execute(sql, (doc_hash,)).fetchone()
                return self.__deserialize_row(row)
 
-     def get_first_document(self) -> dict | None:
-          """Get the first document joined with its ai_analysis."""
+     def get_unprocessed_documents(self) ->dict |None:
           sql = """
                SELECT d.*, a.summary, a.description, a.send_reason, a.keywords,
                          a.topics, a.entities, a.document_type, a.sentiment,
                          a.language, a.date_references
                FROM documents d
                LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
+               WHERE d.processed = 0
                LIMIT 1
           """
           with self.__get_conn() as conn:
                row = conn.execute(sql).fetchone()
-               return self.__deserialize_row(row)
+               return self.__deserialize_row(row) if row else None
+
+     
+
+#== Util 
+     def mark_processed(self, doc_hash: str) -> None:
+
+          with self.__get_conn() as conn:
+               conn.execute("UPDATE documents SET processed = 1 WHERE doc_hash = ?",(doc_hash,))
+               conn.commit()
+
 
      def __deserialize_row(self, row: sqlite3.Row) -> dict | None:
-          """Convert a sqlite3.Row to a dict, deserializing any JSON fields."""
+          
           if row is None:
                return None
           
@@ -145,6 +158,25 @@ class SQL_DataBase():
                          pass  # leave as-is if it can't be parsed
           
           return result
+
+
+
+     def get_first_document(self) -> dict | None: #might delete this method
+          # Get the first document joined with its ai_analysis.
+          sql = """
+               SELECT d.*, a.summary, a.description, a.send_reason, a.keywords,
+                         a.topics, a.entities, a.document_type, a.sentiment,
+                         a.language, a.date_references
+               FROM documents d
+               LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
+               LIMIT 1
+          """
+          with self.__get_conn() as conn:
+               row = conn.execute(sql).fetchone()
+               return self.__deserialize_row(row)
+
+
+
 
      #== Meta
           #===!! danger !!===

@@ -15,12 +15,16 @@ CONST={
 CREATE TABLE IF NOT EXISTS documents (
     doc_hash TEXT PRIMARY KEY,
     title TEXT,
+    document_bytes BLOB,
     header_footer TEXT,
     table_content TEXT,
     author TEXT,
     time_creation TEXT,
     modified_date TEXT,
-    file_computer_id TEXT
+    file_computer_id TEXT,
+    
+    updated_at TEXT,
+    processed INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS ai_analysis (
@@ -49,8 +53,8 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
 "INSERT_DOCUMENT_SQL": 
 """
      INSERT OR REPLACE INTO documents 
-     (doc_hash, title, header_footer, table_content, author, time_creation, modified_date, file_computer_id)
-     VALUES (:doc_hash, :title, :header_footer, :table_content, :author, :time_creation, :modified_date, :file_computer_id)
+     (doc_hash, title, document_bytes, header_footer, table_content, author, time_creation, modified_date, file_computer_id)
+     VALUES (:doc_hash, :title, :document_bytes, :header_footer, :table_content, :author, :time_creation, :modified_date, :file_computer_id)
 """,
 
 
@@ -60,12 +64,18 @@ CREATE TRIGGER IF NOT EXISTS documents_updated_at
 AFTER UPDATE ON documents
 FOR EACH ROW
 BEGIN
-  UPDATE documents SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+  UPDATE documents SET updated_at = CURRENT_TIMESTAMP WHERE doc_hash = NEW.doc_hash;
 END;
 """,
 
-
      "JSON_FIELDS": ["keywords", "topics", "entities", "date_references"],
+
+     "UPDATE_PROCESSED_DOC":
+"""
+UPDATE documents SET processed =1 WHERE doc_hash 
+
+ 
+"""
 }
 
 

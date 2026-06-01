@@ -1,9 +1,11 @@
 # going to use this to orchistrate the exeuction of the scripts. 
 
+import json
 
 from Modules.file_structure import FileStructure
 from Modules.engine_injesting import Injest_Engine
-import json
+from Modules.engine_embedding import Embedding_Engine
+
 
 #==== File Structure ====
 def create_file_structure():
@@ -24,22 +26,24 @@ def injest_files(input_files_path,output_files_path):
 def move_processed_files(files_to_move):
      FileStructure().move_processed_files(files_to_move) #TODO: havent implemented
 
-def embed_files():
-     pass
+def embed_into_VecDB_files():
+     Embedding_Engine().embed_unprocessed_document()
 
-
+def send_VecDB_query(query, num_results):
+     response =Embedding_Engine().send_query(query,num_results)
+     print(response)
 
 #use this method to control the execution of the application. 
 def main():
 
      #==== Get the documents and process them ====
      input_files_path,output_files_path= create_file_structure()
-     processed_doc=injest_files (input_files_path,output_files_path)
-     move_processed_files(processed_doc)
+     # processed_doc=injest_files (input_files_path,output_files_path) #muted for development - there are DB entries already. 
+     
+     embed_into_VecDB_files()
+     send_VecDB_query("testing document", 4)
 
-     #
-     embed_files()
-
+     # move_processed_files(processed_doc)
 
 
 
