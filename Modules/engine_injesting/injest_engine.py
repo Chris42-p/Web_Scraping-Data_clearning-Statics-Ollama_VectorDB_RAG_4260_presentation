@@ -77,6 +77,7 @@ class Injest_Engine(Interface_InjestionEngine):
         self.ingest_dir = Path(ingest_dir)
         self.service = None
 
+        self.controller()
 
      #======= Process files 
      def __reset_injest_state(self):
@@ -337,13 +338,11 @@ class Injest_Engine(Interface_InjestionEngine):
 
                with zipfile.ZipFile(docuemnt, "r") as zip_ref:
                     files_in_zip = zip_ref.namelist()
-               
-               
-               for file in files_in_zip:
+                    for file in files_in_zip:
                     # read documents in a zip file.
                     #with zipfile.ZipFile(docuemnt, "r") as zipf:
-                         content = zip_ref.read(file)
                          try:
+                              content = zip_ref.read(file)
                               doc_content += content.decode('utf-8') + " "
                          except UnicodeDecodeError:
                               print(f"Skipping binary file in zip: {file}")
@@ -447,13 +446,13 @@ class Injest_Engine(Interface_InjestionEngine):
           ).to_json()
 
      def __start_ollama(self, wait_to_boot=20):
-          pass
+          
           if wait_to_boot <= 0:
                print("Please bring up Ollama LLM manually")
                return False
           try:
                #check model is awake 
-               r = httpx.get("http://localhost:11434")
+               r = httpx.get("http://ollama:11434")
                return r.status_code == 200
           except httpx.ConnectError:
                #bring up model 
@@ -469,7 +468,7 @@ class Injest_Engine(Interface_InjestionEngine):
                time.sleep(wait_to_boot)
 
                self.__start_ollama(wait_to_boot-10)
-
+          
 
      #====== Save processed data
      def __save_processed_doc_to_sql(self, og_doc, ai_doc, og_doc_hash): #send one doc at a time 
@@ -514,6 +513,7 @@ class Injest_Engine(Interface_InjestionEngine):
           #return processed_doc_objs
 
           #=== Read all documents
+          print(f"Files to process: {self.files_grouped_typ_type}") 
           processed_doc_objs = []
           for key, value in self.files_grouped_typ_type.items():
                for file in value:

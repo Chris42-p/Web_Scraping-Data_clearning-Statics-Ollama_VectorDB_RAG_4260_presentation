@@ -53,7 +53,7 @@ class SQL_DataBase():
 #== write
      def insert_document(self, og_doc: dict, ai_doc: dict) -> None:
           # serialize any list fields to JSON strings before storing
-           # parse if passed in as a JSON string
+          # parse if passed in as a JSON string
           if isinstance(ai_doc, str):
                ai_doc = json.loads(ai_doc)
 
