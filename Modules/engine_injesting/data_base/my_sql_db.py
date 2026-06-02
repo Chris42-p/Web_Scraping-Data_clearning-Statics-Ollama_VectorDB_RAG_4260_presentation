@@ -1,9 +1,11 @@
 import sqlite3 
 import json
+from pathlib import Path
 from typing import Optional, Dict, Any, List
 from contextlib import closing
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from pathlib import Path
+
 #=== Interface Import
 from .my_sql_db_interface import CONST
 
@@ -40,16 +42,71 @@ class SQL_DataBase():
           return conn
 
      def __initialize(self) -> None:
-          conn=self.__get_conn()
-
-          with conn:
+          #conn=self.__get_conn()
+          with self.__get_conn() as conn:
                conn.executescript(
-                    f"{self.CREATE_TABLE}\n{self.CREATE_TRIGGER}"  # Fix 8: use correct attr names (not _SQL suffix)
-               )
+                    f"{self.CREATE_TABLE}\n{self.CREATE_TRIGGER}")
                conn.commit()
-          
-          self.get_conn = conn
 
+          #with conn:
+          #     conn.executescript(
+          #          f"{self.CREATE_TABLE}\n{self.CREATE_TRIGGER}"  # Fix 8: use correct attr names (not _SQL suffix)
+          #     )
+          #     conn.commit()
+          
+          #self.get_conn = conn
+
+     def create_user(self, username: str, password: str) -> None:
+          """Create a new user with a hashed password."""
+          password_hash = generate_password_hash(password)
+
+          try:
+               with self.__get_conn() as conn:
+                    cursor = conn.execute(
+                         "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                         (username, password_hash)
+                    )
+                    conn.commit()
+          except sqlite3.IntegrityError as e:
+               raise ValueError(f"Username '{username}' already exists") from e
+     
+     def authenticate_user(self, username: str, password: str) -> dict | None:
+          """Authenticate a user and return their info if valid."""
+          with self.__get_conn() as conn:
+               row = conn.execute(
+                    """
+                    SELECT id, username, password_hash
+                    FROM users 
+                    WHERE username = ?
+                    """,
+                    (username,)
+               ).fetchone()
+
+          if row is None:
+               return None
+
+          if not check_password_hash(row["password_hash"], password):
+               return None
+
+          return {
+               "id": row["id"], 
+               "username": row["username"]
+          }
+
+     def get_user_by_username(self, username: str) -> dict | None:
+          with self.__get_conn() as conn:
+               row = conn.execute(
+                    """
+                    SELECT id, username, created_at
+                    FROM users
+                    WHERE username = ?
+                    """,
+                    (username,)
+               ).fetchone()
+
+               return dict(row) if row else None
+          
+     
 #== write
      def insert_document(self, og_doc: dict, ai_doc: dict) -> None:
           # serialize any list fields to JSON strings before storing
@@ -180,9 +237,15 @@ class SQL_DataBase():
 
      #== Meta
           #===!! danger !!===
+     #def DEV_drop_db_table(self):
+     #     with self.__get_conn() as conn:
+     #          conn.execute("DROP TABLE IF EXISTS documents")
+     #          conn.commit()
+
      def DEV_drop_db_table(self):
           with self.__get_conn() as conn:
+               conn.execute("DROP TABLE IF EXISTS ai_analysis")
                conn.execute("DROP TABLE IF EXISTS documents")
+               conn.execute("DROP TABLE IF EXISTS users")
                conn.commit()
-
          
