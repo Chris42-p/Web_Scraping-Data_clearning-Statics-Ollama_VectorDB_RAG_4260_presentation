@@ -81,7 +81,7 @@ reason sent: {"".join(obj["send_reason"])}
                     "document_type": obj["document_type"],
                     "sentiment": obj["sentiment"],
                     "language": obj["language"],
-                    "date_references": obj["date_references"],
+                    "date_references": ", ".join(obj["date_references"]) if obj["date_references"] else ""
                }]
           )
 

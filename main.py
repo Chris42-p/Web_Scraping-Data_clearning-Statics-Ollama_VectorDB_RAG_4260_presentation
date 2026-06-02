@@ -38,7 +38,7 @@ def main():
 
      #==== Get the documents and process them ====
      input_files_path,output_files_path= create_file_structure()
-     # processed_doc=injest_files (input_files_path,output_files_path) #muted for development - there are DB entries already. 
+     processed_doc=injest_files (input_files_path,output_files_path) #muted for development - there are DB entries already. 
      
      embed_into_VecDB_files()
      send_VecDB_query("testing document", 4)
