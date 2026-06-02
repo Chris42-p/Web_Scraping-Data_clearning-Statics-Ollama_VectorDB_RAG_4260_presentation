@@ -513,7 +513,27 @@ class Injest_Engine(Interface_InjestionEngine):
           #                processed_doc_objs.append(doc_obj.to_json())
           #return processed_doc_objs
 
+          #=== Read all documents
+          processed_doc_objs = []
+          for key, value in self.files_grouped_typ_type.items():
+               for file in value:
+                    doc_obj = self.__read_a_document(key, file)
+                    if doc_obj is not None and doc_obj != CONST["ERR_CODE"]:
+                         processed_doc_objs.append(doc_obj)
 
+          #=== Send each document to ollama and save to SQL
+          for processed_doc_obj in processed_doc_objs:
+               try:
+                    ai_processed_doc = self.__call_ollama_on_a_file(processed_doc_obj.to_json())
+                    ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
+                    self.__save_processed_doc_to_sql(
+                         processed_doc_obj.to_json_no_paragraphs(),
+                         ai_doc_obj,
+                         processed_doc_obj.get_hash()
+                    )
+                    print(f"Saved: {processed_doc_obj.to_json_no_paragraphs().get('title', 'unknown')}")
+               except Exception as e:
+                    print(f"Error processing document: {e}")
           # #=== Send the object to ollama to read over.
           # for processed_document in processed_doc_objs:
           #      response=self.__call_ollama_on_a_file(processed_document)
@@ -532,14 +552,14 @@ class Injest_Engine(Interface_InjestionEngine):
           #      })
 
           #=== Dev/Debug area.  #-- the following files were tested and work
-          root=str(self.input_files_path) + "/"
-          processed_doc_obj= self.__read_a_document(".PDF",root+"temp_ocr.pdf")
-          ai_processed_doc=self.__call_ollama_on_a_file(processed_doc_obj.to_json() )
-          ai_doc_obj=self.__ollama_parse_response_into_object(ai_processed_doc)
+          # root=str(self.input_files_path) + "/"
+          # processed_doc_obj= self.__read_a_document(".PDF",root+"temp_ocr.pdf")
+          # ai_processed_doc=self.__call_ollama_on_a_file(processed_doc_obj.to_json() )
+          # ai_doc_obj=self.__ollama_parse_response_into_object(ai_processed_doc)
           
           # print(processed_doc_obj.to_json_no_paragraphs())
           # print(ai_doc_obj)
-          self.__save_processed_doc_to_sql(processed_doc_obj.to_json_no_paragraphs(),ai_doc_obj, processed_doc_obj.get_hash() )
+          # self.__save_processed_doc_to_sql(processed_doc_obj.to_json_no_paragraphs(),ai_doc_obj, processed_doc_obj.get_hash() )
 
           #return the documents that're processed to be moved to another folder
           
