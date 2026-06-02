@@ -41,13 +41,20 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
     date_references TEXT,
     FOREIGN KEY (doc_hash) REFERENCES documents(doc_hash)
 );
+
+CREATE TABLE IF NOT EXISTS users (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     username TEXT UNIQUE NOT NULL,
+     password_hash TEXT NOT NULL,
+     created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 """,
 
   "INSERT_AI_SQL": 
 """
      INSERT OR REPLACE INTO ai_analysis
-     (doc_hash, summary, description, send_reason, keywords, topics, entities, document_type, sentiment, language, date_references,doc_hash)
-     VALUES (:doc_hash, :summary, :description, :send_reason, :keywords, :topics, :entities, :document_type, :sentiment, :language, :date_references, :doc_hash)
+     (doc_hash, summary, description, send_reason, keywords, topics, entities, document_type, sentiment, language, date_references)
+     VALUES (:doc_hash, :summary, :description, :send_reason, :keywords, :topics, :entities, :document_type, :sentiment, :language, :date_references)
 """,
 
 "INSERT_DOCUMENT_SQL": 
@@ -61,10 +68,14 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
      "CREATE_TRIGGER_SQL":                        #-- Create SQL trigger to update objs
 """ 
 CREATE TRIGGER IF NOT EXISTS documents_updated_at
-AFTER UPDATE ON documents
+AFTER UPDATE OF title, document_bytes, header_footer, table_content, author,
+                time_creation, modified_date, file_computer_id, processed
+ON documents
 FOR EACH ROW
 BEGIN
-  UPDATE documents SET updated_at = CURRENT_TIMESTAMP WHERE doc_hash = NEW.doc_hash;
+  UPDATE documents
+  SET updated_at = CURRENT_TIMESTAMP
+  WHERE doc_hash = NEW.doc_hash;
 END;
 """,
 
