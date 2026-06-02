@@ -18,6 +18,7 @@ chromadb==1.5.9
 # === API / Server
 fastapi==0.136.3
 uvicorn==0.34.2
+python-multipart
 
 # === Email
 mail-parser==4.1.4

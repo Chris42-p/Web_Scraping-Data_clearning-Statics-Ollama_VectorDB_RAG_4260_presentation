@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — AI Document Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f7f7f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: #fff;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            background: #1a1a18;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .logo svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #6b6b67;
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 0.5px solid rgba(0, 0, 0, 0.18);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 1rem;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #185fa5;
+            box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.08);
+        }
+
+        button {
+            width: 100%;
+            padding: 11px;
+            background: #1a1a18;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2a2a28;
+        }
+
+        .error {
+            font-size: 13px;
+            color: #a53a3a;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
+                <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
+            </svg>
+        </div>
+        <h1>Sign in</h1>
+        <p class="subtitle">AI Document Search</p>
+        <div class="error" id="errorMsg"></div>
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter username" />
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter password" />
+        <button onclick="handleLogin()">Sign in</button>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000";
+
+        async function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorEl = document.getElementById('errorMsg');
+
+            if (!username || !password) {
+                errorEl.textContent = "Please enter username and password.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    errorEl.textContent = data.detail || "Login failed.";
+                    errorEl.style.display = "block";
+                    return;
+                }
+
+
+                window.location.href = "index.html";
+
+            } catch (e) {
+                errorEl.textContent = "Cannot connect to server.";
+                errorEl.style.display = "block";
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter') handleLogin();
+        });
+    </script>
+</body>
+
+</html>

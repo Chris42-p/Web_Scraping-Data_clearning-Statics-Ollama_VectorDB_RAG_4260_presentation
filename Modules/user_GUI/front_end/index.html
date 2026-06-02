@@ -312,6 +312,35 @@
       background: var(--bg-hover);
     }
 
+    #logoutBtn {
+      border-color: #a53a3a;
+      color: #a53a3a;
+    }
+
+    #logoutBtn:hover {
+      background: #a53a3a;
+      color: #fff;
+    }
+
+    .doc-actions {
+      margin-top: 6px;
+    }
+
+    .download-btn {
+      font-size: 12px;
+      color: #185fa5;
+      text-decoration: none;
+      padding: 3px 8px;
+      border: 0.5px solid #185fa5;
+      border-radius: 5px;
+      display: inline-block;
+    }
+
+    .download-btn:hover {
+      background: #185fa5;
+      color: #fff;
+    }
+
     .status {
       font-size: 13px;
       color: var(--text-secondary);
@@ -351,6 +380,9 @@
       <button id="loadDocsBtn">Load Documents</button>
       <button id="startSessionBtn">Start Session</button>
       <button id="connectGmailBtn">Connect Gmail</button>
+      <button id="selectFolderBtn">📁 Select Folder</button>
+      <input type="file" id="folderInput" webkitdirectory multiple style="display:none" />
+      <button id="logoutBtn">Logout</button>
     </div>
 
     <div class="status" id="statusText">Ready to load documents...</div>
@@ -474,6 +506,11 @@
           </div>
           <div class="doc-from">${userIcon} ${escapeHtml(d.from)}</div>
           <div class="doc-snippet">${highlight(d.snippet, query)}</div>
+          <div class="doc-actions">
+            ${d.doc_hash
+          ? `<a href="${API_BASE}/download/${d.doc_hash}" class="download-btn" download>⬇ Download</a>`
+          : ''}
+          </div>
         </div>
       `).join('');
     }
@@ -540,6 +577,7 @@
         // ChromaDB returns: {ids, documents, metadatas, distances}
         const results = data.results;
         const mapped = results.ids[0].map((id, i) => ({
+          doc_hash: id,
           title: results.metadatas[0][i].title || id,
           type: results.metadatas[0][i].document_type || "DOC",
           from: results.metadatas[0][i].author || "Unknown",
@@ -567,9 +605,22 @@
       if (e.key === 'Enter') handleSearch();
     });
 
+    function connectGmail() {
+      window.location.href = `${API_BASE}/auth/google/login`;
+    }
+
+    async function logout() {
+      await fetch(`${API_BASE}/logout`, { credentials: "include" });
+      window.location.href = "login.html";
+    }
+
     document.getElementById("loadDocsBtn").addEventListener("click", loadDocuments);
     document.getElementById("startSessionBtn").addEventListener("click", startSession);
     document.getElementById("connectGmailBtn").addEventListener("click", connectGmail);
+    document.getElementById("selectFolderBtn").addEventListener("click", () => {
+      document.getElementById("folderInput").click();
+    });
+    document.getElementById("logoutBtn").addEventListener("click", logout);
 
     loadDocuments();
   </script>
