@@ -100,18 +100,35 @@
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
+            margin-bottom: 0.75rem;
         }
 
         button:hover {
             background: #2a2a28;
         }
 
-        .error {
+        .secondary {
+            background: #fff;
+            color: #1a1a18;
+            border: 0.5px solid rgba(0, 0, 0, 0.18);
+        }
+
+
+        .error, .success {
             font-size: 13px;
-            color: #a53a3a;
             margin-bottom: 1rem;
             display: none;
         }
+
+        .error {
+            color: #a53a3a;
+        }
+
+        .success {
+            color: #2d7a46;
+        }
+
+
     </style>
 </head>
 
@@ -126,24 +143,47 @@
         <h1>Sign in</h1>
         <p class="subtitle">AI Document Search</p>
         <div class="error" id="errorMsg"></div>
+        <div class="success" id="successMsg"></div>
         <label for="username">Username</label>
         <input type="text" id="username" placeholder="Enter username" />
         <label for="password">Password</label>
         <input type="password" id="password" placeholder="Enter password" />
         <button onclick="handleLogin()">Sign in</button>
+        <button class="secondary" onclick="handleRegister()">Create an account</button>
     </div>
 
     <script>
         const API_BASE = "http://127.0.0.1:8000";
 
-        async function handleLogin() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
+
+        function showError(message) {
             const errorEl = document.getElementById('errorMsg');
+            const successEl = document.getElementById('successMsg');
+            successEl.style.display = "none";
+            errorEl.textContent = message;
+            errorEl.style.display = "block";
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMsg');
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.style.display = "none";
+            successEl.textContent = message;
+            successEl.style.display = "block";
+        }
+
+        function getFormData() {
+            return {
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value.trim()
+            };
+        }
+
+        async function handleLogin() {
+            const {username, password} = getFormData();
 
             if (!username || !password) {
-                errorEl.textContent = "Please enter username and password.";
-                errorEl.style.display = "block";
+                showError("Please enter username and password.");
                 return;
             }
 
@@ -155,10 +195,9 @@
                     body: JSON.stringify({ username, password })
                 });
 
+                const data = await res.json();
                 if (!res.ok) {
-                    const data = await res.json();
-                    errorEl.textContent = data.detail || "Login failed.";
-                    errorEl.style.display = "block";
+                    showError(data.detail || "Login failed.");
                     return;
                 }
 
@@ -166,8 +205,36 @@
                 window.location.href = "index.html";
 
             } catch (e) {
-                errorEl.textContent = "Cannot connect to server.";
-                errorEl.style.display = "block";
+                showError("Cannot connect to server.");
+            }
+        }
+
+        async function handleRegister() {
+            const {username, password} = getFormData();
+
+            if (!username || !password) {
+                showError("Please enter username and password.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError(data.detail || "Registration failed.");
+                    return;
+                }
+
+                showSuccess("Registration successful! You can now log in.");
+
+            } catch (e) {
+                showError("Cannot connect to server.");
             }
         }
 
