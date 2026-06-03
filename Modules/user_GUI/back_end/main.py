@@ -29,7 +29,7 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type"],
+    allow_headers=["*"],
 )
 
 class LoginRequest(BaseModel):
@@ -93,19 +93,19 @@ def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
     except Exception as e:
         return {"error": str(e), "results": []}
 
-#@app.get("/session/start")
-#def start_session():
-#    session_id = create_session()
-#    response = JSONResponse(content={"message": "Session started", "session_id": session_id})
+@app.get("/session/start")
+def start_session():
+    session_id = create_session()
+    response = JSONResponse(content={"message": "Session started", "session_id": session_id})
 
-#    response.set_cookie (
-#        key="session_id", 
-#        value=session_id, 
-#        httponly=True,
-#        samesite="lax",
-#        secure=False
-#    )  # Set to True in production with HTTPS)
-#    return response
+    response.set_cookie (
+        key="session_id", 
+        value=session_id, 
+        httponly=True,
+        samesite="lax",
+        secure=False
+    )  # Set to True in production with HTTPS)
+    return response
 
 @app.get("/auth/google/login")
 def google_login(user=Depends(get_logged_in_user)):

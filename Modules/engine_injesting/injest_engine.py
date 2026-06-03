@@ -158,6 +158,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     
                     #OCR the doc 
                     try:
+                         print(f"currently processing: {cmd}")
                          subprocess.run(cmd.split(" "),check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                          print(f"Processed {file}")
                     except subprocess.CalledProcessError as e:
