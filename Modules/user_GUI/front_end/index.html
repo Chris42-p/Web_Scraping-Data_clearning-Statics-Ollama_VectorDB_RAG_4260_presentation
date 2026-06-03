@@ -378,7 +378,6 @@
 
     <div class="toolbar">
       <button id="loadDocsBtn">Load Documents</button>
-      <button id="startSessionBtn">Start Session</button>
       <button id="connectGmailBtn">Connect Gmail</button>
       <button id="selectFolderBtn">📁 Select Folder</button>
       <input type="file" id="folderInput" webkitdirectory multiple style="display:none" />
@@ -431,7 +430,27 @@
       { title: "Server Logs Archive", type: "ZIP", from: "ops@company.com", date: "May 8, 2026", snippet: "Compressed archive of server logs from April 2026 including error reports and performance metrics." },
     ];*/
     let docs = [];
-    async function loadDocuments() {
+
+    async function checkAuth() {
+      try {
+        const response = await fetch(`${API_BASE}/me`, {
+          method: "GET",
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          window.location.href = "login.html";
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        window.location.href = "login.html";
+        return false;
+      }
+    }
+
+    /*async function loadDocuments() {
       try {
         const res = await fetch('http://localhost:8000/documents');
         const data = await res.json();
@@ -441,7 +460,7 @@
         console.error('Failed to load documents:', e);
         render([], '');
       }
-    }
+    }*/
 
     // Fetch documents from backend
     function setStatus(message, isError = false) {
@@ -471,11 +490,12 @@
       const dateMatch = headerText.match(/Date:\s*(.*)/i);
 
       return {
+        doc_hash: doc.doc_hash || "",
         title: doc.title || "Untitled document",
-        type: detectType(doc),
+        type: doc.document_type || detectType(doc),
         from: doc.author || (fromMatch ? fromMatch[1].trim() : "Unknown sender"),
         date: doc.time_creation || (dateMatch ? dateMatch[1].trim() : "Unknown date"),
-        snippet: doc.paragraphs || doc.paragaphs || "No preview available"
+        snippet: doc.summary || doc.description || doc.paragraphs || doc.paragaphs || "No preview available"
       };
     }
 
@@ -541,7 +561,7 @@
     }
 
     // start session (initialize backend resources, vector DB, etc.)
-    async function startSession() {
+    /*async function startSession() {
       setStatus("Starting session...");
       try {
         const response = await fetch(`${API_BASE}/session/start`, {
@@ -559,7 +579,7 @@
         console.error(error);
         setStatus(`Failed to start session: ${error.message}`, true);
       }
-    }
+    }*/
 
     // connect to Gmail (OAuth flow)
     async function handleSearch() {
@@ -615,14 +635,20 @@
     }
 
     document.getElementById("loadDocsBtn").addEventListener("click", loadDocuments);
-    document.getElementById("startSessionBtn").addEventListener("click", startSession);
+    //document.getElementById("startSessionBtn").addEventListener("click", startSession);
     document.getElementById("connectGmailBtn").addEventListener("click", connectGmail);
     document.getElementById("selectFolderBtn").addEventListener("click", () => {
       document.getElementById("folderInput").click();
     });
     document.getElementById("logoutBtn").addEventListener("click", logout);
 
-    loadDocuments();
+  (async function init() {
+    const ok = await checkAuth();
+    if (ok) {
+      loadDocuments();
+    }
+  })();
+
   </script>
 </body>
 

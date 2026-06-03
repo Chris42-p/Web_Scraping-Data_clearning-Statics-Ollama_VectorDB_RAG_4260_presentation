@@ -9,16 +9,12 @@ from Modules.user_GUI.back_end.service import load_documents
 from Modules.user_GUI.back_end.session_store import create_session, SESSION_STORE
 from Modules.engine_embedding.embedding import Embedding_Engine
 from Modules.engine_injesting.data_base.my_sql_db import SQL_DataBase
+from Modules.user_GUI.back_end.main_interface import CONST
 
 
 app = FastAPI()
 
-ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-]
+ALLOWED_ORIGINS = CONST["ALLOWED_ORIGINS"]
 
 #USERS = {
 #    "admin": "password123",  # username: password
@@ -36,8 +32,15 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+
+def get_db():
+    return SQL_DataBase()
+
 def get_logged_in_user(request: Request):
-    session_id = request.cookies.get("session_id")
+    session_id = request.cookies.get(CONST["COOKIE_NAME"])
 
     if not session_id:
         raise HTTPException(status_code=401, detail="Not logged in")
@@ -53,16 +56,66 @@ def get_logged_in_user(request: Request):
 def authenticate_user(username: str, password: str):
     db = SQL_DataBase()
 
-    if hasattr(db, "authenticate_user"):
-        user = db.authenticate_user(username, password)
-        if not user:
-            raise HTTPException(status_code=401, detail="Invalid username or password")
-        return user
+    user = db.authenticate_user(username, password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    return user
 
-    raise HTTPException(
-        status_code=500,
-        detail="authenticate_user() is not implemented in SQL_DataBase yet"
+@app.post("/register")
+def register(request: RegisterRequest):
+    db = SQL_DataBase()
+
+    existing_user = db.get_user_by_username(request.username)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    db.create_user(request.username, request.password)
+    return {"message": "User registered successfully"}
+
+@app.post("/login")
+def login(request: LoginRequest):
+
+    user = authenticate_user(request.username, request.password)
+
+
+    #if request.username not in USERS:
+    #    raise HTTPException(status_code=401, detail="Invalid username or password")
+    #if USERS[request.username] != request.password:
+    #    raise HTTPException(status_code=401, detail="Invalid username or password")
+    
+    
+    session_id = create_session()
+    SESSION_STORE[session_id] = {
+        "username": user["username"],
+        "user_id": user["id"],
+    }
+    
+    response = JSONResponse(content={"message": "Login successful"})
+    response.set_cookie(
+        key=CONST["COOKIE_NAME"],
+        value=session_id,
+        httponly=CONST["COOKIE_HTTPONLY"],
+        samesite=CONST["COOKIE_SAMESITE"],
+        secure=CONST["COOKIE_SECURE"]
     )
+    return response
+
+@app.post("/logout")
+def logout(request: Request):
+    session_id = request.cookies.get(CONST["COOKIE_NAME"])
+
+    if session_id and session_id in SESSION_STORE:
+        del SESSION_STORE[session_id]
+
+    response = JSONResponse(content={"message": "Logged out"})
+    response.delete_cookie(CONST["COOKIE_NAME"])
+    return response
+
+@app.get("/me")
+def get_current_user(user=Depends(get_logged_in_user)):
+    return {"username": user.get("username")}
+
+
 
 @app.get("/documents")
 def get_documents(user=Depends(get_logged_in_user)):
@@ -98,14 +151,14 @@ def start_session():
     session_id = create_session()
     response = JSONResponse(content={"message": "Session started", "session_id": session_id})
 
-    response.set_cookie (
-        key="session_id", 
-        value=session_id, 
-        httponly=True,
-        samesite="lax",
-        secure=False
-    )  # Set to True in production with HTTPS)
-    return response
+#    response.set_cookie (
+#        key=CONST["COOKIE_NAME"], 
+#        value=session_id, 
+#        httponly=CONST["COOKIE_HTTPONLY"],
+#        samesite=CONST["COOKIE_SAMESITE"],
+#        secure=CONST["COOKIE_SECURE"]
+#    )  # Set to True in production with HTTPS)
+#    return response
 
 @app.get("/auth/google/login")
 def google_login(user=Depends(get_logged_in_user)):
@@ -157,46 +210,3 @@ async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)
             f.write(await file.read())
         saved.append(file.filename)
     return {"uploaded": saved}
-
-
-@app.post("/login")
-def login(request: LoginRequest):
-
-    user = authenticate_user(request.username, request.password)
-
-
-    #if request.username not in USERS:
-    #    raise HTTPException(status_code=401, detail="Invalid username or password")
-    #if USERS[request.username] != request.password:
-    #    raise HTTPException(status_code=401, detail="Invalid username or password")
-    
-    
-    session_id = create_session()
-    SESSION_STORE[session_id] = {
-        "username": user.get("username", request.username)
-    }
-    
-    response = JSONResponse(content={"message": "Login successful"})
-    response.set_cookie(
-        key="session_id",
-        value=session_id,
-        httponly=True,
-        samesite="lax",
-        secure=False
-    )
-    return response
-
-@app.post("/logout")
-def logout(request: Request):
-    session_id = request.cookies.get("session_id")
-
-    if session_id and session_id in SESSION_STORE:
-        del SESSION_STORE[session_id]
-
-    response = JSONResponse(content={"message": "Logged out"})
-    response.delete_cookie("session_id")
-    return response
-
-@app.get("/me")
-def get_current_user(user=Depends(get_logged_in_user)):
-    return {"username": user.get("username")}
