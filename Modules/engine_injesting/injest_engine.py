@@ -258,8 +258,8 @@ class Injest_Engine(Interface_InjestionEngine):
                header_footer=header_text,
                table_content=all_row_data,
                author=props.author if props.author else None,
-               time_creation=str(props.created) if props.created else None,
-               modified_date=str(props.modified) if props.modified else None,
+               time_creation=str(props.created.isoformat()) if props.created else None,
+               modified_date=str(props.modified.isoformat()) if props.modified else None,
                file_computer_id=props.last_modified_by if props.last_modified_by else None
                )
 
