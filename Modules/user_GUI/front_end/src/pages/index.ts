@@ -1,0 +1,10 @@
+export { LoginPage } from "./loginPage";
+export { RegisterPage } from "./RegisterPage";
+export { DashboardPage } from "./DashboardPage";
+export { DocumentsPage } from "./DocumentsPage";
+export { GmailPage } from "./GmailPage";
+export { SpiderPage } from "./SpiderPage";
+export { ReportsPage } from "./ReportsPage";
+export { FeedbackPage } from "./FeedbackPage";
+export { SettingsPage } from "./SettingsPage";
+export { DocumentDetailsPage } from "./DocumentDetailsPage";

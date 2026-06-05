@@ -145,9 +145,9 @@
         <div class="error" id="errorMsg"></div>
         <div class="success" id="successMsg"></div>
         <label for="username">Username</label>
-        <input type="text" id="username" placeholder="Enter username" />
+        <input type="text" id="username" placeholder="Enter username" required/>
         <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Enter password" />
+        <input type="password" id="password" placeholder="Enter password" required/>
         <button onclick="handleLogin()">Sign in</button>
         <button class="secondary" onclick="handleRegister()">Create an account</button>
     </div>
@@ -211,7 +211,8 @@
 
         async function handleRegister() {
             const {username, password} = getFormData();
-
+            console.log("register clicked", { username, password });
+            
             if (!username || !password) {
                 showError("Please enter username and password.");
                 return;
