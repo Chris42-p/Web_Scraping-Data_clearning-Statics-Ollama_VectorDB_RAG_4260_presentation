@@ -1,0 +1,9 @@
+Documents: https://thepythonscrapyplaybook.com/scrapy-beginners-guide/
+
+
+#creating a project: scrapy startproject <project_name>
+- items.py : model for extracting data
+- pipelines :used to clean the data
+- middle ware: used to send requests and gets responses. 
+
+#creating a spider.: 

@@ -1,0 +1,14 @@
+#ignore file 
+
+**/password.txt 
+#glob pattern allow ignore of all password.txt files. 
+
+src/html/password.txt
+#explicit 
+
+__pycache__/
+*.pyc
+*.ipynb
+*.ipynb_checkpoints/
+.env
+sample_files/

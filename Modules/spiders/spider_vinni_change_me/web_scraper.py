@@ -34,7 +34,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent))
 
-from listing_object import ListingObject
+from Modules.spiders.spider_vinni_change_me.listing_object import ListingObject
 
 import re
 

@@ -1,0 +1,31 @@
+#================== Renting. 
+
+https://vancouver.craigslist.org/search/apa#search=2~gallery~0
+
+https://www.realtor.ca/map#view=list&Sort=6-D&GeoIds=g30_c2b2nw3h&GeoName=Vancouver%2C%20BC&PropertyTypeGroupID=1&TransactionTypeId=3&PropertySearchTypeId=1&Currency=CAD
+
+
+
+https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12
+
+
+
+https://www.zillow.com/vancouver-bc/rentals/11_p/?searchQueryState=%7B%22pagination%22%3A%7B%22currentPage%22%3A11%7D%2C%22isMapVisible%22%3Afalse%2C%22mapBounds%22%3A%7B%22west%22%3A-123.15265576782227%2C%22east%22%3A-122.98614423217774%2C%22south%22%3A49.17985649714017%2C%22north%22%3A49.27772130128113%7D%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A791534%2C%22regionType%22%3A6%7D%5D%2C%22filterState%22%3A%7B%22fr%22%3A%7B%22value%22%3Atrue%7D%2C%22fsba%22%3A%7B%22value%22%3Afalse%7D%2C%22fsbo%22%3A%7B%22value%22%3Afalse%7D%2C%22nc%22%3A%7B%22value%22%3Afalse%7D%2C%22lsact%22%3A%7B%22value%22%3Afalse%7D%2C%22cmsn%22%3A%7B%22value%22%3Afalse%7D%2C%22lscmsn%22%3A%7B%22value%22%3Afalse%7D%2C%22lszp%22%3A%7B%22value%22%3Afalse%7D%2C%22auc%22%3A%7B%22value%22%3Afalse%7D%2C%22fore%22%3A%7B%22value%22%3Afalse%7D%7D%2C%22isListVisible%22%3Atrue%2C%22mapZoom%22%3A13%7D
+
+
+
+
+
+#================== Selling 
+https://www.realtor.ca/map#view=list&CurrentPage=2&Sort=6-D&GeoIds=g30_c2b2nw3h&GeoName=Vancouver%2C%20BC&PropertyTypeGroupID=1&TransactionTypeId=2&PropertySearchTypeId=1&Currency=CAD
+
+
+https://www.rew.ca/properties/areas/vancouver-bc
+
+
+https://www.zealty.ca/region/bc/metro
+
+https://www.zolo.ca/vancouver-real-estate
+
+
+https://www.vancouverforsale.ca/vancouver?utm_source=bing&utm_medium=cpc&utm_campaign=VA_Vancouver&utm_content=AG_Vancouver_MLS&msclkid=4c75b95fe1991322e5f3d340fa6e2ba8

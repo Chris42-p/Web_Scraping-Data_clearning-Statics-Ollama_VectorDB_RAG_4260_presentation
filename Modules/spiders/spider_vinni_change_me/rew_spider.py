@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from rew_parser import parse_rew_rental_listing
+from Modules.spiders.spider_vinni_change_me.rew_parser import parse_rew_rental_listing
 
 class REWSpider(scrapy.Spider):
     """
