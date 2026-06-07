@@ -32,9 +32,9 @@ from datetime import datetime
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(Path(__file__).resolve().parents[3]))
 
-from Modules.spiders.spider_vinni_change_me.listing_object import ListingObject
+from Modules.spiders.spider_default_obj.spider_std_obj import SpiderData_Default_Obj
 
 import re
 
@@ -236,7 +236,7 @@ class RealEstateScraper:
 
             agent_name, brokerage = extract_agent_and_brokerage(title)
 
-            listing = ListingObject(
+            listing = SpiderData_Default_Obj(
     title=title,
     price=extract_price(title),
     bedrooms=extract_bedrooms(title),
