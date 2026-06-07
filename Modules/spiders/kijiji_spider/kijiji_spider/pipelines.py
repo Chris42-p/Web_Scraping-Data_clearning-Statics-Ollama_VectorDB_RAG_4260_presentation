@@ -21,7 +21,7 @@ class KijijiSpiderPipeline:
     """
 
     TABLE_NAME = "kijiji_vancouver_rentals"
-    DB_PATH = "Modules/engine_injesting/data_base/4260_BigData_db.db"
+    DB_PATH = str(Path(__file__).resolve().parents[4] / "Modules" / "engine_injesting" / "data_base" / "4260_BigData_db.db")
     CSV_PATH = "scraped_data/kijiji_rentals.csv"
 
     def open_spider(self, spider):

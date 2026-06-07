@@ -1,8 +1,9 @@
 """
 Kijiji Vancouver Rental Spider
 
-Uses SpiderData_Default_Obj from spider_default_obj module.
-Fields mapped from Kijiji JSON-LD data.
+Uses SpiderData_Default_Obj fields from spider_default_obj module.
+Parses JSON-LD structured data for clean, structured fields.
+Neighbourhood extracted from address or postal code lookup table.
 
 Usage:
     cd Modules/spiders/kijiji_spider
@@ -14,18 +15,87 @@ import scrapy
 import json
 import re
 import hashlib
-import sys
-from pathlib import Path
 from datetime import datetime
 
 from kijiji_spider.items import KijijiRentalItem
 
-# Import shared spider object
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-try:
-    from Modules.spiders.spider_default_obj.spider_std_obj import SpiderData_Default_Obj
-except ImportError:
-    SpiderData_Default_Obj = None
+
+# ===== Postal code → neighbourhood lookup =====
+
+POSTAL_NEIGHBOURHOOD_MAP = {
+    # Vancouver
+    "V5K": "Hastings-Sunrise",
+    "V5L": "Grandview-Woodland",
+    "V5M": "Renfrew-Collingwood",
+    "V5N": "Kensington-Cedar Cottage",
+    "V5P": "Victoria-Fraserview",
+    "V5R": "Killarney",
+    "V5S": "Killarney",
+    "V5T": "Mount Pleasant",
+    "V5V": "Riley Park",
+    "V5W": "Marpole",
+    "V5X": "Marpole",
+    "V5Y": "Mount Pleasant",
+    "V5Z": "Fairview",
+    "V6A": "Strathcona",
+    "V6B": "Downtown",
+    "V6C": "Downtown",
+    "V6E": "West End",
+    "V6G": "West End",
+    "V6H": "Fairview",
+    "V6J": "Kitsilano",
+    "V6K": "Kitsilano",
+    "V6M": "Kerrisdale",
+    "V6N": "Marpole",
+    "V6P": "Sunset",
+    "V6R": "Point Grey",
+    "V6S": "Dunbar",
+    "V6T": "UBC",
+    "V6Z": "Yaletown",
+    # Burnaby
+    "V3J": "Burnaby",
+    "V3K": "Burnaby",
+    "V3N": "Burnaby",
+    "V5A": "Burnaby",
+    "V5B": "Burnaby",
+    "V5C": "Burnaby",
+    "V5E": "Burnaby",
+    "V5G": "Burnaby",
+    "V5H": "Burnaby",
+    # North Vancouver
+    "V7G": "North Vancouver",
+    "V7H": "North Vancouver",
+    "V7J": "North Vancouver",
+    "V7K": "North Vancouver",
+    "V7L": "North Vancouver",
+    "V7M": "North Vancouver",
+    "V7N": "North Vancouver",
+    "V7P": "North Vancouver",
+    "V7R": "North Vancouver",
+    # Coquitlam
+    "V3B": "Coquitlam",
+    "V3C": "Coquitlam",
+    "V3E": "Coquitlam",
+    # Richmond
+    "V6V": "Richmond",
+    "V6W": "Richmond",
+    "V6X": "Richmond",
+    "V6Y": "Richmond",
+    "V7A": "Richmond",
+    "V7B": "Richmond",
+    "V7C": "Richmond",
+    "V7E": "Richmond",
+    # Surrey
+    "V3R": "Surrey",
+    "V3S": "Surrey",
+    "V3T": "Surrey",
+    "V3V": "Surrey",
+    "V3W": "Surrey",
+    "V3X": "Surrey",
+    "V3Z": "Surrey",
+    # White Rock
+    "V4B": "White Rock",
+}
 
 
 # ===== Private extraction helpers =====
@@ -59,17 +129,57 @@ def _extract_neighbourhood(address: str) -> str:
         "Killarney", "Champlain Heights", "Hastings-Sunrise", "East Village",
         "Metrotown", "Burnaby", "Richmond", "Surrey", "North Vancouver",
         "Coquitlam", "Gastown", "Chinatown", "UBC", "Lonsdale",
+        "White Rock", "Langley", "Abbotsford", "New Westminster",
+        "Port Moody", "Port Coquitlam", "Delta", "Maple Ridge",
     ]
+
+    # Step 1: check known neighbourhood names in address
     for n in neighbourhoods:
         if n.lower() in address.lower():
             return n
 
+    # Step 2: extract from postal code
+    postal_match = re.search(r'\b(V\d[A-Z])\s*\d[A-Z]\d\b', address)
+    if postal_match:
+        prefix = postal_match.group(1)
+        if prefix in POSTAL_NEIGHBOURHOOD_MAP:
+            return POSTAL_NEIGHBOURHOOD_MAP[prefix]
+
+    # Step 3: fallback — second component after comma
     parts = address.split(",")
     if len(parts) >= 2:
         second = parts[1].strip()
-        if second not in ["BC", "AB", "ON"] and not re.match(r"^V\d", second):
+        if (second not in ["BC", "AB", "ON", "QC"]
+                and not re.match(r"^V\d", second)
+                and not re.match(r"^BC\s", second)
+                and len(second) > 3):
             return second
+
     return "N/A"
+
+
+def _extract_city(address: str) -> str:
+    """Extract actual city from address, not just Vancouver."""
+    cities = {
+        "North Vancouver": "North Vancouver",
+        "West Vancouver": "West Vancouver",
+        "Burnaby": "Burnaby",
+        "Richmond": "Richmond",
+        "Surrey": "Surrey",
+        "Coquitlam": "Coquitlam",
+        "Port Coquitlam": "Port Coquitlam",
+        "Port Moody": "Port Moody",
+        "New Westminster": "New Westminster",
+        "White Rock": "White Rock",
+        "Langley": "Langley",
+        "Abbotsford": "Abbotsford",
+        "Delta": "Delta",
+        "Maple Ridge": "Maple Ridge",
+    }
+    for city, name in cities.items():
+        if city.lower() in address.lower():
+            return name
+    return "Vancouver"
 
 
 def _extract_property_type(description: str, bedrooms: str) -> str:
@@ -100,7 +210,7 @@ def _extract_pets(pets_raw: str) -> str:
 class KijijiRentalsSpider(scrapy.Spider):
     """
     Scrapy spider for Kijiji Vancouver rental listings.
-    Parses JSON-LD structured data. Uses SpiderData_Default_Obj.
+    Parses JSON-LD structured data. Fields match SpiderData_Default_Obj.
     """
 
     name = "kijiji_rentals"
@@ -138,12 +248,10 @@ class KijijiRentalsSpider(scrapy.Spider):
                 price_raw = d.get("offers", {}).get("price", "N/A")
                 sqft_raw = str(d.get("floorSize", {}).get("value", "N/A"))
 
-                # Format fields
                 price = _clean_number(f"${price_raw}") if price_raw != "N/A" else None
                 sqft = _clean_number(sqft_raw) if sqft_raw not in ["0", "N/A"] else None
                 bedrooms = "Studio/Bachelor" if bedrooms_raw == "0" else bedrooms_raw
 
-                # listing ID from URL
                 listing_id = "N/A"
                 if url != "N/A":
                     match = re.search(r"/(\d+)$", url)
@@ -151,27 +259,21 @@ class KijijiRentalsSpider(scrapy.Spider):
                         listing_id = match.group(1)
 
                 item = KijijiRentalItem(
-                    # === Matching SpiderData_Default_Obj fields ===
+                    # === SpiderData_Default_Obj fields ===
                     title=d.get("name", "N/A"),
                     listing_url=url,
                     source_website="Kijiji.ca",
                     img_of_unit="N/A",
-
-                    # Market speed
                     days_ago_posted="N/A",
                     post_updated="N/A",
                     first_seen=datetime.now().strftime("%Y-%m-%d"),
                     last_seen=datetime.now().strftime("%Y-%m-%d"),
                     status="active",
-
-                    # Address
                     address=address,
                     street_address=_extract_street_address(address),
                     neighbourhood=_extract_neighbourhood(address),
-                    city="Vancouver",
+                    city=_extract_city(address),
                     province="BC",
-
-                    # Unit details
                     price=price,
                     bedrooms=bedrooms,
                     bathrooms=str(d.get("numberOfBathroomsTotal", "N/A")),
@@ -182,8 +284,6 @@ class KijijiRentalsSpider(scrapy.Spider):
                     move_in_date="N/A",
                     security_deposit="N/A",
                     min_rental_period="N/A",
-
-                    # Features
                     amenities="N/A",
                     features="N/A",
                     facilities="N/A",
@@ -192,22 +292,22 @@ class KijijiRentalsSpider(scrapy.Spider):
                     parking="N/A",
                     locker="N/A",
                     smoking="N/A",
-
-                    # Seller info
                     agent_name="N/A",
                     brokerage="N/A",
-
-                    # Kijiji-specific
                     listing_id=listing_id,
                     listing_hash=hashlib.md5(url.encode()).hexdigest(),
                     latitude="N/A",
                     longitude="N/A",
+                    furnished="N/A",
+                    pets_allowed=_extract_pets(d.get("petsAllowed", "N/A")),
+                    utilities_included="N/A",
+                    description=description[:300] if description else "N/A",
+                    is_active=1,
                 )
 
                 listings_found += 1
                 yield item
 
-        # Pagination
         if self.current_page < self.max_pages and listings_found > 0:
             self.current_page += 1
             next_url = (

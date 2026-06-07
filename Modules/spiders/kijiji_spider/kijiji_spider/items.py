@@ -62,3 +62,9 @@ class KijijiRentalItem(scrapy.Item):
     listing_hash = scrapy.Field()
     latitude = scrapy.Field()
     longitude = scrapy.Field()
+
+    furnished = scrapy.Field()
+    pets_allowed = scrapy.Field()
+    utilities_included = scrapy.Field()
+    description = scrapy.Field()
+    is_active = scrapy.Field()
