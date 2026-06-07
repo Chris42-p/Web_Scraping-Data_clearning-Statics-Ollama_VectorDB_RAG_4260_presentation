@@ -1,4 +1,4 @@
-# Scrapy settings for cregs_list_spider project
+# Scrapy settings for cregslist_spider project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,16 +7,16 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "cregs_list_spider"
+BOT_NAME = "cregslist_spider"
 
-SPIDER_MODULES = ["cregs_list_spider.spiders"]
-NEWSPIDER_MODULE = "cregs_list_spider.spiders"
+SPIDER_MODULES = ["cregslist_spider.spiders"]
+NEWSPIDER_MODULE = "cregslist_spider.spiders"
 
 ADDONS = {}
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "cregs_list_spider (+http://www.yourdomain.com)"
+#USER_AGENT = "cregslist_spider (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -41,13 +41,13 @@ DOWNLOAD_DELAY = 1
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    "cregs_list_spider.middlewares.CregsListSpiderSpiderMiddleware": 543,
+#    "cregslist_spider.middlewares.CregslistSpiderSpiderMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    "cregs_list_spider.middlewares.CregsListSpiderDownloaderMiddleware": 543,
+#    "cregslist_spider.middlewares.CregslistSpiderDownloaderMiddleware": 543,
 #}
 
 # Enable or disable extensions
@@ -59,7 +59,7 @@ DOWNLOAD_DELAY = 1
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    "cregs_list_spider.pipelines.CregsListSpiderPipeline": 300,
+#    "cregslist_spider.pipelines.CregslistSpiderPipeline": 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
