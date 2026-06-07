@@ -5,25 +5,31 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama # save ollama data in a named volume
+      - ollama_data:/root/.ollama
+
   app:
-    build: .
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
     depends_on:
       - ollama
     environment:
-      - OLLAMA_HOST=http://ollama:11434 # make app connect to ollama service
+      - OLLAMA_HOST=http://ollama:11434
     volumes:
-      - ./__ingest_file:/app/__ingest_file
-      - ./__processed_file:/app/__processed_file
+      - ../__ingest_file:/app/__ingest_file
+      - ../__processed_file:/app/__processed_file
+
   backend:
-    build: .
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
     command: uvicorn Modules.user_GUI.back_end.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     depends_on:
       - ollama
     volumes:
-      - ./__ingest_file:/app/__ingest_file
+      - ../__ingest_file:/app/__ingest_file
 
 volumes:
   ollama_data:
