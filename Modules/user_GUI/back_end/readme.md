@@ -31,7 +31,7 @@ Get-ChildItem -Path . -Recurse -Include app.py,main.py,requirements.txt,manage.p
 This will help identify whether the backend uses Flask, FastAPI, or Django.
 
 ### Start a Node backend
-If the backend has a `package.json`, open a second terminal and run:
+Backend has a `package.json`, open a second terminal and run:
 
 ```bash
 cd Modules/user_GUI/back_end
@@ -52,7 +52,7 @@ npm start
 ```
 
 ### Start a FastAPI backend
-If the backend uses FastAPI, run:
+For FastAPI, run:
 
 ```bash
 cd Modules/user_GUI/back_end
@@ -66,32 +66,3 @@ The backend usually runs on:
 http://localhost:8000
 ```
 
-### Start a Flask backend
-If the backend uses Flask, run:
-
-```bash
-cd Modules/user_GUI/back_end
-pip install -r requirements.txt
-flask run
-```
-
-or:
-
-```bash
-python app.py
-```
-
-### Start a Django backend
-If the backend uses Django, run:
-
-```bash
-cd Modules/user_GUI/back_end
-pip install -r requirements.txt
-python manage.py runserver
-```
-
-The backend usually runs on:
-
-```bash
-http://127.0.0.1:8000
-```
