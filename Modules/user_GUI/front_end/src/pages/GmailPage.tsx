@@ -1,3 +1,3 @@
 export function GmailPage() {
-  return <div>Gmail Page</div>;
+    return <div>Gmail Page</div>;
 }

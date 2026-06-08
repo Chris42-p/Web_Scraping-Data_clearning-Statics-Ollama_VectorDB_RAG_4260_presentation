@@ -24,7 +24,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -54,11 +54,22 @@ def get_logged_in_user(request: Request):
 
 
 def authenticate_user(username: str, password: str):
+    print("authenticate start")
+
     db = SQL_DataBase()
 
+    print("before db call")
+
     user = db.authenticate_user(username, password)
+
+    print("after db call")
+
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid username or password"
+        )
+
     return user
 
 @app.post("/register")
@@ -74,30 +85,29 @@ def register(request: RegisterRequest):
 
 @app.post("/login")
 def login(request: LoginRequest):
+    print("login route hit")
+    print("username:", request.username)
 
     user = authenticate_user(request.username, request.password)
+    print("user authenticated:", user)
 
-
-    #if request.username not in USERS:
-    #    raise HTTPException(status_code=401, detail="Invalid username or password")
-    #if USERS[request.username] != request.password:
-    #    raise HTTPException(status_code=401, detail="Invalid username or password")
-    
-    
     session_id = create_session()
+    print("session created:", session_id)
+
     SESSION_STORE[session_id] = {
         "username": user["username"],
         "user_id": user["id"],
     }
-    
+
     response = JSONResponse(content={"message": "Login successful"})
     response.set_cookie(
         key=CONST["COOKIE_NAME"],
         value=session_id,
         httponly=CONST["COOKIE_HTTPONLY"],
         samesite=CONST["COOKIE_SAMESITE"],
-        secure=CONST["COOKIE_SECURE"]
+        secure=CONST["COOKIE_SECURE"],
     )
+    print("returning response")
     return response
 
 @app.post("/logout")
@@ -146,10 +156,10 @@ def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
     except Exception as e:
         return {"error": str(e), "results": []}
 
-@app.get("/session/start")
-def start_session():
-    session_id = create_session()
-    response = JSONResponse(content={"message": "Session started", "session_id": session_id})
+#@app.get("/session/start")
+#def start_session():
+#    session_id = create_session()
+ #   response = JSONResponse(content={"message": "Session started", "session_id": session_id})
 
 #    response.set_cookie (
 #        key=CONST["COOKIE_NAME"], 

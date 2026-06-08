@@ -1,3 +1,3 @@
 export function SpiderPage() {
-  return <div>Spider Page</div>;
+    return <div>Spider Page</div>;
 }

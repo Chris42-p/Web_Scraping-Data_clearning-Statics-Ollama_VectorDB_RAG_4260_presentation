@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   appName: "Big Data Analytics Platform",
   appShortName: "BDAP",
-  apiBaseUrl: "http://127.0.0.1:8000",
+  apiBaseUrl: "http://localhost:8000",
   defaultTheme: "dark",
 };
 
