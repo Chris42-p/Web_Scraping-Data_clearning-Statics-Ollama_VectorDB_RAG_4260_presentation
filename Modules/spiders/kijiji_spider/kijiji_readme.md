@@ -1,6 +1,6 @@
 # Kijiji Vancouver Rental Spider
 
-## Why / 為什麼這樣做
+## Why
 
 Kijiji is one of Canada's largest rental listing platforms. Scraping Vancouver
 rental data allows us to:
@@ -15,7 +15,7 @@ the planned map overlay showing regional rental prices (similar to Zillow heat m
 
 ---
 
-## How / 如何實作
+## How
 
 - Uses `requests` + `BeautifulSoup` (no Selenium required)
 - Kijiji listing cards use `li[data-listing-id]` for unique IDs
@@ -69,7 +69,7 @@ detail_scraper = KijijiDetailScraper(use_google=True, google_api_key="your_key")
 
 ---
 
-## Fields Collected / 抓取的欄位
+## Fields Collected
 
 | Field | Source | Description |
 |---|---|---|
@@ -96,7 +96,7 @@ detail_scraper = KijijiDetailScraper(use_google=True, google_api_key="your_key")
 
 ---
 
-## Bugs / 已知問題
+## Bugs 
 
 - Search results page may only show neighbourhood (not full street address)
   → Detail scraper required for full address
