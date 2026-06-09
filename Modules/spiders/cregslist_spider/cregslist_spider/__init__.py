@@ -1,1 +1,4 @@
-from spider_default_obj import spider_std_obj
+
+
+from .spider_interface import CONST
+from ...spider_default_obj import SpiderData_Default_Obj 

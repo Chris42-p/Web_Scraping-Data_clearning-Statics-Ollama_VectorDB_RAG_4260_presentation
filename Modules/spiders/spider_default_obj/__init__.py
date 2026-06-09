@@ -1,0 +1,1 @@
+from .spider_std_obj import SpiderData_Default_Obj

@@ -1,64 +1,53 @@
-ollama_response={
-     "summary": "This document is a placeholder structure with empty fields except for a brief text in the paragraphs section mentioning 'secret data' and containing numerical text. It appears to be a template or mock-up with no substantive content.",
-     "description": "The document provided is structured as a dictionary with several standard fields (title, paragraphs, header/footer, table content, author, creation/modification dates, computer ID, and document hash) which are all empty except for the 'paragraphs' field. The paragraphs contain placeholder text discussing 'secret data' and includes arbitrary numerical text ('12 4'). There is no author, creation date, or other metadata. The content is minimal and serves as a template or example, lacking specific information or context about its origin or purpose.",
-     "send_reason": "This communication was sent because a representative of the organization needs to provide an example or template document for processing or analysis. The document represents a generic structure, possibly to test systems or to illustrate a point about handling certain types of data. The content itself is intentionally vague, referring to 'secret data' without specifics.",
-     "keywords": ["placeholder", "document", "template", "secret", "example"],
-     "topics": ["Data", "Document Structure", "Placeholder"],
-     "entities": [],
-     "document_type": "placeholder",
-     "sentiment": "neutral",
-     "language": "en",
-     "date_references": []
-}
-print(ollama_response["summary"])
-# AI_Processed_Document_Obj()
+from bs4 import BeautifulSoup
+import re
 
 
+class XX():
+     content={'post_id': 'post id: 7933065454', 'time_of_post': '2026-05-08T14:52:55-0700', 'user_post_title': 'Garden level suite with spectacular view, 2 bed, 2 bath.', 'first_pic': 'https://images.craigslist.org/00202_aMWkT5dcbzW_0CI0t2_600x450.jpg', 'user_meta_tags': '<div class="attrgroup">\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?housing_type=6">house</a>\n</span>\n            </div>\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?laundry=1">w/d in unit</a>\n</span>\n            </div>\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?parking=5">street parking</a>\n</span>\n            </div>\n\n\n            <div class="attr no_smoking">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?no_smoking=1">no smoking</a>\n</span>\n            </div>\n    </div>', 'post_url': 'https://vancouver.craigslist.org/nvn/apa/d/west-vancouver-garden-level-suite-with/7933065454.html', 'price_of_the_unit': '$4,000', 'num_bedrooms_n_square_feet_sq': '/ 2br - 1500ft', 'city_general_area': ' (West Vancouver)', 'address': None, 'bed_and_bath': '<span class="attr important">\n                2BR / 2Ba\n            </span>', 'square_feet_unit': '<span class="attr important">\n                1500ft<sup>2</sup>\n            </span>', 'post_description': '<section id="postingbody">\n        <div class="print-information print-qrcode-container">\n            <p class="print-qrcode-label">QR Code Link to This Post</p>\n            <div class="print-qrcode" data-location="https://vancouver.craigslist.org/nvn/apa/d/west-vancouver-garden-level-suite-with/7933065454.html">\n            </div>\n        </div>\nSpectacular views of downtown Vancouver and Lions Gate from all rooms, located in a prime West Van neighborhood within the Chartwell Elementary and Sentinel Secondary school catchments. This 1,500 sqf garden level suite features high ceiling (9 feet), layout includes 2 large bedrooms, all with bathroom inside (ensuite). All bedrooms and living room have full glass doors from floor to ceiling, opening up to a flat backyard with a swimming pool and spectacular views. Complete privacy with own entrance and own laundry. Parking space for 1 car in the front yard (not in the garage) and additional street parking. Price: $4,000/month, utilities and internet are already included. Available now.<br>\n**No smoking inside. **No pets. **Unfurnished. **Will require references and credit (income) check. **Not accessible by wheelchair. **Utilities are included for up to 4 people, and EV charging is NOT included. **Please email/text for questions or viewing.<br>\n    </section>', 'rent_period': 'monthly'}
 
-class AI_Processed_Document_Obj:
-     #== Inheretence
-     doc_obj="" #processed_doc_obj -- instances. 
+     def __init__(self,):
+          post_id=self.content["post_id"].strip().split(":")[1]
+          # print(post_id)
 
-     #AI processed objects. 
-     ai_summary=""
-     ai_description=""
-     ai_send_reason=""
-     ai_keywords=""
-     ai_topics=""
-     ai_entities=""
-     ai_document_type=""
-     ai_sentiment=""
-     ai_language=""
-     ai_date_references=""
+          time_of_post=self.content["time_of_post"]
+          # print(time_of_post)
+          
+          user_post_title=self.content["user_post_title"]
+          # print(user_post_title)
 
-     def __init__(self,
-               #    doc_obj:Processed_Document_Obj
-          doc_obj,ai_summary, ai_description, ai_send_reason, ai_keywords, ai_topics, ai_entities, ai_document_type, ai_sentiment, ai_language, ai_date_references):
-          self.doc_obj= doc_obj
-          self.ai_summary=ai_summary
-          self.ai_description=ai_description
-          self.ai_send_reason=ai_send_reason
-          self.ai_keywords=ai_keywords
-          self.ai_topics=ai_topics
-          self.ai_entities=ai_entities
-          self.ai_document_type=ai_document_type
-          self.ai_sentiment=ai_sentiment
-          self.ai_language=ai_language
-          self.ai_date_references=ai_date_references
+
+          user_meta_tags= self.__strip_html(self.content["user_meta_tags"]).replace("\n"," ")
+          user_meta_tags =self.__strip_extra_spaces(user_meta_tags)
+          
+          
+          # user_meta_tags
+          print(user_meta_tags)
+
+          
+          
+          
+          # user_meta_tags=self.content["user_meta_tags"]
+          
+          
+          self.content
+          self.content
+
 
           pass
-     
+
+     def __strip_extra_spaces(self, text) :
+          return re.sub( r"\s+", " ", text)
+
+          
+          pass
+     def __strip_html(self,text):
+          return BeautifulSoup(text, "html.parser").get_text()
+          pass
 
 
-AI_Processed_Document_Obj(
-ollama_response["summary"] ,
-ollama_response["description"] ,
-ollama_response["send_reason"] ,
-ollama_response["keywords"] ,
-ollama_response["topics"] ,
-ollama_response["entities"] ,
-ollama_response["document_type"] ,
-ollama_response["sentiment"] ,
-ollama_response["language"] ,
-ollama_response["date_references"] ,
-)
+
+
+XX()
+
+
+

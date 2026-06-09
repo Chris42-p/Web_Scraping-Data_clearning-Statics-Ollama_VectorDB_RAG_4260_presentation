@@ -13,7 +13,7 @@ Updated by: Yung (Philip)
 import hashlib
 
 
-class SpiderData_Default_Obj():
+class SpiderData_Default_Obj(): #clean input before putting into this obj
     def __init__(self,
         # Required fields
         title,
