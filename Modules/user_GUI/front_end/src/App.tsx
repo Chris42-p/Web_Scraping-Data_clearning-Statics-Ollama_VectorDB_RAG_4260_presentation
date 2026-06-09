@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import {
   LoginPage,
   RegisterPage,
-  DashboardPage,
   DocumentsPage,
   DocumentDetailsPage,
   GmailPage,
@@ -10,6 +9,8 @@ import {
   ReportsPage,
   FeedbackPage,
   SettingsPage,
+  DashboardHomePage,
+  DashboardLayout,
 } from "./pages";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -23,15 +24,20 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/app/dashboard" element={<DashboardPage />} />
-        <Route path="/app/documents" element={<DocumentsPage />} />
-        <Route path="/app/documents/:id" element={<DocumentDetailsPage />} />
-        <Route path="/app/gmail" element={<GmailPage />} />
-        <Route path="/app/spider" element={<SpiderPage />} />
-        <Route path="/app/reports" element={<ReportsPage />} />
-        <Route path="/app/feedback" element={<FeedbackPage />} />
-        <Route path="/app/settings" element={<SettingsPage />} />
+        <Route path="/app" element={<DashboardLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardHomePage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="documents/:id" element={<DocumentDetailsPage />} />
+          <Route path="gmail" element={<GmailPage />} />
+          <Route path="spider" element={<SpiderPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="feedback" element={<FeedbackPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
       </Route>
+
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

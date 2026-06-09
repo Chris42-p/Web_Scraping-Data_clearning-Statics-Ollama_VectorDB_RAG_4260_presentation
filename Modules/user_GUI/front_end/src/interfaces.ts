@@ -16,15 +16,19 @@ export interface NavItem {
 }
 
 export interface DocumentItem {
-  id: string | number;
-  title: string;
+  id?: string;
+  doc_hash?: string;
+  title?: string;
+  from?: string;
+  date?: string;
+  type?: string;
   summary?: string;
-  doc_hash: string;
-  type: string;
-  from: string;
-  date: string;
-  snippet: string;
-  score?: number;
+  snippet?: string;
+
+  stored_filename?: string;
+  relative_path?: string;
+  original_filename?: string;
+  mime_type?: string;
 }
 
 export interface SearchResponse {

@@ -55,6 +55,43 @@ class AnalysisEngine:
         for row in rows:
             print(row)
 
+    def get_dashboard_summary(self):
+        self.cursor.execute("""
+            SELECT ROUND(AVG(price), 0)
+            FROM rew_listings
+            WHERE price IS NOT NULL
+        """)
+        avg_price = self.cursor.fetchone()[0]
+
+        self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM rew_listings
+        """)
+        sales_volume = self.cursor.fetchone()[0]
+
+        self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM rew_listings
+            WHERE date_posted IS NOT NULL
+        """)
+        new_listings = self.cursor.fetchone()[0]
+
+        self.cursor.execute("""
+            SELECT ROUND(AVG(days_on_market), 0)
+            FROM rew_listings
+            WHERE days_on_market IS NOT NULL
+        """)
+        days_on_market = self.cursor.fetchone()[0]
+
+        self.conn.close()
+
+        return {
+            "avgPrice": f"${avg_price:,.0f}" if avg_price is not None else "No data",
+            "salesVolume": str(sales_volume or 0),
+            "newListings": str(new_listings or 0),
+            "daysOnMarket": str(days_on_market or 0),
+        }
+
     def property_type_distribution(self):
 
         self.cursor.execute("""

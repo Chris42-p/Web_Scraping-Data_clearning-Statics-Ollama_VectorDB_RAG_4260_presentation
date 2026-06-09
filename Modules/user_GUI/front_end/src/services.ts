@@ -1,6 +1,7 @@
 import { APP_CONFIG } from "./config";
 import type { HousingSummaryResponse } from "./interfaces";
 import type { DocumentItem } from "./interfaces";
+import { normalizeDocument } from "./utils"
 
 
 import type {
@@ -68,26 +69,56 @@ export async function getCurrentUser() {
 // Load document services
 
 export async function loadDocuments(): Promise<DocumentItem[]> {
-  return apiRequest<DocumentItem[]>("/documents", {
-    method: "GET",
+  const response = await fetch("http://localhost:8000/documents", {
+    credentials: "include",
   });
+
+  if (!response.ok) {
+    throw new Error("Failed to load documents");
+  }
+
+  const data = await response.json();
+  console.log("loadDocuments raw json:", data);
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data.documents)) {
+    return data.documents;
+  }
+
+  return [];
 }
 
 export async function loadAllDocuments() {
   return apiRequest("/documents/all", { method: "GET" });
 }
 
-export async function searchDocuments(query: string): Promise<DocumentItem[]> {
-  return apiRequest<DocumentItem[]>(
-    `/documents/search?q=${encodeURIComponent(query)}`,
+export async function searchDocuments(query: string): Promise<any[]> {
+  const data = await apiRequest<{ results: any[] }>(
+    `/search?query=${encodeURIComponent(query)}`,
     { method: "GET" }
   );
+
+  return Array.isArray(data.results) ? data.results : [];
 }
 
-export async function getDocumentById(id: string): Promise<DocumentItem> {
-  return apiRequest<DocumentItem>(`/documents/${id}`, {
+export async function getDocumentById(id: string): Promise<DocumentItem | null> {
+  const response = await fetch(`${APP_CONFIG.apiBaseUrl}/documents/${id}`, {
     method: "GET",
+    credentials: "include",
   });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+    throw new Error("Failed to load document");
+  }
+
+  const data = await response.json();
+  return data;
 }
 
 // Connect to Gmail

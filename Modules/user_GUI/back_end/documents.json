@@ -1,9 +1,12 @@
 [
     {
+        "id": "1",
         "title": "User Manual",
+        "summary": "A comprehensive guide...",
+        "doc_hash": "abc123-user-manual",
         "type": "pdf",
         "from": "finance@company.com",
         "date": "2024-05-01",
-        "snippet": "A comprehensive guide to using the user interface effectively."
+        "snippet": "A comprehensive guide..."
     }
 ]

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../styles/DocumentsPage.css";
 import type { DocumentItem } from "../interfaces";
-import { loadDocuments, searchDocuments } from "../services";
+import { loadDocuments } from "../services";
 import { useNavigate } from "react-router-dom";
 
 export function DocumentsPage() {
@@ -11,8 +11,6 @@ export function DocumentsPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
-
-
     useEffect(() => {
         async function fetchDocuments() {
             try {
@@ -20,7 +18,18 @@ export function DocumentsPage() {
                 setErrorMessage("");
 
                 const data = await loadDocuments();
-                setDocuments(data);
+
+                console.log("Documents API response:", data);
+                console.log("Is array?", Array.isArray(data));
+                console.log("Documents length:", Array.isArray(data) ? data.length : "not an array");
+
+                if (Array.isArray(data)) {
+                    setDocuments(data);
+                } else {
+                    console.error("loadDocuments() did not return an array:", data);
+                    setDocuments([]);
+                    setErrorMessage("Documents response format is invalid.");
+                }
             } catch (error) {
                 console.error("Failed to load documents:", error);
                 setErrorMessage("Failed to load documents.");
@@ -32,33 +41,33 @@ export function DocumentsPage() {
         fetchDocuments();
     }, []);
 
-    async function handleSearch() {
-        try {
-            setLoading(true);
-            setErrorMessage("");
+    const filteredDocuments = useMemo(() => {
+        const trimmed = searchTerm.trim().toLowerCase();
 
-            const trimmedSearch = searchTerm.trim();
-
-            if (!trimmedSearch) {
-                const data = await loadDocuments();
-                setDocuments(data);
-                return;
-            }
-
-            const results = await searchDocuments(trimmedSearch);
-            setDocuments(results);
-        } catch (error) {
-            console.error("Search failed:", error);
-            setErrorMessage("Search failed. Please try again.");
-        } finally {
-            setLoading(false);
+        if (!trimmed) {
+            return documents;
         }
-    }
 
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        await handleSearch();
-    }
+        return documents.filter((document) => {
+            const title = document.title?.toLowerCase() ?? "";
+            const summary = document.summary?.toLowerCase() ?? "";
+            const snippet = document.snippet?.toLowerCase() ?? "";
+            const type = document.type?.toLowerCase() ?? "";
+            const from = document.from?.toLowerCase() ?? "";
+
+            return (
+                title.includes(trimmed) ||
+                summary.includes(trimmed) ||
+                snippet.includes(trimmed) ||
+                type.includes(trimmed) ||
+                from.includes(trimmed)
+            );
+        });
+    }, [documents, searchTerm]);
+
+    console.log("documents state:", documents);
+    console.log("filteredDocuments:", filteredDocuments);
+    console.log("searchTerm:", searchTerm);
 
     return (
         <div className="documents-page">
@@ -81,7 +90,7 @@ export function DocumentsPage() {
                 </div>
             )}
 
-            <form className="documents-toolbar" onSubmit={handleSubmit}>
+            <div className="documents-toolbar">
                 <input
                     className="documents-search-input"
                     type="text"
@@ -89,27 +98,32 @@ export function DocumentsPage() {
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                 />
-                <button className="documents-search-button" type="submit">
-                    Search
-                </button>
-            </form>
+            </div>
 
-            {!loading && documents.length === 0 && (
-                <div className="documents-message error">
-                    No documents found.
+            {!loading && !errorMessage && documents.length === 0 && (
+                <div className="documents-message">
+                    No documents are available yet.
+                </div>
+            )}
+
+            {!loading && !errorMessage && documents.length > 0 && filteredDocuments.length === 0 && (
+                <div className="documents-message">
+                    No matching documents found.
                 </div>
             )}
 
             <div className="documents-list">
-                {documents.map((document) => (
+                {filteredDocuments.map((document) => (
                     <div
-                        key={document.id}
+                        key={document.id ?? document.doc_hash ?? document.title}
                         className="documents-card"
-                        onClick={() => navigate(`/app/documents/${document.id}`)}
+                        onClick={() =>
+                            navigate(`/app/documents/${document.id ?? document.doc_hash}`)
+                        }
                         style={{ cursor: "pointer" }}
                     >
                         <h3>{document.title}</h3>
-                        <p>{document.summary || "No summary available."}</p>
+                        <p>{document.summary || document.snippet || "No summary available."}</p>
                     </div>
                 ))}
             </div>

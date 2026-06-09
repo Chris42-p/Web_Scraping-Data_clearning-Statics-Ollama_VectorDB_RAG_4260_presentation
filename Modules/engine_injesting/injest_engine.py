@@ -35,7 +35,7 @@ import time
 from .injest_interface import Interface_InjestionEngine
 from .injest_interface import CONST
 from .data_base.my_sql_db import SQL_DataBase
-
+from .gmail_api import GmailIngestor
 
 
 class Injest_Engine(Interface_InjestionEngine):
@@ -45,32 +45,38 @@ class Injest_Engine(Interface_InjestionEngine):
      err_model_crash=CONST["MODEL_CRASH_RETRY"]
 
 
-
      def __init__(
-               self, 
-               input_files_path, 
+               self,
+               input_files_path,
                output_files_path,
-
-               credentials_path='credentials.json', 
-               token_path='token.json', 
-               ingest_dir='__ingest'
+               credentials_path="credentials.json",
+               token_path="token.json",
+               ingest_dir="__ingest",
           ):
-        #=== Items in the injest files ====
-        self.input_files_path = Path(input_files_path)
-        self.output_files_path = Path(output_files_path)
-        self.files_in_dir = [] #files in dir
-        self.dir_in_dir = [] #directories in injest directory
-        self.files_grouped_typ_type = {k: [] for k in 
-                                       CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
+          self.input_files_path = Path(input_files_path)
+          self.output_files_path = Path(output_files_path)
+          self.files_in_dir = []
+          self.dir_in_dir = []
+          self.files_grouped_typ_type = {
+               k: [] for k in CONST["DOCUMENT_TYPES"].keys()
+     }
 
+          # Gmail ingestion state
+          self.credentials_path = credentials_path
+          self.token_path = token_path
+          self.ingest_dir = Path(ingest_dir)
+          self.service = None
 
-        # Gmail ingestion state
-        self.credentials_path = credentials_path
-        self.token_path = token_path
-        self.ingest_dir = Path(ingest_dir)
-        self.service = None
+          self.Processed_Document_Obj = Injest_Engine.Processed_Document_Obj
 
-        self.controller()
+          self.gmail_ingestor = GmailIngestor(
+               processed_document_cls=self.Processed_Document_Obj,
+               credentials_path=self.credentials_path,
+               token_path=self.token_path,
+               ingest_dir=self.ingest_dir,
+          )
+
+          self.controller()
 
      #======= Process files 
      def __reset_injest_state(self):
@@ -79,7 +85,10 @@ class Injest_Engine(Interface_InjestionEngine):
           self.files_grouped_typ_type = {k: [] for k in 
                                        CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
           
+     def injest_gmail(self, max_emails: int = 10):
+          return self.gmail_ingestor.ingest_gmail(max_emails=max_emails)
 
+     
      #get the path of the files that're in the dir. 
      def __get_files_in_injest_file(self,path= None):
           if path== None:

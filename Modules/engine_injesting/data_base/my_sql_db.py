@@ -42,10 +42,9 @@ class SQL_DataBase():
           return conn
 
      def __initialize(self) -> None:
-          #conn=self.__get_conn()
           with self.__get_conn() as conn:
-               conn.executescript(
-                    f"{self.CREATE_TABLE}\n{self.CREATE_TRIGGER}")
+               conn.executescript(f"{self.CREATE_TABLE}\n{self.CREATE_TRIGGER}")
+               self.__ensure_document_columns(conn)
                conn.commit()
 
           #with conn:
@@ -241,6 +240,59 @@ class SQL_DataBase():
      #     with self.__get_conn() as conn:
      #          conn.execute("DROP TABLE IF EXISTS documents")
      #          conn.commit()
+
+     def __ensure_document_columns(self, conn: sqlite3.Connection) -> None:
+        rows = conn.execute("PRAGMA table_info(documents)").fetchall()
+        existing_columns = {row["name"] for row in rows}
+
+        required_columns = {
+               "stored_filename": "TEXT",
+               "relative_path": "TEXT",
+               "original_filename": "TEXT",
+               "mime_type": "TEXT",
+        }
+
+        for column_name, column_type in required_columns.items():
+            if column_name not in existing_columns:
+                conn.execute(
+                    f"ALTER TABLE documents ADD COLUMN {column_name} {column_type}"
+               )
+
+     def insert_document_with_file_metadata(
+          self,
+          doc_hash: str,
+          title: str,
+          author: str,
+          stored_filename: str,
+          relative_path: str,
+          original_filename: str,
+          mime_type: str,
+     ) -> None:
+          with self.__get_conn() as conn:
+               conn.execute(
+                """
+                    INSERT INTO documents (
+                    doc_hash,
+                    title,
+                    author,
+                    stored_filename,
+                    relative_path,
+                    original_filename,
+                    mime_type
+               )
+               VALUES (?, ?, ?, ?, ?, ?, ?)
+               """,
+               (
+                    doc_hash,
+                    title,
+                    author,
+                    stored_filename,
+                    relative_path,
+                    original_filename,
+                    mime_type,
+               ),
+          )
+          conn.commit()
 
      def DEV_drop_db_table(self):
           with self.__get_conn() as conn:
