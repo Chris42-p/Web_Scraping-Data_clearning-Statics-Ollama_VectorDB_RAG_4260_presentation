@@ -5,7 +5,7 @@ from uuid import uuid4
 from pathlib import Path
 from fastapi import FastAPI, Request, HTTPException, UploadFile, Depends
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from Modules.user_GUI.back_end.service import load_documents
@@ -13,9 +13,16 @@ from Modules.user_GUI.back_end.session_store import create_session, SESSION_STOR
 from Modules.engine_embedding.embedding import Embedding_Engine
 from Modules.engine_injesting.data_base.my_sql_db import SQL_DataBase
 from Modules.user_GUI.back_end.main_interface import CONST
+from Modules.gmail_api.gmail_api import GmailIngestor
+from Modules.engine_injesting.injest_engine import Injest_Engine
+from Modules.user_GUI.back_end.spider_service import get_available_spiders, run_spider_by_key
+
 
 
 app = FastAPI()
+
+GMAIL_OAUTH_STATE = {}
+GMAIL_CONNECTED_ACCOUNTS = {}
 
 ALLOWED_ORIGINS = CONST["ALLOWED_ORIGINS"]
 INGEST_ROOT = Path(__file__).resolve().parents[2] / "___ingest_file"
@@ -38,6 +45,9 @@ class LoginRequest(BaseModel):
 class RegisterRequest(BaseModel):
     username: str
     password: str
+
+class SpiderRunRequest(BaseModel):
+    spider_key: str
 
 def get_db():
     return SQL_DataBase()
@@ -76,7 +86,97 @@ def authenticate_user(username: str, password: str):
     return user
 
 
+# GMAIL INJECT AND CONNECT
+def get_gmail_ingestor():
+    project_root = Path(__file__).resolve().parents[3]
+    return GmailIngestor(
+        processed_document_cls=Injest_Engine.Processed_Document_Obj,
+        credentials_path=str(project_root / "credentials.json"),
+        ingest_dir=str(INGEST_ROOT / "gmail"),
+        redirect_uri="http://localhost:8000/auth/google/callback",
+    )
 
+@app.get("/gmail/status")
+def gmail_status(user=Depends(get_logged_in_user)):
+    connected = user["user_id"] in GMAIL_CONNECTED_ACCOUNTS
+    return {"connected": connected}
+
+@app.get("/auth/google/login")
+def google_login(user=Depends(get_logged_in_user)):
+    gmail = get_gmail_ingestor()
+    state = uuid4().hex
+
+    GMAIL_OAUTH_STATE[state] = {
+        "user_id": user["user_id"],
+        "username": user["username"],
+    }
+
+    auth_url, _ = gmail.build_auth_url(state)
+    return RedirectResponse(url=auth_url, status_code=302)
+
+@app.get("/debug/routes")
+def debug_routes():
+    return {
+        "routes": [route.path for route in app.routes]
+    }
+
+@app.get("/auth/google/callback")
+def google_callback(code: str, state: str, user=Depends(get_logged_in_user)):
+    state_data = GMAIL_OAUTH_STATE.get(state)
+
+    if not state_data:
+        raise HTTPException(status_code=400, detail="Invalid OAuth state")
+
+    if state_data["user_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="OAuth state does not match logged in user")
+
+    gmail = get_gmail_ingestor()
+    token_info = gmail.exchange_code_for_tokens(code, state)
+
+    GMAIL_CONNECTED_ACCOUNTS[user["user_id"]] = token_info
+    del GMAIL_OAUTH_STATE[state]
+
+    return RedirectResponse(
+        url="http://localhost:5173/app/gmail?connected=true",
+        status_code=303,
+    )
+
+@app.post("/gmail/import")
+def gmail_import(max_emails: int = 10, user=Depends(get_logged_in_user)):
+    token_info = GMAIL_CONNECTED_ACCOUNTS.get(user["user_id"])
+    if not token_info:
+        raise HTTPException(status_code=400, detail="Gmail not connected")
+
+    gmail = get_gmail_ingestor()
+    gmail.set_credentials_from_token_info(token_info)
+    imported = gmail.ingest_gmail(max_emails=max_emails)
+
+    return {
+        "message": "Gmail import completed",
+        "imported_count": len(imported),
+        "documents": imported,
+    }
+
+
+# Spiders
+
+@app.get("/spiders")
+def get_spiders(user=Depends(get_logged_in_user)):
+    return {"spiders": get_available_spiders()}
+
+@app.post("/spiders/run")
+def run_spider(request: SpiderRunRequest, user=Depends(get_logged_in_user)):
+    try:
+        result = run_spider_by_key(request.spider_key)
+        return {
+            "message": f"{request.spider_key} run finished",
+            "result": result,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Register New User
 @app.post("/register")
 def register(request: RegisterRequest):
     db = SQL_DataBase()
@@ -202,15 +302,6 @@ def get_document_by_id(doc_id: str, user=Depends(get_logged_in_user)):
 
     raise HTTPException(status_code=404, detail="Document not found")
 
-
-@app.get("/search")
-def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
-    try:
-        results = Embedding_Engine().send_query(query, num_results)
-        return {"results": results}
-    except Exception as e:
-        return {"error": str(e), "results": []}
-
 #@app.get("/session/start")
 #def start_session():
 #    session_id = create_session()
@@ -225,19 +316,6 @@ def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
 #    )  # Set to True in production with HTTPS)
 #    return response
 
-@app.get("/auth/google/login")
-def google_login(user=Depends(get_logged_in_user)):
-    return {
-        "message": "Google OAuth login route not implemented yet"
-    }
-
-@app.get("/auth/google/callback")
-def google_callback(code: str, state: str, user=Depends(get_logged_in_user)):
-    return {
-        "message": "Google OAuth callback route not implemented yet",
-        "code": code, 
-        "state": state
-    }
 
 @app.get("/download/{doc_hash}")
 def download_document(doc_hash: str, user=Depends(get_logged_in_user)):
@@ -273,7 +351,14 @@ def download_document(doc_hash: str, user=Depends(get_logged_in_user)):
         }
     )
 
-
+@app.get("/search")
+def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
+    try:
+        results = Embedding_Engine().send_query(query, num_results)
+        return {"results": results}
+    except Exception as e:
+        return {"error": str(e), "results": []}
+    
 @app.post("/upload")
 async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
     INGEST_ROOT.mkdir(parents=True, exist_ok=True)

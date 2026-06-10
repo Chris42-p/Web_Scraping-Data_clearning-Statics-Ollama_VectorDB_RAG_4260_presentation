@@ -1,117 +1,91 @@
-import "../styles/dashboard.css";
+import { useEffect, useState } from "react";
 import { APP_CONFIG } from "../config";
 
-export function GmailPage() {
-    const connectUrl = `${APP_CONFIG.apiBaseUrl}/auth/gmail/connect`;
+type GmailStatus = {
+    connected: boolean;
+};
 
-    function handleConnectGmail() {
-        window.location.href = connectUrl;
-    }
+type ImportResult = {
+    message: string;
+    imported_count: number;
+    documents: Array<{
+        message_id: string;
+        parsed_email: Record<string, unknown>;
+        saved_to: string;
+    }>;
+};
+
+export function GmailPage() {
+    const [status, setStatus] = useState<GmailStatus>({ connected: false });
+    const [loading, setLoading] = useState(false);
+    const [result, setResult] = useState<ImportResult | null>(null);
+    const [error, setError] = useState("");
+
+    const loadStatus = async () => {
+        try {
+            const res = await fetch(`${APP_CONFIG.apiBaseUrl}/gmail/status`, {
+                credentials: "include",
+            });
+            if (!res.ok) throw new Error("Failed to load Gmail status");
+            const data = await res.json();
+            setStatus(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Unknown error");
+        }
+    };
+
+    useEffect(() => {
+        loadStatus();
+    }, []);
+
+    const connectGmail = () => {
+        window.location.href = `${APP_CONFIG.apiBaseUrl}/auth/google/login`;
+    };
+
+    const importGmail = async () => {
+        try {
+            setLoading(true);
+            setError("");
+            const res = await fetch(`${APP_CONFIG.apiBaseUrl}/gmail/import?max_emails=10`, {
+                method: "POST",
+                credentials: "include",
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Import failed");
+            setResult(data);
+            await loadStatus();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Unknown error");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className="dashboard-home">
-            <section className="dashboard-hero-grid">
-                <div className="dashboard-hero-card dashboard-hero-main">
-                    <div className="dashboard-section-tag">Gmail integration</div>
+        <div>
+            <h1>Gmail</h1>
+            <p>Connect a Gmail account and import report emails into the platform.</p>
 
-                    <h2 className="dashboard-hero-title">
-                        Connect Gmail to your workspace
-                    </h2>
+            <div>
+                <strong>Status:</strong> {status.connected ? "Connected" : "Not connected"}
+            </div>
 
-                    <p className="dashboard-hero-text">
-                        Authorize your Gmail account so the app can sync messages, display
-                        inbox activity, and power future email workflows from the dashboard.
-                    </p>
+            <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+                <button onClick={connectGmail}>Connect Gmail</button>
+                <button onClick={importGmail} disabled={!status.connected || loading}>
+                    {loading ? "Importing..." : "Import Gmail"}
+                </button>
+            </div>
 
-                    <div className="dashboard-hero-actions">
-                        <button
-                            className="app-primary-button"
-                            type="button"
-                            onClick={handleConnectGmail}
-                        >
-                            Connect Gmail
-                        </button>
+            {error && <p style={{ color: "red", marginTop: "16px" }}>{error}</p>}
 
-                        <button
-                            className="app-secondary-button"
-                            type="button"
-                        >
-                            Learn More
-                        </button>
-                    </div>
+            {result && (
+                <div style={{ marginTop: "24px" }}>
+                    <h2>Import Result</h2>
+                    <p>Imported: {result.imported_count}</p>
+                    <pre>{JSON.stringify(result, null, 2)}</pre>
                 </div>
-
-                <div className="dashboard-hero-card">
-                    <h3 className="dashboard-panel-title">Connection status</h3>
-
-                    <ul className="dashboard-quick-list">
-                        <li>Google OAuth not connected yet</li>
-                        <li>Inbox sync is currently inactive</li>
-                        <li>Backend OAuth flow is the next step</li>
-                        <li>Email widgets will appear after connection</li>
-                    </ul>
-                </div>
-            </section>
-
-            <section className="dashboard-summary-grid">
-                <div className="dashboard-panel">
-                    <p className="dashboard-panel-label">Connection</p>
-                    <h3 className="dashboard-metric-value">Offline</h3>
-                    <p className="dashboard-panel-note">
-                        Gmail has not been authorized yet.
-                    </p>
-                </div>
-
-                <div className="dashboard-panel">
-                    <p className="dashboard-panel-label">Inbox sync</p>
-                    <h3 className="dashboard-metric-value">0</h3>
-                    <p className="dashboard-panel-note">
-                        Message sync begins after successful connection.
-                    </p>
-                </div>
-
-                <div className="dashboard-panel">
-                    <p className="dashboard-panel-label">Unread emails</p>
-                    <h3 className="dashboard-metric-value">--</h3>
-                    <p className="dashboard-panel-note">
-                        Unread counts will appear after Gmail access is granted.
-                    </p>
-                </div>
-
-                <div className="dashboard-panel">
-                    <p className="dashboard-panel-label">Last sync</p>
-                    <h3 className="dashboard-metric-value">--</h3>
-                    <p className="dashboard-panel-note">
-                        No sync history is available yet.
-                    </p>
-                </div>
-            </section>
-
-            <section className="dashboard-analytics-grid">
-                <div className="dashboard-panel">
-                    <div className="dashboard-panel-header">
-                        <h3 className="dashboard-panel-title">Inbox preview</h3>
-                        <span className="dashboard-panel-badge">After connect</span>
-                    </div>
-
-                    <div className="dashboard-chart-placeholder">
-                        Connected Gmail messages, categories, or recent inbox activity
-                        can appear in this section after OAuth is completed.
-                    </div>
-                </div>
-
-                <div className="dashboard-panel">
-                    <div className="dashboard-panel-header">
-                        <h3 className="dashboard-panel-title">Automation panel</h3>
-                        <span className="dashboard-panel-badge">Next phase</span>
-                    </div>
-
-                    <div className="dashboard-map-placeholder">
-                        This section can later power email workflows, reply assistance,
-                        or message routing once Gmail is connected.
-                    </div>
-                </div>
-            </section>
+            )}
         </div>
     );
 }

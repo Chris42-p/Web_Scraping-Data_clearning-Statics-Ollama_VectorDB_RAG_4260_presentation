@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../services";
 
 export function LoginPage() {
@@ -38,35 +38,42 @@ export function LoginPage() {
     }
 
     return (
-        <div>
-            <h1>Login Page</h1>
+        <div className="auth-page">
+            <div className="auth-card">
+                <h1>Login</h1>
+                <p>Access the Vancouver rental market workspace.</p>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Username: </label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(event) => setUsername(event.target.value)}
-                    />
-                </div>
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div>
+                        <label>Username</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(event) => setUsername(event.target.value)}
+                        />
+                    </div>
 
-                <div>
-                    <label>Password: </label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                    />
-                </div>
+                    <div>
+                        <label>Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                        />
+                    </div>
 
-                {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-                {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+                    {errorMessage && <p className="auth-error">{errorMessage}</p>}
+                    {successMessage && <p className="auth-success">{successMessage}</p>}
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Logging in..." : "Login"}
-                </button>
-            </form>
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Logging in..." : "Login"}
+                    </button>
+                </form>
+
+                <p className="auth-switch-text">
+                    Don’t have an account? <Link to="/register">Create one</Link>
+                </p>
+            </div>
         </div>
     );
 }

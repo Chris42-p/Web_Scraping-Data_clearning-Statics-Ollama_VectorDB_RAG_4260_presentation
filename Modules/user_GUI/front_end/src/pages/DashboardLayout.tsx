@@ -1,79 +1,94 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
+import { logoutUser } from "../services";
 
 export function DashboardLayout() {
     const location = useLocation();
+    const navigate = useNavigate();
 
     function getPageTitle() {
-        if (location.pathname.includes("/gmail")) return "Gmail";
+        if (location.pathname.includes("/gmail")) return "Gmail Integration";
         if (location.pathname.includes("/documents")) return "Documents";
-        if (location.pathname.includes("/spider")) return "Spider";
+        if (location.pathname.includes("/spider")) return "Spider Control";
         if (location.pathname.includes("/reports")) return "Reports";
         if (location.pathname.includes("/feedback")) return "Feedback";
         if (location.pathname.includes("/settings")) return "Settings";
-        return "Dashboard";
+        return "Rental Market Dashboard";
     }
 
     function getPageSubtitle() {
         if (location.pathname.includes("/gmail")) {
-            return "Connect, sync, and manage Gmail inside your workspace.";
+            return "Connect Gmail, import reports, and ingest market documents.";
         }
         if (location.pathname.includes("/documents")) {
-            return "Browse, inspect, and manage your indexed documents.";
+            return "Browse uploaded files, Gmail imports, and indexed project documents.";
         }
         if (location.pathname.includes("/spider")) {
-            return "Run spider tools and review extracted results.";
+            return "Run rental, neighbourhood, and safety spiders from one control page.";
         }
         if (location.pathname.includes("/reports")) {
-            return "Review generated insights, summaries, and exports.";
+            return "Review housing summaries, analytics output, and exported insights.";
         }
         if (location.pathname.includes("/feedback")) {
-            return "Track user notes, product comments, and review flow.";
+            return "Track notes, review issues, and capture project feedback.";
         }
         if (location.pathname.includes("/settings")) {
-            return "Manage configuration, app preferences, and account options.";
+            return "Manage account settings, backend connections, and app preferences.";
         }
 
-        return "Monitor all connected apps from one central workspace.";
+        return "Monitor ingestion, housing data, and project modules from one workspace.";
+    }
+
+    async function handleLogout() {
+        try {
+            await logoutUser();
+            navigate("/login", { replace: true });
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    }
+
+    function getNavClassName({ isActive }: { isActive: boolean }) {
+        return isActive ? "app-nav-link app-nav-link-active" : "app-nav-link";
     }
 
     return (
         <div className="app-shell">
             <aside className="app-sidebar">
                 <div className="app-brand">
-                    <div className="app-brand-logo">P</div>
+                    <div className="app-brand-logo">V</div>
                     <div>
-                        <p className="app-brand-name">Project Hub</p>
-                        <p className="app-brand-subtitle">Secure workspace</p>
+                        <p className="app-brand-name">VanCity Rental Tracker</p>
+                        <p className="app-brand-subtitle">Market intelligence workspace</p>
                     </div>
                 </div>
 
                 <nav className="app-nav">
-                    <NavLink to="/app/dashboard" className="app-nav-link">
+                    <NavLink to="/app/dashboard" end className={getNavClassName}>
                         Dashboard
                     </NavLink>
 
-                    <NavLink to="/app/gmail" className="app-nav-link">
+                    <NavLink to="/app/gmail" className={getNavClassName}>
                         Gmail
                     </NavLink>
 
-                    <NavLink to="/app/documents" className="app-nav-link">
+                    <NavLink to="/app/documents" className={getNavClassName}>
                         Documents
                     </NavLink>
 
-                    <NavLink to="/app/spider" className="app-nav-link">
-                        Spider
+                    <NavLink to="/app/spider" className={getNavClassName}>
+                        Spiders
                     </NavLink>
 
-                    <NavLink to="/app/reports" className="app-nav-link">
+                    <NavLink to="/app/reports" className={getNavClassName}>
                         Reports
                     </NavLink>
 
-                    <NavLink to="/app/feedback" className="app-nav-link">
+                    <NavLink to="/app/feedback" className={getNavClassName}>
                         Feedback
                     </NavLink>
 
-                    <NavLink to="/app/settings" className="app-nav-link">
+                    <NavLink to="/app/settings" className={getNavClassName}>
                         Settings
                     </NavLink>
                 </nav>
@@ -81,10 +96,14 @@ export function DashboardLayout() {
                 <div className="app-sidebar-footer">
                     <div className="app-assistant-card">
                         <p className="app-assistant-text">
-                            Use one workspace to manage Gmail, documents, reports, and other app modules.
+                            Use this workspace to collect listings, ingest documents, connect Gmail, and review housing insights.
                         </p>
-                        <button className="app-primary-button" type="button">
-                            Open Assistant
+                        <button
+                            className="app-primary-button"
+                            type="button"
+                            onClick={() => navigate("/app/spider")}
+                        >
+                            Open Spider Control
                         </button>
                     </div>
                 </div>
@@ -98,14 +117,17 @@ export function DashboardLayout() {
                     </div>
 
                     <div className="app-topbar-actions">
-
                         <button className="app-notification-button" type="button">
-                            Notifications
+                            Updates
                             <span className="app-notification-badge">3</span>
                         </button>
 
-                        <button className="app-icon-button" type="button" aria-label="More actions">
-                            ⋯
+                        <button
+                            className="app-primary-button"
+                            type="button"
+                            onClick={handleLogout}
+                        >
+                            Logout
                         </button>
                     </div>
                 </header>

@@ -1,9 +1,8 @@
-import os
 import base64
 from pathlib import Path
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 
 from .gmail_api_interface import Interface_GmailIngestor
@@ -16,37 +15,63 @@ class GmailIngestor(Interface_GmailIngestor):
         self,
         processed_document_cls,
         credentials_path: str,
-        token_path: str,
-        ingest_dir,
+        ingest_dir: str,
+        redirect_uri: str,
     ):
         self.Processed_Document_Obj = processed_document_cls
         self.credentials_path = credentials_path
-        self.token_path = token_path
         self.ingest_dir = Path(ingest_dir)
+        self.redirect_uri = redirect_uri
+        self.creds = None
         self.service = None
 
-    def authenticate(self):
-        creds = None
+    def _build_flow(self, state: str | None = None) -> Flow:
+        flow = Flow.from_client_secrets_file(
+            self.credentials_path,
+            scopes=self.SCOPES,
+            state=state,
+        )
+        flow.redirect_uri = self.redirect_uri
+        return flow
 
-        if os.path.exists(self.token_path):
-            creds = Credentials.from_authorized_user_file(
-                self.token_path,
-                self.SCOPES,
-            )
+    def build_auth_url(self, state: str) -> tuple[str, str]:
+        flow = self._build_flow(state=state)
+        auth_url, returned_state = flow.authorization_url(
+            access_type="offline",
+            include_granted_scopes="true",
+            prompt="consent",
+        )
+        return auth_url, returned_state
 
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    self.credentials_path,
-                    self.SCOPES,
-                )
-                creds = flow.run_local_server(port=0)
+    def exchange_code_for_tokens(self, code: str, state: str) -> dict:
+        flow = self._build_flow(state=state)
+        flow.fetch_token(code=code)
+        creds = flow.credentials
 
-            with open(self.token_path, "w") as token:
-                token.write(creds.to_json())
+        return {
+            "token": creds.token,
+            "refresh_token": creds.refresh_token,
+            "token_uri": creds.token_uri,
+            "client_id": creds.client_id,
+            "client_secret": creds.client_secret,
+            "scopes": list(creds.scopes or self.SCOPES),
+            "expiry": creds.expiry.isoformat() if creds.expiry else None,
+        }
 
+    def set_credentials_from_token_info(self, token_info: dict) -> None:
+        creds = Credentials(
+            token=token_info["token"],
+            refresh_token=token_info.get("refresh_token"),
+            token_uri=token_info.get("token_uri", "https://oauth2.googleapis.com/token"),
+            client_id=token_info["client_id"],
+            client_secret=token_info["client_secret"],
+            scopes=token_info.get("scopes", self.SCOPES),
+        )
+
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+
+        self.creds = creds
         self.service = build("gmail", "v1", credentials=creds)
 
     def get_header_value(self, headers, header_name):
@@ -72,7 +97,6 @@ class GmailIngestor(Interface_GmailIngestor):
         if "parts" in payload:
             for part in payload["parts"]:
                 mime_type = part.get("mimeType", "")
-
                 if mime_type == "text/plain":
                     data = part.get("body", {}).get("data", "")
                     body += self.decode_base64_text(data)
@@ -134,21 +158,22 @@ class GmailIngestor(Interface_GmailIngestor):
         return output_path
 
     def ingest_gmail(self, max_emails=10):
-        self.authenticate()
+        if not self.service:
+            raise RuntimeError("Gmail service not initialized")
+
         processed_documents = []
 
         for msg in self.fetch_message_ids(max_results=max_emails):
             message_id = msg["id"]
-            email_message = self.fetch_message(message_id)
+            email_message = self.fetch_message(message_id, fmt="full")
             processed_doc = self.parse_email_to_processed_object(email_message)
             save_path = self.save_raw_email(message_id)
 
-            print(f"Saved raw email to: {save_path}")
-
             processed_documents.append(
                 {
+                    "message_id": message_id,
                     "parsed_email": processed_doc.to_json(),
-                    "saved_to": str(save_path) if save_path else "Failed to save",
+                    "saved_to": str(save_path),
                 }
             )
 

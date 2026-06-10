@@ -1,41 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
 import type { SummaryCard } from "../interfaces";
-import { loadHousingSummary, logoutUser } from "../services";
+import { loadHousingSummary } from "../services";
 
 export function DashboardPage() {
     const navigate = useNavigate();
 
     const [summaryCards, setSummaryCards] = useState<SummaryCard[]>([
-        { label: "Average Price", value: "Data placeholder" },
-        { label: "Sales Volume", value: "Data placeholder" },
-        { label: "New Listings", value: "Data placeholder" },
-        { label: "Days on Market", value: "Data placeholder" },
+        { label: "Average Rent", value: "Loading..." },
+        { label: "Listing Volume", value: "Loading..." },
+        { label: "New Listings", value: "Loading..." },
+        { label: "Days on Market", value: "Loading..." },
     ]);
 
     const [loading, setLoading] = useState(true);
-    const [loggingOut, setLoggingOut] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-
-    function handleNavigation(path: string) {
-        navigate(path);
-    }
-
-    async function handleLogout() {
-        try {
-            setLoggingOut(true);
-            setErrorMessage("");
-
-            await logoutUser();
-            navigate("/login", { replace: true });
-        } catch (error) {
-            console.error("Logout failed:", error);
-            setErrorMessage("Logout failed. Please try again.");
-        } finally {
-            setLoggingOut(false);
-        }
-    }
 
     useEffect(() => {
         async function fetchDashboardData() {
@@ -46,14 +26,14 @@ export function DashboardPage() {
                 const data = await loadHousingSummary();
 
                 setSummaryCards([
-                    { label: "Average Price", value: data.avgPrice || "No data" },
-                    { label: "Sales Volume", value: data.salesVolume || "No data" },
+                    { label: "Average Rent", value: data.avgPrice || "No data" },
+                    { label: "Listing Volume", value: data.salesVolume || "No data" },
                     { label: "New Listings", value: data.newListings || "No data" },
                     { label: "Days on Market", value: data.daysOnMarket || "No data" },
                 ]);
             } catch (error) {
                 console.error("Failed to load dashboard data:", error);
-                setErrorMessage("Failed to load dashboard data.");
+                setErrorMessage("Failed to load housing summary data.");
             } finally {
                 setLoading(false);
             }
@@ -63,27 +43,45 @@ export function DashboardPage() {
     }, []);
 
     return (
-        <div className="dashboard-page">
-            <div className="dashboard-header">
-                <div>
-                    <h1 className="dashboard-title">Dashboard Page</h1>
-                    <p className="dashboard-subtitle">
-                        Welcome to the analytics dashboard.
+        <div className="dashboard-home">
+            <section className="dashboard-hero">
+                <div className="dashboard-hero-card dashboard-hero-main">
+                    <h2>Vancouver rental market workspace</h2>
+                    <p>
+                        Track housing documents, connect Gmail imports, run spiders, and review analytics from one dashboard built for the rental market project.
                     </p>
+                    <div className="dashboard-hero-actions">
+                        <button
+                            className="app-primary-button"
+                            onClick={() => navigate("/app/gmail")}
+                        >
+                            Open Gmail Setup
+                        </button>
+
+                        <button
+                            className="app-secondary-button"
+                            onClick={() => navigate("/app/spider")}
+                        >
+                            Run Spiders
+                        </button>
+                    </div>
                 </div>
 
-                <button
-                    className="dashboard-button logout-button"
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                >
-                    {loggingOut ? "Logging out..." : "Logout"}
-                </button>
-            </div>
+                <div className="dashboard-hero-card dashboard-hero-side">
+                    <h3>Project Status</h3>
+                    <p>Current modules connected to the platform workspace.</p>
+                    <ul className="dashboard-status-list">
+                        <li>Document ingestion available</li>
+                        <li>Gmail connection enabled</li>
+                        <li>Spider integration in progress</li>
+                        <li>Reports ready for expansion</li>
+                    </ul>
+                </div>
+            </section>
 
             {loading && (
                 <div className="dashboard-message loading">
-                    Loading dashboard data...
+                    Loading housing summary...
                 </div>
             )}
 
@@ -93,9 +91,8 @@ export function DashboardPage() {
                 </div>
             )}
 
-            <div className="dashboard-section">
-                <h2>Summary Cards</h2>
-
+            <section className="dashboard-section">
+                <h2>Market summary</h2>
                 <div className="dashboard-cards">
                     {summaryCards.map((card) => (
                         <div key={card.label} className="dashboard-card">
@@ -104,54 +101,58 @@ export function DashboardPage() {
                         </div>
                     ))}
                 </div>
-            </div>
+            </section>
 
-            <div className="dashboard-section">
-                <h2>Quick Actions</h2>
+            <section className="dashboard-section">
+                <h2>Quick actions</h2>
                 <div className="dashboard-panel">
                     <div className="dashboard-actions">
                         <button
                             className="dashboard-button"
-                            onClick={() => handleNavigation("/app/documents")}
+                            onClick={() => navigate("/app/documents")}
                         >
                             View Documents
                         </button>
 
                         <button
                             className="dashboard-button"
-                            onClick={() => handleNavigation("/app/reports")}
+                            onClick={() => navigate("/app/reports")}
                         >
                             Open Reports
                         </button>
 
                         <button
                             className="dashboard-button"
-                            onClick={() => handleNavigation("/app/gmail")}
+                            onClick={() => navigate("/app/gmail")}
                         >
-                            Connect Gmail
+                            Open Gmail
                         </button>
 
                         <button
                             className="dashboard-button"
-                            onClick={() => handleNavigation("/app/spider")}
+                            onClick={() => navigate("/app/spider")}
                         >
-                            Run Spider
+                            Run Spiders
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div className="dashboard-lower-grid">
+            <section className="dashboard-lower-grid">
                 <div className="dashboard-section">
-                    <h2>Charts Section</h2>
-                    <div className="dashboard-placeholder">Chart placeholder</div>
+                    <h2>Trend charts</h2>
+                    <div className="dashboard-placeholder">
+                        Housing chart area
+                    </div>
                 </div>
 
                 <div className="dashboard-section">
-                    <h2>Interactive Map</h2>
-                    <div className="dashboard-placeholder">Map placeholder</div>
+                    <h2>Market map</h2>
+                    <div className="dashboard-placeholder">
+                        Listing and neighbourhood map area
+                    </div>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }

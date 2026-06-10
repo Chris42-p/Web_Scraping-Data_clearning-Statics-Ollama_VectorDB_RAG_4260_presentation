@@ -19,14 +19,9 @@ export function DocumentsPage() {
 
                 const data = await loadDocuments();
 
-                console.log("Documents API response:", data);
-                console.log("Is array?", Array.isArray(data));
-                console.log("Documents length:", Array.isArray(data) ? data.length : "not an array");
-
                 if (Array.isArray(data)) {
                     setDocuments(data);
                 } else {
-                    console.error("loadDocuments() did not return an array:", data);
                     setDocuments([]);
                     setErrorMessage("Documents response format is invalid.");
                 }
@@ -65,16 +60,12 @@ export function DocumentsPage() {
         });
     }, [documents, searchTerm]);
 
-    console.log("documents state:", documents);
-    console.log("filteredDocuments:", filteredDocuments);
-    console.log("searchTerm:", searchTerm);
-
     return (
         <div className="documents-page">
             <div className="documents-header">
-                <h1 className="documents-title">Documents</h1>
+                <h1 className="documents-title">Project documents</h1>
                 <p className="documents-subtitle">
-                    Browse and search the available documents.
+                    Search uploaded files, indexed reports, and imported housing documents.
                 </p>
             </div>
 
@@ -94,7 +85,7 @@ export function DocumentsPage() {
                 <input
                     className="documents-search-input"
                     type="text"
-                    placeholder="Search documents..."
+                    placeholder="Search by title, summary, source, or type..."
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                 />

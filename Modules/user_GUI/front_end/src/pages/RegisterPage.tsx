@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { registerUser } from "../services";
 import "../styles/dashboard.css";
 
@@ -32,19 +33,12 @@ export function RegisterPage() {
         setSuccessMessage("");
 
         try {
-            const response = await registerUser({
+            await registerUser({
                 username: formData.username,
                 password: formData.password,
             });
 
-            console.log("Registration successful:", response);
-            console.log("Extra registration fields:", {
-                fullName: formData.fullName,
-                email: formData.email,
-                phone: formData.phone,
-            });
-
-            setSuccessMessage("Registration successful.");
+            setSuccessMessage("Registration successful. You can now log in.");
         } catch (error) {
             console.error("Registration failed:", error);
             setErrorMessage("Registration failed. Please try again.");
@@ -54,67 +48,74 @@ export function RegisterPage() {
     }
 
     return (
-        <div>
-            <h1>Register Page</h1>
+        <div className="auth-page">
+            <div className="auth-card">
+                <h1>Create account</h1>
+                <p>Register for the rental market workspace.</p>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Full Name</label>
-                    <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                    />
-                </div>
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div>
+                        <label>Full Name</label>
+                        <input
+                            type="text"
+                            name="fullName"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                <div>
-                    <label>Username</label>
-                    <input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                    />
-                </div>
+                    <div>
+                        <label>Username</label>
+                        <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                <div>
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                    />
-                </div>
+                    <div>
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                <div>
-                    <label>Phone</label>
-                    <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                    />
-                </div>
+                    <div>
+                        <label>Phone</label>
+                        <input
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                <div>
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                    />
-                </div>
+                    <div>
+                        <label>Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                {errorMessage && <p>{errorMessage}</p>}
-                {successMessage && <p>{successMessage}</p>}
+                    {errorMessage && <p className="auth-error">{errorMessage}</p>}
+                    {successMessage && <p className="auth-success">{successMessage}</p>}
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Registering..." : "Register"}
-                </button>
-            </form>
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Registering..." : "Register"}
+                    </button>
+                </form>
+
+                <p className="auth-switch-text">
+                    Already have an account? <Link to="/login">Back to login</Link>
+                </p>
+            </div>
         </div>
     );
 }

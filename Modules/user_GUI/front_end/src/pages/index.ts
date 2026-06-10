@@ -9,4 +9,3 @@ export { FeedbackPage } from "./FeedbackPage";
 export { SettingsPage } from "./SettingsPage";
 export { DocumentDetailsPage } from "./DocumentDetailsPage";
 export { DashboardLayout } from "./DashboardLayout";
-export { DashboardHomePage} from "./DashboardHomePage";

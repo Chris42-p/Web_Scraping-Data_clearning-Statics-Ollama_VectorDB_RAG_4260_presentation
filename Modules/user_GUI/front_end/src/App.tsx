@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import {
   LoginPage,
   RegisterPage,
+  DashboardPage,
   DocumentsPage,
   DocumentDetailsPage,
   GmailPage,
@@ -9,7 +10,6 @@ import {
   ReportsPage,
   FeedbackPage,
   SettingsPage,
-  DashboardHomePage,
   DashboardLayout,
 } from "./pages";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -26,7 +26,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/app" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardHomePage />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="documents/:id" element={<DocumentDetailsPage />} />
           <Route path="gmail" element={<GmailPage />} />
