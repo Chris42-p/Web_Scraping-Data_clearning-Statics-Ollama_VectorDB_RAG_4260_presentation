@@ -91,6 +91,26 @@ export async function loadDocuments(): Promise<DocumentItem[]> {
   return [];
 }
 
+export async function uploadDocuments(files: File[]) {
+  const formData = new FormData();
+
+  for (const file of files) {
+    formData.append("files", file);
+  }
+
+  const response = await fetch(`${APP_CONFIG.apiBaseUrl}/upload`, {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to upload documents");
+  }
+
+  return response.json();
+}
+
 export async function loadAllDocuments() {
   return apiRequest("/documents/all", { method: "GET" });
 }

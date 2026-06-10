@@ -1,38 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
-import "../styles/DocumentsPage.css";
+import "../styles/documentsPage.css";
 import type { DocumentItem } from "../interfaces";
-import { loadDocuments } from "../services";
+import { loadDocuments, uploadDocuments } from "../services";
 import { useNavigate } from "react-router-dom";
 
 export function DocumentsPage() {
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const navigate = useNavigate();
 
-    useEffect(() => {
-        async function fetchDocuments() {
-            try {
-                setLoading(true);
-                setErrorMessage("");
+    async function fetchDocuments() {
+        try {
+            setLoading(true);
+            setErrorMessage("");
 
-                const data = await loadDocuments();
+            const data = await loadDocuments();
 
-                if (Array.isArray(data)) {
-                    setDocuments(data);
-                } else {
-                    setDocuments([]);
-                    setErrorMessage("Documents response format is invalid.");
-                }
-            } catch (error) {
-                console.error("Failed to load documents:", error);
-                setErrorMessage("Failed to load documents.");
-            } finally {
-                setLoading(false);
+            if (Array.isArray(data)) {
+                setDocuments(data);
+            } else {
+                setDocuments([]);
+                setErrorMessage("Documents response format is invalid.");
             }
+        } catch (error) {
+            console.error("Failed to load documents:", error);
+            setErrorMessage("Failed to load documents.");
+        } finally {
+            setLoading(false);
         }
+    }
 
+    useEffect(() => {
         fetchDocuments();
     }, []);
 
@@ -60,6 +63,42 @@ export function DocumentsPage() {
         });
     }, [documents, searchTerm]);
 
+    function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const files = event.target.files ? Array.from(event.target.files) : [];
+        setSelectedFiles(files);
+        setSuccessMessage("");
+        setErrorMessage("");
+    }
+
+    async function handleUpload() {
+        if (selectedFiles.length === 0) {
+            setErrorMessage("Please choose at least one file to upload.");
+            return;
+        }
+
+        try {
+            setUploading(true);
+            setErrorMessage("");
+            setSuccessMessage("");
+
+            const result = await uploadDocuments(selectedFiles);
+
+            setSuccessMessage(
+                result?.uploaded?.length
+                    ? `${result.uploaded.length} file(s) uploaded successfully.`
+                    : "Upload completed successfully."
+            );
+
+            setSelectedFiles([]);
+            await fetchDocuments();
+        } catch (error) {
+            console.error("Upload failed:", error);
+            setErrorMessage("Failed to upload document(s).");
+        } finally {
+            setUploading(false);
+        }
+    }
+
     return (
         <div className="documents-page">
             <div className="documents-header">
@@ -69,9 +108,9 @@ export function DocumentsPage() {
                 </p>
             </div>
 
-            {loading && (
+            {(loading || uploading) && (
                 <div className="documents-message loading">
-                    Loading documents...
+                    {loading ? "Loading documents..." : "Uploading document(s)..."}
                 </div>
             )}
 
@@ -81,15 +120,47 @@ export function DocumentsPage() {
                 </div>
             )}
 
+            {successMessage && (
+                <div className="documents-message success">
+                    {successMessage}
+                </div>
+            )}
+
             <div className="documents-toolbar">
-                <input
-                    className="documents-search-input"
-                    type="text"
-                    placeholder="Search by title, summary, source, or type..."
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                />
+                <div className="documents-upload-row">
+                    <input
+                        className="documents-file-input"
+                        type="file"
+                        multiple
+                        onChange={handleFileChange}
+                    />
+
+                    <button
+                        className="documents-search-button"
+                        type="button"
+                        onClick={handleUpload}
+                        disabled={uploading}
+                    >
+                        {uploading ? "Uploading..." : "Upload Documents"}
+                    </button>
+                </div>
+
+                <div className="documents-search-row">
+                    <input
+                        className="documents-search-input"
+                        type="text"
+                        placeholder="Search by title, summary, source, or type..."
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                    />
+                </div>
             </div>
+
+            {selectedFiles.length > 0 && (
+                <div className="documents-message">
+                    Selected: {selectedFiles.map((file) => file.name).join(", ")}
+                </div>
+            )}
 
             {!loading && !errorMessage && documents.length === 0 && (
                 <div className="documents-message">

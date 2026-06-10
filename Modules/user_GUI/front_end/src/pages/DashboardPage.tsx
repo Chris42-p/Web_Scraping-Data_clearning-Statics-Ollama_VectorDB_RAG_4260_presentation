@@ -71,10 +71,11 @@ export function DashboardPage() {
                     <h3>Project Status</h3>
                     <p>Current modules connected to the platform workspace.</p>
                     <ul className="dashboard-status-list">
-                        <li>Document ingestion available</li>
-                        <li>Gmail connection enabled</li>
+                        <li>Document browser available</li>
+                        <li>Document upload pending</li>
+                        <li>Gmail integration in progress</li>
                         <li>Spider integration in progress</li>
-                        <li>Reports ready for expansion</li>
+                        <li>Reports module scaffolded</li>
                     </ul>
                 </div>
             </section>

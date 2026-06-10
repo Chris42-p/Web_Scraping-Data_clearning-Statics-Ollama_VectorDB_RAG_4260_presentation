@@ -1,95 +1,177 @@
 .documents-page {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   color: var(--text-main);
+  display: grid;
+  gap: 24px;
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.documents-page,
+.documents-header,
+.documents-toolbar,
+.documents-list,
+.documents-preview-card {
+  background: transparent;
 }
 
 .documents-header {
-  margin: 0 0 24px;
+  margin: 0;
 }
 
 .documents-title {
   margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.15;
   color: var(--text-main);
 }
 
 .documents-subtitle {
-  margin-top: 8px;
-  margin-bottom: 0;
+  margin: 8px 0 0;
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 70ch;
 }
 
 .documents-toolbar {
-  margin: 0 0 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
   align-items: center;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.documents-upload-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.documents-search-input,
+.documents-file-input {
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .documents-search-input {
-  flex: 1;
-  min-width: 240px;
-  padding: 12px 14px;
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-main);
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  min-width: 0;
 }
 
-.documents-search-input:focus {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.12);
+.documents-file-input {
+  min-width: 260px;
+  max-width: 100%;
+}
+
+.documents-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.documents-search-input:focus,
+.documents-file-input:focus {
+  border-color: rgba(31, 123, 255, 0.6);
+  box-shadow: 0 0 0 4px rgba(31, 123, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.documents-search-button {
+  min-height: 46px;
+  padding: 12px 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--accent-blue);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.documents-search-button:hover {
+  transform: translateY(-1px);
+  background: var(--accent-blue-hover);
+}
+
+.documents-search-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .documents-message {
-  margin: 0 0 20px;
+  margin: 0;
+  width: 100%;
   padding: 14px 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
   border: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(14, 43, 63, 0.9), rgba(11, 34, 51, 0.92));
   color: var(--text-main);
+  box-shadow: var(--shadow-soft);
 }
 
 .documents-message.loading {
-  background: rgba(29, 78, 216, 0.12);
-  border-color: rgba(96, 165, 250, 0.35);
   color: #93c5fd;
+  border-color: rgba(96, 165, 250, 0.24);
 }
 
 .documents-message.error {
-  background: rgba(127, 29, 29, 0.15);
-  border-color: rgba(252, 165, 165, 0.3);
-  color: #fca5a5;
+  color: #ffb4a9;
+  border-color: rgba(255, 107, 87, 0.35);
+}
+
+.documents-message.success {
+  color: #b7f7c4;
+  border-color: rgba(102, 209, 122, 0.32);
 }
 
 .documents-list {
   display: grid;
   gap: 20px;
+  width: 100%;
+  min-width: 0;
 }
 
 .documents-card {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   background: linear-gradient(180deg, rgba(14, 43, 63, 0.98), rgba(11, 34, 51, 0.98));
   border: 1px solid var(--border-soft);
   border-radius: 16px;
   padding: 20px;
   box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.documents-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(31, 123, 255, 0.24);
 }
 
 .documents-card h3,
 .documents-card h4 {
   margin-top: 0;
+  margin-bottom: 10px;
   color: var(--text-main);
 }
 
 .documents-card p {
+  margin: 0;
   color: var(--text-muted);
   line-height: 1.6;
 }
@@ -98,10 +180,13 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px 20px;
-  margin-top: 14px;
+  margin-top: 18px;
+  width: 100%;
+  min-width: 0;
 }
 
 .documents-meta-item {
+  min-width: 0;
   padding: 12px 14px;
   border: 1px solid var(--border-soft);
   border-radius: 12px;
@@ -111,7 +196,7 @@
 .documents-meta-label {
   display: block;
   margin-bottom: 6px;
-  font-size: 0.8rem;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -119,9 +204,11 @@
 }
 
 .documents-meta-value {
-  font-size: 0.95rem;
+  display: block;
+  font-size: 15px;
   color: var(--text-main);
   word-break: break-word;
+  line-height: 1.5;
 }
 
 .documents-preview-card {
@@ -136,9 +223,19 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+.documents-card a {
+  color: #8fc0ff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.documents-card a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .documents-title {
-    font-size: 1.65rem;
+    font-size: 28px;
   }
 
   .documents-toolbar {
@@ -146,7 +243,9 @@
     align-items: stretch;
   }
 
-  .documents-search-input {
+  .documents-search-input,
+  .documents-file-input,
+  .documents-search-button {
     width: 100%;
   }
 
@@ -166,18 +265,19 @@
 
 @media (max-width: 480px) {
   .documents-title {
-    font-size: 1.45rem;
+    font-size: 24px;
   }
 
   .documents-subtitle {
-    font-size: 0.95rem;
+    font-size: 14px;
   }
 
   .documents-card h3 {
     font-size: 1rem;
   }
 
-  .documents-card p {
+  .documents-card p,
+  .documents-meta-value {
     font-size: 0.94rem;
   }
 
