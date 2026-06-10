@@ -35,6 +35,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from Modules.spiders.spider_default_obj.spider_std_obj import SpiderData_Default_Obj
+from Modules.spiders.spider_vinni_change_me.listing_detail_scraper import ListingDetailScraper
 
 import re
 
@@ -43,25 +44,34 @@ def format_address(address):
         return "N/A"
 
     neighbourhoods = [
-        "Kitsilano",
-        "Marpole",
-        "Arbutus",
-        "Yaletown",
-        "Knight",
-        "Cambie",
-        "Downtown West",
-        "Downtown East",
-        "Mount Pleasant East",
-        "Mount Pleasant West",
-        "Grandview East",
-        "Hastings",
-        "Main",
-        "Fairview",
-        "Coal Harbour",
-        "West End",
-        "False Creek",
-        "Kerrisdale"
-    ]
+    "Kitsilano",
+    "Marpole",
+    "Arbutus",
+    "Yaletown",
+    "Knight",
+    "Cambie",
+    "South Cambie",
+    "Downtown West",
+    "Downtown East",
+    "Mount Pleasant East",
+    "Mount Pleasant West",
+    "Grandview East",
+    "Hastings",
+    "Main",
+    "Fairview",
+    "Coal Harbour",
+    "West End",
+    "False Creek",
+    "Kerrisdale",
+    "Renfrew",
+    "Renfrew Heights",
+    "South Granville",
+    "Shaughnessy",
+    "Dunbar",
+    "Point Grey",
+    "Quilchena",
+    "University (Ubc)",
+]
 
     formatted = address
 
@@ -194,6 +204,7 @@ class RealEstateScraper:
 
     def __init__(self, start_url):
         self.start_url = start_url
+        self.detail_scraper = ListingDetailScraper()
 
     def fetch(self):
         headers = {
@@ -215,7 +226,7 @@ class RealEstateScraper:
 
         listings = []
 
-        cards = soup.find_all("article")
+        cards = soup.find_all("article")[:3]
 
         for card in cards:
             title = card.get_text(" ", strip=True)
@@ -225,6 +236,8 @@ class RealEstateScraper:
 
             if listing_url.startswith("/"):
                 listing_url = "https://www.rew.ca" + listing_url
+
+            details = self.detail_scraper.scrape(listing_url)
 
             formatted_address = format_address(
                 extract_address(title)
@@ -237,32 +250,62 @@ class RealEstateScraper:
             agent_name, brokerage = extract_agent_and_brokerage(title)
 
             listing = SpiderData_Default_Obj(
-    title=title,
-    price=extract_price(title),
-    bedrooms=extract_bedrooms(title),
-    bathrooms=extract_bathrooms(title),
-    square_feet=extract_square_feet(title),
-    property_type=extract_property_type(title),
+                title=title,
+                price=extract_price(title),
 
-    address=formatted_address,
-    street_address=address_parts["street_address"],
-    neighbourhood=address_parts["neighbourhood"],
-    city=address_parts["city"],
-    province=address_parts["province"],
+                address=formatted_address,
+                street_address=address_parts["street_address"],
+                neighbourhood=address_parts["neighbourhood"],
+                city=address_parts["city"],
+                province=address_parts["province"],
 
-    lot_size=extract_lot_size(title),
+                bedrooms=extract_bedrooms(title),
+                bathrooms=extract_bathrooms(title),
+                square_feet=extract_square_feet(title),
 
-    features="N/A",
-    facilities="N/A",
-    agent_name=agent_name,
-    brokerage=brokerage,
+                lot_size=extract_lot_size(title),
+                property_type=extract_property_type(title),
 
-    listing_url=listing_url,
-    source_website="REW.ca",
+                post_description="N/A",
+                move_in_date="N/A",
+                security_deposit="N/A",
+                min_rental_period="N/A",
 
-    first_seen=datetime.now().strftime("%Y-%m-%d"),
-    last_seen=datetime.now().strftime("%Y-%m-%d"),
-)
+                features=details.get("features", "N/A"),
+                facilities=details.get("basement_details", "N/A"),
+                amenities=details.get("amenities", "N/A"),
+
+                appliances=details.get("appliances", "N/A"),
+                parking=details.get("parking_spaces", "N/A"),
+
+                pet="N/A",
+                locker="N/A",
+                smoking="N/A",
+
+                agent_name=details.get("primary_agent", agent_name),
+                brokerage=details.get("primary_broker", brokerage),
+
+                listing_url=listing_url,
+                source_website="REW.ca",
+
+                img_of_unit="N/A",
+
+                days_ago_posted=details.get("days_on_rew", "N/A"),
+                post_updated="N/A",
+
+                first_seen=datetime.now().strftime("%Y-%m-%d"),
+                last_seen=datetime.now().strftime("%Y-%m-%d"),
+                status="active",
+
+                postal_code="N/A",
+                latitude="N/A",
+                longitude="N/A",
+
+                mls_number=details.get("mls_number", "N/A"),
+                building_name=details.get("building_name", "N/A"),
+                building_age="N/A",
+                year_built=details.get("year_built", "N/A")
+            )
 
             listings.append(listing)
 

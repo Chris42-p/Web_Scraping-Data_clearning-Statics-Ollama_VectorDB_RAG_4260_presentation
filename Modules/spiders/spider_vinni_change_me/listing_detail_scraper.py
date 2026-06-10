@@ -12,6 +12,7 @@ features, appliances, days on REW, and MLS number.
 
 import requests
 from bs4 import BeautifulSoup
+import time
 
 
 class ListingDetailScraper:
@@ -27,28 +28,26 @@ class ListingDetailScraper:
     def fetch_html(self, url):
         """
         Download the HTML content of a listing detail page.
+        Adds a small delay and handles rate limiting.
         """
+
+        time.sleep(2)
+
         response = requests.get(
             url,
             headers=self.headers,
             timeout=15
         )
 
+        if response.status_code == 429:
+            print(f"Rate limited. Skipping detail page: {url}")
+            return ""
+
         response.raise_for_status()
         return response.text
 
     def extract_between(self, text, start_label, end_label):
-        """
-        Extract text between two labels.
 
-        Example:
-            Parking Spaces
-            1
-            Parking Details
-
-        Returns:
-            1
-        """
         start_index = text.find(start_label)
 
         if start_index == -1:
@@ -59,7 +58,7 @@ class ListingDetailScraper:
         end_index = text.find(end_label, start_index)
 
         if end_index == -1:
-            return text[start_index:].strip()
+            return "N/A"
 
         return text[start_index:end_index].strip()
 
@@ -68,9 +67,27 @@ class ListingDetailScraper:
         Scrape and return detailed fields from one listing URL.
         """
         html = self.fetch_html(url)
+
+        if not html:
+            return {}
+
         soup = BeautifulSoup(html, "html.parser")
 
         text = soup.get_text("\n", strip=True)
+
+        broker = self.extract_between(
+            text,
+            "Primary Broker",
+            "Secondary Agent"
+        )
+
+        if broker == "N/A":
+            broker = self.extract_between(
+                text,
+                "Primary Broker",
+                "Listing details"
+            )
+
 
         return {
             "gross_taxes": self.extract_between(text, "Gross Taxes for 2025", "Home facts"),
@@ -80,10 +97,12 @@ class ListingDetailScraper:
             "heating_type": self.extract_between(text, "Heating Type", "Cooling"),
             "cooling": self.extract_between(text, "Cooling", "Basement Details"),
             "basement_details": self.extract_between(text, "Basement Details", "Features"),
-            "features": self.extract_between(text, "Features", "Appliances"),
+            "features": self.extract_between(text, "Features", "Amenities"),
             "appliances": self.extract_between(text, "Appliances", "Community"),
             "primary_agent": self.extract_between(text, "Primary Agent", "Primary Broker"),
-            "primary_broker": self.extract_between(text, "Primary Broker", "Secondary Agent"),
-            "days_on_rew": self.extract_between(text, "Days on REW", "Property Views"),
-            "mls_number": self.extract_between(text, "MLS® Number", "Source")
+            "primary_broker": broker,
+            "days_on_rew": self.extract_between(text, "Days on REW","Property Views"),
+            "mls_number": self.extract_between(text, "MLS® Number", "Source"),
+            "amenities": self.extract_between(text,"Amenities","Appliances"),
+            "building_name": self.extract_between(text,"Building Information",","),
         }
