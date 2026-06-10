@@ -13,6 +13,7 @@ features, appliances, days on REW, and MLS number.
 import requests
 from bs4 import BeautifulSoup
 import time
+import re
 
 
 class ListingDetailScraper:
@@ -61,6 +62,14 @@ class ListingDetailScraper:
             return "N/A"
 
         return text[start_index:end_index].strip()
+    
+    def clean_year_built(self, year_text):
+        match = re.search(r"Built in (\d{4})", year_text)
+        return match.group(1) if match else "N/A"
+
+    def clean_building_age(self, year_text):
+        match = re.search(r"\((\d+)\s+yrs old\)", year_text)
+        return match.group(1) if match else "N/A"
 
     def scrape(self, url):
         """
@@ -74,6 +83,12 @@ class ListingDetailScraper:
         soup = BeautifulSoup(html, "html.parser")
 
         text = soup.get_text("\n", strip=True)
+
+        year_info = self.extract_between(
+            text,
+            "Year Built",
+            "Title"
+        )
 
         broker = self.extract_between(
             text,
@@ -93,7 +108,6 @@ class ListingDetailScraper:
             "gross_taxes": self.extract_between(text, "Gross Taxes for 2025", "Home facts"),
             "parking_spaces": self.extract_between(text, "Parking Spaces", "Parking Details"),
             "parking_details": self.extract_between(text, "Parking Details", "Property Type"),
-            "year_built": self.extract_between(text, "Year Built", "Title"),
             "heating_type": self.extract_between(text, "Heating Type", "Cooling"),
             "cooling": self.extract_between(text, "Cooling", "Basement Details"),
             "basement_details": self.extract_between(text, "Basement Details", "Features"),
@@ -104,5 +118,7 @@ class ListingDetailScraper:
             "days_on_rew": self.extract_between(text, "Days on REW","Property Views"),
             "mls_number": self.extract_between(text, "MLS® Number", "Source"),
             "amenities": self.extract_between(text,"Amenities","Appliances"),
-            "building_name": self.extract_between(text,"Building Information",","),
+            "building_age": self.clean_building_age(year_info),
+            "year_built": self.clean_year_built(year_info)
+
         }
