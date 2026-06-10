@@ -71,7 +71,13 @@ def format_address(address):
     "Point Grey",
     "Quilchena",
     "University (Ubc)",
-]
+    "University (UBC)",
+    "Shaughnessy",
+    "Oakridge",
+    "Collingwood",
+    "Killarney",
+
+    ]
 
     formatted = address
 
@@ -141,7 +147,7 @@ def extract_lot_size(text):
 
 
 def extract_property_type(text):
-    property_types = ["Apt/Condo", "Townhouse", "Duplex", "House"]
+    property_types = ["Apt/Condo", "Townhouse", "Duplex", "House","Land","Manufactured","Row House","Half Duplex"]
 
     for property_type in property_types:
         if property_type.lower() in text.lower():
@@ -226,7 +232,7 @@ class RealEstateScraper:
 
         listings = []
 
-        cards = soup.find_all("article")[:3]
+        cards = soup.find_all("article")
 
         for card in cards:
             title = card.get_text(" ", strip=True)
