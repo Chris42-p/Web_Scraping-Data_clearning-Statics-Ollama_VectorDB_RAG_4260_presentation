@@ -10,20 +10,19 @@ def load_class_from_file(file_path, class_name):
 
 
 RealEstateScraper = load_class_from_file(
-    Path("Modules/engine_injesting/web_scraper.py"),
+    Path("Modules/spiders/spider_vinni_change_me/web_scraper.py"),
     "RealEstateScraper"
 )
 
 ListingCSVStorage = load_class_from_file(
-    Path("Modules/engine_injesting/listing_csv_storage.py"),
+    Path("Modules/spiders/spider_vinni_change_me/listing_csv_storage.py"),
     "ListingCSVStorage"
 )
 
 ListingSQLiteStorage = load_class_from_file(
-    Path("Modules/engine_injesting/listing_sqlite_storage.py"),
+    Path("Modules/spiders/spider_vinni_change_me/listing_sqlite_storage.py"),
     "ListingSQLiteStorage"
 )
-
 
 def main():
     url = "https://www.rew.ca/properties/areas/vancouver-bc"
