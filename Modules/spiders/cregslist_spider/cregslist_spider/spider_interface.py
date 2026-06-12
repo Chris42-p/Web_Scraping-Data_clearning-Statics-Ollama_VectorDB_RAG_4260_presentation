@@ -17,7 +17,7 @@ CONST={
      "BOT_NAME":"cregslist_spider",
      "ROBOTSTXT_OBEY":True,
      "CONCURRENT_REQUESTS_PER_DOMAIN":1,
-     "DOWNLOAD_DELAY": 20,  #sec #slow it down for LLM to process obj
+     "DOWNLOAD_DELAY": 30,  #sec #slow it down for LLM to process obj
      "COOKIES_ENABLED":False, 
           #== caching. 
      "HTTPCACHE_ENABLED":True, 

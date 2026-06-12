@@ -6,31 +6,113 @@
 
 
 
-#=== internal lib import 
-from .spider_interface import CONST
-from ...spider_default_obj import SpiderData_Default_Obj 
-
-
 #==== Default imports 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from bs4 import BeautifulSoup
+import ollama
+from datetime import datetime
+from typing import Optional
+import json
+
+
+#=== internal lib import 
+from .spider_interface import CONST
+from ...spider_default_obj import Post_Data 
+
+
 
 
 
 class CregslistSpiderPipeline:
     def process_item(self, item, spider):
-        #--        
         
+        post_id=item["post_id"].strip().split(":")[1]
+        time_of_post=item["time_of_post"]
+          
+        user_post_title=item["user_post_title"]
+        first_pic=item['first_pic']
 
-        return item
+        # user_meta_tags
+        user_meta_tags= self.__strip_html(item["user_meta_tags"]).replace("\n"," ")
+        user_meta_tags =self.__strip_extra_spaces(user_meta_tags)
+          
+        #square feet.           
+        street_number, city, province, postal_code = self.__process_address(item["address"])
+        # print(street_number, city, province, postal_code)
+        general_area=item["city_general_area"]
+
+        sqr_feet=item["num_bedrooms_n_square_feet_sq"].split("-")[1]#leaving ft just in case 
+
+        post_url=item["post_url"]
+        price_of_the_unit=item["price_of_the_unit"]
+
+        rent_period=item["rent_period"]
+
+        post_description=item["post_description"]
+
+        #Bed and bath 
+        bed_bath=item["bed_and_bath"]            
+
+        #Square feet 
+        square_feet_unit=item["square_feet_unit"]
+        square_feet_unit=self.__strip_spaces(self.__strip_html(square_feet_unit))
+        square_feet_unit=square_feet_unit[:-1]
+
+
+        Post_Data(
+            post_id,
+            time_of_post,
+            user_post_title,
+            first_pic,
+            user_meta_tags, 
+            post_url,
+            price_of_the_unit,
+            sqr_feet,
+            general_area,
+            street_number,
+            city,
+            province,
+            postal_code,
+            bed_bath,
+            square_feet_unit,
+            post_description,
+            rent_period
+        ).save_to_db()
+
+        # return item
   
-    def __drop_html_tags():
+ 
+    def __process_address(self, text):
+        # 'address': '815 SW Marine Dr, Vancouver, BC V6P5Y9', 
+        text=text.split(",")
+        street_number=text[0]
+        city=text[1]
+        province=text[2].split(" ")[0]
+        postal_code=text[2].split(" ")[1]
+        
+        return street_number, city, province, postal_code
+
+    def __strip_extra_spaces(self, text) :
+        text=text.replace("     ",",").replace("   ","") #custom for cregslist prasing of data 
+        return text.split(",")
+        
+    def __strip_spaces(self, text):
+        return text.strip()
+         
+    
+    def __strip_html(self,text):
+        return BeautifulSoup(text, "html.parser").get_text()
         pass
-
+     
+     
     def __process_into_def_obj_n_save():
-        SpiderData_Default_Obj(
+        # SpiderData_Default_Obj(
+            #item one 
+            #item two 
+            #item three
 
-        )
+        # )
         pass
 
 

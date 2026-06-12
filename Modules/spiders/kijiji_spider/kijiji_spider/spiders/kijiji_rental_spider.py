@@ -22,7 +22,7 @@ from kijiji_spider.items import KijijiRentalItem
 
 # ===== Postal code → neighbourhood lookup =====
 
-POSTAL_NEIGHBOURHOOD_MAP = {
+POSTAL_NEIGHBOURHOOD_MAP = {  
     # Vancouver
     "V5K": "Hastings-Sunrise",
     "V5L": "Grandview-Woodland",
@@ -119,7 +119,7 @@ def _extract_neighbourhood(address: str) -> str:
     if not address or address == "N/A":
         return "N/A"
 
-    neighbourhoods = [
+    neighbourhoods = [   
         "Kitsilano", "Marpole", "Arbutus", "Yaletown", "Knight", "Cambie",
         "Downtown", "Mount Pleasant", "Grandview", "Hastings", "Main",
         "Fairview", "Coal Harbour", "West End", "False Creek", "Kerrisdale",

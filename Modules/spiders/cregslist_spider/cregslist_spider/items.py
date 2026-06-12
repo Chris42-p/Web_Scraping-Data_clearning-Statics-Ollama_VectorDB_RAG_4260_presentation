@@ -7,7 +7,7 @@ import scrapy
 from scrapy.item import Item, Field
 
 #== Module import 
-from spider_default_obj.spider_std_obj import SpiderData_Default_Obj  #how to link objs
+from Modules.spiders.spider_default_obj.spider_default_obj import SpiderData_Default_Obj  #how to link objs
 
 
 
