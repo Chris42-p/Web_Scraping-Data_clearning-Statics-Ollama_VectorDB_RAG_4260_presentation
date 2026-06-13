@@ -3,31 +3,26 @@ import ollama
 from datetime import datetime
 
 class XX():
-     content={'post_id': 'post id: 7933065454', 
-              'time_of_post': '2026-05-08T14:52:55-0700', 
-              'user_post_title': 'Garden level suite with spectacular view, 2 bed, 2 bath.', 
-              'first_pic': 'https://images.craigslist.org/00202_aMWkT5dcbzW_0CI0t2_600x450.jpg', 
-              
-              'user_meta_tags': '<div class="attrgroup">\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?housing_type=6">house</a>\n</span>\n            </div>\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?laundry=1">w/d in unit</a>\n</span>\n            </div>\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?parking=5">street parking</a>\n</span>\n            </div>\n\n\n            <div class="attr no_smoking">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?no_smoking=1">no smoking</a>\n</span>\n            </div>\n    </div>',
-               'post_url': 'https://vancouver.craigslist.org/nvn/apa/d/west-vancouver-garden-level-suite-with/7933065454.html', 
-               'address': '815 SW Marine Dr, Vancouver, BC V6P5Y9', 
-               'city_general_area': ' (West Vancouver)', 
-               
-               'price_of_the_unit': '$4,000', 
-               'num_bedrooms_n_square_feet_sq': '/ 2br - 1500ft', 
-               'square_feet_unit': '<span class="attr important">\n                1500ft<sup>2</up>\n            </span>', 
-               'bed_and_bath': '<span class="attr important">\n                2BR / 2Ba\n            </span>', 
-
-               'post_description': '<section id="postingbody">\n        <div class="print-information print-qrcode-container">\n            <p class="print-qrcode-label">QR Code Link to This Post</p>\n            <div class="print-qrcode" data-location="https://vancouver.craigslist.org/nvn/apa/d/west-vancouver-garden-level-suite-with/7933065454.html">\n            </div>\n        </div>\nSpectacular views of downtown Vancouver and Lions Gate from all rooms, located in a prime West Van neighborhood within the Chartwell Elementary and Sentinel Secondary school catchments. This 1,500 sqf garden level suite features high ceiling (9 feet), layout includes 2 large bedrooms, all with bathroom inside (ensuite). All bedrooms and living room have full glass doors from floor to ceiling, opening up to a flat backyard with a swimming pool and spectacular views. Complete privacy with own entrance and own laundry. Parking space for 1 car in the front yard (not in the garage) and additional street parking. Price: $4,000/month, utilities and internet are already included. Available now.<br>\n**No smoking inside. **No pets. **Unfurnished. **Will require references and credit (income) check. **Not accessible by wheelchair. **Utilities are included for up to 4 people, and EV charging is NOT included. **Please email/text for questions or viewing.<br>\n    </section>', 
-               'rent_period': 'monthly'
-          }
+     content={'post_id': 'post id: 7938853846', 'time_of_post': '2026-06-04T16:24:38-0700', 'user_post_title': 'Richmond 3 BDRM House', 'first_pic': 'https://images.craigslist.org/00M0M_1H1TQh5hqcu_0CI0t2_600x450.jpg', 'user_meta_tags': '<div class="attrgroup">\n\n\n            <div class="attr pets_cat">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?pets_cat=1">cats are OK - purrr</a>\n</span>\n            </div>\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?housing_type=6">house</a>\n</span>\n            </div>\n\n\n            <div class="attr pets_dog">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?pets_dog=1">dogs are OK - wooof</a>\n</span>\n            </div>\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?laundry=1">w/d in unit</a>\n</span>\n            </div>\n\n\n            <div class="attr">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?parking=1">carport</a>\n</span>\n            </div>\n\n\n            <div class="attr no_smoking">\n                <span class="valu">              <a href="https://vancouver.craigslist.org/search/apa?no_smoking=1">no smoking</a>\n</span>\n            </div>\n    </div>', 'post_url': 'https://vancouver.craigslist.org/rch/apa/d/richmond-richmond-bdrm-house/7938853846.html', 'price_of_the_unit': '$2,850', 'num_bedrooms_n_square_feet_sq': '/ 3br - 2124ft', 'city_general_area': ' (Boyd Park)', 'address': None, 'bed_and_bath': '<span class="attr important">\n                3BR / 2Ba\n            </span>', 'square_feet_unit': '<span class="attr important">\n                2124ft<sup>2</sup>\n            </span>', 'post_description': '<section id="postingbody">\n        <div class="print-information print-qrcode-container">\n            <p class="print-qrcode-label">QR Code Link to This Post</p>\n            <div class="print-qrcode" data-location="https://vancouver.craigslist.org/rch/apa/d/richmond-richmond-bdrm-house/7938853846.html">\n            </div>\n        </div>\n3 bedroom 2 bathroom house for rent<br>\nLarge fenced backyard<br>\n<br>\nRM Grauer Elementary school and park one block away<br>\nHugh Boyd Secondary school catchement<br>\n<br>\nSpacious well-loved 3 bedroom house with ample storage space. Additional room can be added if needed.  House will be rented AS-IS.<br>\nSteps away from bus stations, grocery stores and restaurants.<br>\n<br>\nBedroom 3<br>\nBathrooms: 2<br>\n<br>\nParking : carport<br>\n<br>\nAvailable: July 1, 2026<br>\n<br>\nIdeal Tenants:<br>\nClean, Respectful, Quiet tenants, families, students<br>\nLease Term: 6 to 12 months  <br>\nDeposits: half a month\'s rent<br>\nTenant insurance required<br>\nAbsolutely no smoking, no vaping, no drugs, no sublets<br>\n<br>\nCredit/Reference/Employment Check: required<br>\n<br>\nIf interested please email and tell us about your situation.<br>\n- Full Name and Number of Occupants<br>\n- Background of Each Tenant<br>\n- Expected Move-In Date and Length of Lease Term<br>\n- Availability for viewings<br>\n<br>\nThanks for your time.<br>\n    </section>', 'rent_period': 'monthly'}
 
      llm_model_crash_limit=4
 
      def __init__(self,):
-          x=self.content["square_feet_unit"]
-          x=self.__strip_spaces(self.__strip_html(x))
-          print(x[:-1])
+          self.__process_address(self.content["address"])
+
+          # x=self.content["square_feet_unit"]
+          # x=self.__strip_spaces(self.__strip_html(x))
+          # print(x[:-1])
+
+     def __process_address(self, text):
+        # 'address': '815 SW Marine Dr, Vancouver, BC V6P5Y9', 
+        text=text.split(",")
+        street_number=text[0]
+        city=text[1]
+        province=text[2].split(" ")[0]
+        postal_code=text[2].split(" ")[1]
+        
+        return street_number, city, province, postal_code
 
 
      def __strip_extra_spaces(self, text) :

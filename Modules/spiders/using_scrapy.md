@@ -30,3 +30,8 @@ tutorial ref: https://thepythonscrapyplaybook.com/scrapy-beginners-guide/
 
 scrapy crawl cregslist_spider
  
+
+
+### default object is installed via the requirements and the import in to the spider/ whereever is 
+
+from spider_default_obj.spider_default_obj import Post_Data

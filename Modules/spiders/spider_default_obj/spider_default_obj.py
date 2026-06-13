@@ -18,7 +18,7 @@ from typing import Optional
 import json
 
 #======= Custom libs 
-from spider_std_obj_interface import CONST
+from .spider_std_obj_interface import CONST
 
 
 class Post_Data():
@@ -28,8 +28,9 @@ class Post_Data():
      post_active=None                   #Team IDK how to handle this RN please look over this
 
      def __init__(self, 
-                  post_id, time_of_post, user_post_title, first_pic, user_meta_tags, post_url, price_of_the_unit, num_bedrooms_n_square_feet_sq, city_general_area, address, bed_and_bath, square_feet_unit, post_description, rent_period):
-
+               post_id,time_of_post, user_post_title, first_pic, user_meta_tags, post_url, price_of_the_unit, sqr_feet, general_area, street_number, city, province, postal_code, bed_bath, square_feet_unit, post_description, rent_period
+          ):
+   
           self.post_id=post_id
           self.time_of_post=time_of_post
           self.user_post_title=user_post_title
@@ -37,13 +38,17 @@ class Post_Data():
           self.user_meta_tags=user_meta_tags
           self.post_url=post_url
           self.price_of_the_unit=price_of_the_unit
-          self.num_bedrooms_n_square_feet_sq=num_bedrooms_n_square_feet_sq
-          self.city_general_area=city_general_area
-          self.address=address
-          self.bed_and_bath=bed_and_bath
+          self.sqr_feet=sqr_feet
+          self.general_area=general_area
+          self.street_number=street_number
+          self.city=city
+          self.province=province
+          self.postal_code=postal_code
+          self.bed_bath=bed_bath
           self.square_feet_unit=square_feet_unit
           self.post_description=post_description
           self.rent_period=rent_period
+
 
           self.parse_description() #call parse description automatically. 
           self.get_current_time()
@@ -59,9 +64,9 @@ class Post_Data():
                post_dec=self.Post_Description_Parser()
                post_dec.ingest_post_description(self.post_description)
                
-     def save_to_db(self, item):
-          print(f" {item}")
+     def save_to_db(self):
           print(self.post_id)
+          print("=========Spider 'Saved' the content=======")
           #TODO
                #link this to the DB and make the object savable          
           pass
@@ -157,15 +162,15 @@ class Post_Data():
                #ref: https://github.com/ollama/ollama-python
                crashes=0
                response=""
-               while crashes<self.llm_model_crash_limit:
-                    # try:
+               while crashes<CONST["LLM_CRASH_LIMIT"]:
+                    try:
+                         instruction= f"{CONST["LLM_OUTPUT_OBJ_INSTRUCTIONS"]} Document:{document}"
                          
                          response=ollama.chat(
-                              model=CONST["MODEL_NAME"],          #     llama3.2:latest
+                              model=CONST["MODEL_NAME"],          
                               messages=[
                                    {"role": "system","content": CONST["SYSTEM_ROLE"]},
-                                   {"role": "user","content":CONST["LLM_INSTRUCTIONS"]},
-                                   ],
+                                   {"role": "user","content":instruction}],
                                    stream= True
                               )
                          full_response = ""
@@ -177,10 +182,10 @@ class Post_Data():
                          self.__parse_llm(full_response)
                          return full_response
 
-                    # except Exception as e:
-                    #      crashes+=1
-                    #      # print(f"Ollama call:  {e}"  )
-                    #      print("Model Crashed")               
+                    except Exception as e:
+                         crashes+=1
+                         print(f"Ollama call:  {e}"  )
+                         print("Model Crashed")               
 
                # return response #return empty string if the model keeps crashing.
 

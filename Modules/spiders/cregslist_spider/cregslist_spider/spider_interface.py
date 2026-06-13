@@ -6,10 +6,7 @@ CONST={
      "HTTPCACHE_DIR": "cregslist_spider_cache", #set this one dynamically #get_cache_path(),
      # cregslist_spider.py
      "ALLOWED_DOMAINS":["vancouver.craigslist.org"],
-     "START_URL":
-    [
-        "https://vancouver.craigslist.org/search/hhh?excats=2-16-1-20-1-1-17-7-34-22-22-1#search=2~gallery~0"
-     ],
+     "START_URL":["https://vancouver.craigslist.org/search/hhh?excats=2-16-1-20-1-1-17-7-34-22-22-1#search=2~gallery~0"],
      
 
      #settings.py
@@ -28,7 +25,6 @@ CONST={
      "FEED_EXPORT_ENCODING":"utf-8",
      "LOG_LEVEL":"DEBUG",
 
-     
 
 }
 

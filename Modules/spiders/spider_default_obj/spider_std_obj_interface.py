@@ -4,6 +4,7 @@
 
 CONST={
      "MODEL_NAME":"llama3.2:latest", #what AI model?
+     "LLM_CRASH_LIMIT":4,
      "SYSTEM_ROLE": # what is the role given to the system ?
 """
 You are a precise data extraction engine.
@@ -30,8 +31,9 @@ OUTPUT FORMAT RULES:
 - GOOD: "close_to": "Located one block from Central Park and near two grocery stores."
 """,
 
-     "LLM_INSTRUCTIONS":
+     "LLM_OUTPUT_OBJ_INSTRUCTIONS":
 """
+Extract and return this JSON object:
      {{
      "smoke_free": bool or null,
      "pet_friendly": {{
