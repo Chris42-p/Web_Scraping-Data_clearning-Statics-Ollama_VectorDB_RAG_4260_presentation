@@ -1,6 +1,6 @@
 #================== Renting. 
 
-https://vancouver.craigslist.org/search/apa#search=2~gallery~0
+
 
 https://www.realtor.ca/map#view=list&Sort=6-D&GeoIds=g30_c2b2nw3h&GeoName=Vancouver%2C%20BC&PropertyTypeGroupID=1&TransactionTypeId=3&PropertySearchTypeId=1&Currency=CAD
 
@@ -14,6 +14,11 @@ https://www.zillow.com/vancouver-bc/rentals/11_p/?searchQueryState=%7B%22paginat
 
 
 
+#======================== Monthly report 
+https://www.gvrealtors.ca/market-watch/monthly-market-report/may-2026.html #market reports
+
+
+https://economics.gvrealtors.ca/#category=  #market blogs
 
 
 #================== Selling 

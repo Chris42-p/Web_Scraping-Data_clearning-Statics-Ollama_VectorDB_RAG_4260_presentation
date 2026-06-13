@@ -5,7 +5,7 @@ tutorial ref: https://thepythonscrapyplaybook.com/scrapy-beginners-guide/
 ## scrapy startproject <name_of_project>
 
 
-# step 2: create a scrapy spider:  scrapy genspider pwd/cregslist_spider <website_irl>
+# step 2: create a scrapy spider:  scrapy genspider cregslist_spider <website_irl>
 
 # step 3: add  "shell=ipython" to scrapy.cfg
 

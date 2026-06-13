@@ -164,6 +164,7 @@ class Post_Data():
                response=""
                while crashes<CONST["LLM_CRASH_LIMIT"]:
                     try:
+                         print("\n====== Parsing Description Using LLM ===========\n") 
                          instruction= f"{CONST["LLM_OUTPUT_OBJ_INSTRUCTIONS"]} Document:{document}"
                          
                          response=ollama.chat(
@@ -188,6 +189,8 @@ class Post_Data():
                          print("Model Crashed")               
 
                # return response #return empty string if the model keeps crashing.
+
+
 
 
 
