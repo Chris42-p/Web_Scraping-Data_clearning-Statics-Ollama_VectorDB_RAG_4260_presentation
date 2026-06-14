@@ -58,6 +58,10 @@ class CregslistSpiderPipeline:
         square_feet_unit=self.__strip_spaces(self.__strip_html(square_feet_unit))
         square_feet_unit=square_feet_unit[:-1]
 
+        #listing agent == individuals. 
+        leasing_agent="individual"
+
+
         Post_Data(
             post_id,
             time_of_post,
@@ -75,7 +79,8 @@ class CregslistSpiderPipeline:
             bed_bath,
             square_feet_unit,
             post_description,
-            rent_period
+            rent_period,
+            leasing_agent,
         ).save_to_db()
         
 

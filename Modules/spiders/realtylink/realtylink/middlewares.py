@@ -1,18 +1,15 @@
 # Define here the models for your spider middleware
+#
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-from itemadapter import ItemAdapter# useful for handling different item types with a single interface
 
-#=== scrapy default imports 
-
+# useful for handling different item types with a single interface
+from itemadapter import ItemAdapter
 
 
 from spider_default_obj.spider_user_agent_factor import UserAgentFactory
-#=== Custom imports
-
-
 class UserAgentRotationMilleware:
     
     @classmethod
@@ -35,8 +32,7 @@ class UserAgentRotationMilleware:
         spider.logger.info("Spider opened: %s" % spider.name)
 
 
-
-class RealtorCaSpiderMiddleware:
+class RealtylinkSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -79,7 +75,8 @@ class RealtorCaSpiderMiddleware:
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
 
-class RealtorCaDownloaderMiddleware:
+
+class RealtylinkDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
@@ -94,14 +91,13 @@ class RealtorCaDownloaderMiddleware:
     def process_request(self, request, spider):
         # Called for each request that goes through the downloader
         # middleware.
+
         # Must either:
         # - return None: continue processing this request
         # - or return a Response object
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
-        
-        
         return None
 
     def process_response(self, request, response, spider):
@@ -111,9 +107,6 @@ class RealtorCaDownloaderMiddleware:
         # - return a Response object
         # - return a Request object
         # - or raise IgnoreRequest
-
-
-
         return response
 
     def process_exception(self, request, exception, spider):
@@ -128,5 +121,3 @@ class RealtorCaDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
-
-

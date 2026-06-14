@@ -28,7 +28,7 @@ class Post_Data():
      post_active=None                   #Team IDK how to handle this RN please look over this
 
      def __init__(self, 
-               post_id,time_of_post, user_post_title, first_pic, user_meta_tags, post_url, price_of_the_unit, sqr_feet, general_area, street_number, city, province, postal_code, bed_bath, square_feet_unit, post_description, rent_period
+               post_id,time_of_post, user_post_title, first_pic, user_meta_tags, post_url, price_of_the_unit, sqr_feet, general_area, street_number, city, province, postal_code, bed_bath, square_feet_unit, post_description, rent_period, leasing_agent
           ):
    
           self.post_id=post_id
@@ -48,6 +48,7 @@ class Post_Data():
           self.square_feet_unit=square_feet_unit
           self.post_description=post_description
           self.rent_period=rent_period
+          self.leasing_agent=leasing_agent
 
 
           self.parse_description() #call parse description automatically. 
