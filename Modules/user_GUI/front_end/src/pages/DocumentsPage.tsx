@@ -144,7 +144,7 @@ export function DocumentsPage() {
                         {uploading ? "Uploading..." : "Upload Documents"}
                     </button>
                 </div>
-
+                
                 <div className="documents-search-row">
                     <input
                         className="documents-search-input"

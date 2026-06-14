@@ -1,15 +1,14 @@
 import { APP_CONFIG } from "./config";
-import type { HousingSummaryResponse } from "./interfaces";
-import type { DocumentItem } from "./interfaces";
-import { normalizeDocument } from "./utils"
-
-
 import type {
   AuthPayload,
+  DocumentItem,
   FeedbackPayload,
   GmailFilterPayload,
+  HousingSummaryResponse,
+  SpiderConfig,
   SpiderPayload,
-  SearchResponse,
+  SpiderRunResponse,
+  SpiderStatus,
 } from "./interfaces";
 
 const API_BASE = APP_CONFIG.apiBaseUrl;
@@ -69,7 +68,7 @@ export async function getCurrentUser() {
 // Load document services
 
 export async function loadDocuments(): Promise<DocumentItem[]> {
-  const response = await fetch("http://localhost:8000/documents", {
+  const response = await fetch(`${API_BASE}/documents`, {
     credentials: "include",
   });
 
@@ -172,9 +171,48 @@ export async function submitFeedback(payload: FeedbackPayload) {
 
 // Reports
 export async function loadHousingSummary(): Promise<HousingSummaryResponse> {
-  return apiRequest<HousingSummaryResponse>("/reports/housing/summary", {
-    method: "GET",
-  });
+  try {
+    const response = await fetch(`${API_BASE}/reports/housing/summary`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        avgPrice: "No data",
+        salesVolume: "0",
+        newListings: "0",
+        daysOnMarket: "0",
+        updatesCount: 0,
+        error:
+          data?.detail ||
+          data?.error ||
+          data?.message ||
+          `HTTP ${response.status}`,
+      };
+    }
+
+    return {
+      avgPrice: data?.avgPrice ?? "No data",
+      salesVolume: data?.salesVolume ?? "0",
+      newListings: data?.newListings ?? "0",
+      daysOnMarket: data?.daysOnMarket ?? "0",
+      updatesCount: data?.updatesCount ?? 0,
+      error: null,
+    };
+  } catch (error) {
+    console.error("loadHousingSummary failed:", error);
+    return {
+      avgPrice: "No data",
+      salesVolume: "0",
+      newListings: "0",
+      daysOnMarket: "0",
+      updatesCount: 0,
+      error: "Unable to load live summary data.",
+    };
+  }
 }
 
 export async function loadHousingTrends() {
@@ -196,6 +234,30 @@ export async function rerunModel(docHash: string) {
 }
 
 
+export async function loadSpiderConfig(): Promise<SpiderConfig> {
+  return apiRequest<SpiderConfig>("/spider/config", {
+    method: "GET",
+  });
+}
+
+export async function saveSpiderConfig(config: SpiderConfig): Promise<SpiderConfig> {
+  return apiRequest<SpiderConfig>("/spider/config", {
+    method: "POST",
+    body: JSON.stringify(config),
+  });
+}
+
+export async function runSpiderNow(): Promise<SpiderRunResponse> {
+  return apiRequest<SpiderRunResponse>("/spider/run", {
+    method: "POST",
+  });
+}
+
+export async function loadSpiderStatus(): Promise<SpiderStatus> {
+  return apiRequest<SpiderStatus>("/spider/status", {
+    method: "GET",
+  });
+}
 
 
 

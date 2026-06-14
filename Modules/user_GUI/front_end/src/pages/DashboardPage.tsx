@@ -16,6 +16,7 @@ export function DashboardPage() {
 
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
+    const [updatesCount, setUpdatesCount] = useState(0);
 
     useEffect(() => {
         async function fetchDashboardData() {
@@ -24,16 +25,26 @@ export function DashboardPage() {
                 setErrorMessage("");
 
                 const data = await loadHousingSummary();
+                setUpdatesCount(data?.updatesCount ?? 0);
 
                 setSummaryCards([
-                    { label: "Average Rent", value: data.avgPrice || "No data" },
-                    { label: "Listing Volume", value: data.salesVolume || "No data" },
-                    { label: "New Listings", value: data.newListings || "No data" },
-                    { label: "Days on Market", value: data.daysOnMarket || "No data" },
+                    { label: "Average Rent", value: data?.avgPrice ?? "No data" },
+                    { label: "Listing Volume", value: data?.salesVolume ?? "No data" },
+                    { label: "New Listings", value: data?.newListings ?? "No data" },
+                    { label: "Days on Market", value: data?.daysOnMarket ?? "No data" },
                 ]);
             } catch (error) {
                 console.error("Failed to load dashboard data:", error);
-                setErrorMessage("Failed to load housing summary data.");
+
+                setSummaryCards([
+                    { label: "Average Rent", value: "No data" },
+                    { label: "Listing Volume", value: "No data" },
+                    { label: "New Listings", value: "No data" },
+                    { label: "Days on Market", value: "No data" },
+                ]);
+
+                setUpdatesCount(0);
+                setErrorMessage("Market summary is temporarily unavailable.");
             } finally {
                 setLoading(false);
             }
@@ -44,12 +55,67 @@ export function DashboardPage() {
 
     return (
         <div className="dashboard-home">
-            <section className="dashboard-hero">
+            <section className="dashboard-section">
+                <div className="dashboard-section-header">
+                    <div>
+                        <h2>Market summary</h2>
+                        <p className="dashboard-section-subtitle">
+                            Latest rental market indicators from your connected data sources.
+                        </p>
+                    </div>
+
+                    {updatesCount > 0 ? (
+                        <div className="dashboard-update-pill">
+                            {updatesCount} update{updatesCount === 1 ? "" : "s"} detected
+                        </div>
+                    ) : null}
+                </div>
+
+                {loading && (
+                    <div className="dashboard-message loading">
+                        Loading housing summary...
+                    </div>
+                )}
+
+                {errorMessage && (
+                    <div className="dashboard-message error">
+                        {errorMessage}
+                    </div>
+                )}
+
+                <div className="dashboard-cards">
+                    {summaryCards.map((card) => (
+                        <div key={card.label} className="dashboard-card">
+                            <h3>{card.label}</h3>
+                            <p>{card.value}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <section className="dashboard-lower-grid">
+                <div className="dashboard-section">
+                    <h2>Trend charts</h2>
+                    <div className="dashboard-placeholder">
+                        Housing chart area
+                    </div>
+                </div>
+
+                <div className="dashboard-section">
+                    <h2>Market map</h2>
+                    <div className="dashboard-placeholder">
+                        Listing and neighbourhood map area
+                    </div>
+                </div>
+            </section>
+
+            <section className="dashboard-hero dashboard-hero-bottom">
                 <div className="dashboard-hero-card dashboard-hero-main">
                     <h2>Vancouver rental market workspace</h2>
                     <p>
                         Track housing documents, connect Gmail imports, run spiders, and review analytics from one dashboard built for the rental market project.
                     </p>
+
                     <div className="dashboard-hero-actions">
                         <button
                             className="app-primary-button"
@@ -72,86 +138,12 @@ export function DashboardPage() {
                     <p>Current modules connected to the platform workspace.</p>
                     <ul className="dashboard-status-list">
                         <li>Document browser available</li>
-                        <li>Document upload pending</li>
-                        <li>Gmail integration in progress</li>
-                        <li>Spider integration in progress</li>
-                        <li>Reports module scaffolded</li>
+                        <li>Document upload available</li>
+                        <li>Gmail integration available</li>
+                        <li>Spider integration available</li>
+                        <li>Reports in progress</li>
+                        <li>Settings in available</li>
                     </ul>
-                </div>
-            </section>
-
-            {loading && (
-                <div className="dashboard-message loading">
-                    Loading housing summary...
-                </div>
-            )}
-
-            {errorMessage && (
-                <div className="dashboard-message error">
-                    {errorMessage}
-                </div>
-            )}
-
-            <section className="dashboard-section">
-                <h2>Market summary</h2>
-                <div className="dashboard-cards">
-                    {summaryCards.map((card) => (
-                        <div key={card.label} className="dashboard-card">
-                            <h3>{card.label}</h3>
-                            <p>{card.value}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="dashboard-section">
-                <h2>Quick actions</h2>
-                <div className="dashboard-panel">
-                    <div className="dashboard-actions">
-                        <button
-                            className="dashboard-button"
-                            onClick={() => navigate("/app/documents")}
-                        >
-                            View Documents
-                        </button>
-
-                        <button
-                            className="dashboard-button"
-                            onClick={() => navigate("/app/reports")}
-                        >
-                            Open Reports
-                        </button>
-
-                        <button
-                            className="dashboard-button"
-                            onClick={() => navigate("/app/gmail")}
-                        >
-                            Open Gmail
-                        </button>
-
-                        <button
-                            className="dashboard-button"
-                            onClick={() => navigate("/app/spider")}
-                        >
-                            Run Spiders
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section className="dashboard-lower-grid">
-                <div className="dashboard-section">
-                    <h2>Trend charts</h2>
-                    <div className="dashboard-placeholder">
-                        Housing chart area
-                    </div>
-                </div>
-
-                <div className="dashboard-section">
-                    <h2>Market map</h2>
-                    <div className="dashboard-placeholder">
-                        Listing and neighbourhood map area
-                    </div>
                 </div>
             </section>
         </div>
