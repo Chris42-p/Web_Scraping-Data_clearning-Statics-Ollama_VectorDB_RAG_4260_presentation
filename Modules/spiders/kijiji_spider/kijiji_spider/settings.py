@@ -40,6 +40,7 @@ ITEM_PIPELINES = {
 }
 
 DOWNLOADER_MIDDLEWARES = {
+    "kijiji_spider.middlewares.UserAgentRotationMiddleware": 400,
     "kijiji_spider.middlewares.KijijiSpiderDownloaderMiddleware": 543,
 }
 
