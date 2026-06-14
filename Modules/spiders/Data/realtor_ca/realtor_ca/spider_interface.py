@@ -3,13 +3,13 @@ from pathlib import Path
 
 CONST={
      # realtor_ca_spider.py
-     "ALLOWED_DOMAINS":["www.realtor.ca"],
-     "START_URL":["https://www.realtor.ca/map#view=list&Sort=6-D&GeoIds=g30_c2b2nw3h&GeoName=Vancouver%2C%20BC&PropertyTypeGroupID=1&TransactionTypeId=3&PropertySearchTypeId=1&Currency=CAD"],
+     "ALLOWED_DOMAINS":["www.realtylink.org"],
+     "START_URL":["https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12"],
      
 
      #settings.py
           #== meta
-     "BOT_NAME":"realtor_ca_spider",
+     "BOT_NAME":"realtylink",
      "ROBOTSTXT_OBEY":False,
      "CONCURRENT_REQUESTS_PER_DOMAIN":1,
      "AUTOTHROTTLE_ENABLED":True,

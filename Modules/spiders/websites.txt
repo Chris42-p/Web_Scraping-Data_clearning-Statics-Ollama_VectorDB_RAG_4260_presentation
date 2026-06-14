@@ -2,6 +2,40 @@
 
 
 
+fetch(
+     "https://www.rentfaster.ca/bc/vancouver/",
+ headers={
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 OPR/69.0.3686.57",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+})
+
+
+
+fetch(
+     "https://www.apartments.com/vancouver-bc/?&msclkid=e0019bbd7f0118e36efff19343193aad&utm_source=bing&utm_medium=cpc&utm_campaign=APTS_Canada_B_Province_BC_SRP_KWT_Phrase&utm_term=vancouver%20apartments%20for%20rent&utm_content=APTS_B_Province_BC_City_Vancouver_Generic_Broad_SRP_KWT&gclid=CP-k0eb_hZUDFcCAjgQdZNwo2A&gclsrc=ds&gad_source=7&gad_campaignid=487074470",
+ headers={
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 OPR/69.0.3686.57",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+})
+
+
+
+
+fetch(
+     "https://www.remax.ca/bc/vancouver-real-estate?searchQuery={%22place%22:{%22city%22:%22Vancouver%22,%22placeId%22:%22%22,%22placeType%22:%22places%22,%22stateOrProvince%22:%22BC%22},%22filters%22:{%22uiTransactionType%22:%22Rent%22,%22universalHomeType%22:[]},%22mapBounds%22:{%22north%22:49.3172939,%22south%22:49.19817700000001,%22east%22:-123.023068,%22west%22:-123.22474},%22sortKey%22:%221%22,%22sortDirection%22:%221%22,%22hasPolygon%22:false,%22mapState%22:%22hidden-all%22,%22pageNumber%22:1,%22zoom%22:10}",
+ headers={
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 OPR/69.0.3686.57",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+})
+
+
+#=========  validated and work 
+
+
+
 https://www.realtor.ca/map#view=list&Sort=6-D&GeoIds=g30_c2b2nw3h&GeoName=Vancouver%2C%20BC&PropertyTypeGroupID=1&TransactionTypeId=3&PropertySearchTypeId=1&Currency=CAD
 
 
