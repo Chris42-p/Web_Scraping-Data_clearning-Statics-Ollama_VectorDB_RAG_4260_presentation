@@ -1,6 +1,10 @@
 """
 Kijiji Vancouver Rental Spider
 
+Two-step scraping:
+  1. parse()      - Search results page, get listing URLs from JSON-LD
+  2. parse_page() - Detail page, get full data from meta tags + JSON-LD
+
 Follows cregslist_spider pattern:
 - Spider only scrapes, no data processing
 - All processing happens in pipelines.py
@@ -8,8 +12,7 @@ Follows cregslist_spider pattern:
 
 Usage:
     cd Modules/spiders/kijiji_spider
-    scrapy crawl kijiji_rentals
-    scrapy crawl kijiji_rentals -O ../../../scraped_data/kijiji_rentals.csv
+    scrapy crawl kijiji_spider
 """
 
 import scrapy
@@ -36,6 +39,7 @@ class KijijiRentalsSpider(scrapy.Spider):
             yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
+        """Step 1: Search results page — get listing URLs from JSON-LD."""
         scripts = response.css('script[type="application/ld+json"]::text').getall()
         listings_found = 0
 
@@ -55,30 +59,29 @@ class KijijiRentalsSpider(scrapy.Spider):
                 d = entry.get("item", {})
                 url = d.get("url", "N/A")
 
-                # Extract listing ID from URL
-                post_id = "N/A"
-                if url != "N/A":
-                    match = re.search(r"/(\d+)$", url)
-                    if match:
-                        post_id = match.group(1)
+                if url == "N/A":
+                    continue
 
-                yield KijijiSpiderItem(
-                    post_id=post_id,
-                    time_of_post=d.get("datePosted", "N/A"),
-                    user_post_title=d.get("name", "N/A"),
-                    first_pic=d.get("image", "N/A"),
-                    user_meta_tags=str(d.get("keywords", "N/A")),
-                    post_url=url,
-                    price_of_the_unit=d.get("offers", {}).get("price", "N/A"),
-                    num_bedrooms_n_square_feet_sq=str(d.get("numberOfBedrooms", "N/A")),
-                    city_general_area=d.get("address", "N/A"),
-                    address=d.get("address", "N/A"),
-                    bed_and_bath=f"{d.get('numberOfBedrooms', 'N/A')}br / {d.get('numberOfBathroomsTotal', 'N/A')}ba",
-                    square_feet_unit=str(d.get("floorSize", {}).get("value", "N/A")),
-                    post_description=d.get("description", "N/A"),
-                    rent_period="monthly",
-                )
+                # Pass basic info from search results to detail page
+                meta = {
+                    "post_url": url,
+                    "user_post_title": d.get("name", "N/A"),
+                    "price_of_the_unit": d.get("offers", {}).get("price", "N/A"),
+                    "address": d.get("address", "N/A"),
+                    "num_bedrooms": str(d.get("numberOfBedrooms", "N/A")),
+                    "num_bathrooms": str(d.get("numberOfBathroomsTotal", "N/A")),
+                    "square_feet": str(d.get("floorSize", {}).get("value", "N/A")),
+                    "first_pic": d.get("image", "N/A"),
+                    "pets_allowed": str(d.get("petsAllowed", "N/A")),
+                }
+
                 listings_found += 1
+                yield scrapy.Request(
+                    url=url,
+                    callback=self.parse_page,
+                    meta=meta,
+                    headers={"Referer": response.url},
+                )
 
         # Pagination
         if self.current_page < self.max_pages and listings_found > 0:
@@ -92,3 +95,61 @@ class KijijiRentalsSpider(scrapy.Spider):
                 callback=self.parse,
                 headers={"Referer": response.url},
             )
+
+    def parse_page(self, response):
+        """Step 2: Detail page — enrich with meta tags and JSON-LD."""
+        meta = response.meta
+
+        # Extract listing ID from URL
+        post_id = "N/A"
+        url = meta.get("post_url", response.url)
+        match = re.search(r"/(\d+)$", url)
+        if match:
+            post_id = match.group(1)
+
+        # == Coordinates from og: meta tags
+        latitude = response.css('meta[property="og:latitude"]::attr(content)').get("N/A")
+        longitude = response.css('meta[property="og:longitude"]::attr(content)').get("N/A")
+
+        # == Full description from og:description (more complete than JSON-LD snippet)
+        full_description = response.css('meta[property="og:description"]::attr(content)').get(
+            meta.get("post_url", "N/A")
+        )
+
+        # == Time of post from JSON-LD on detail page
+        time_of_post = "N/A"
+        scripts = response.css('script[type="application/ld+json"]::text').getall()
+        for script in scripts:
+            try:
+                data = json.loads(script)
+                if data.get("@type") in ("Product", "Offer", "RentalAction"):
+                    time_of_post = data.get("datePosted", "N/A")
+                    break
+            except json.JSONDecodeError:
+                continue
+
+        # == bed/bath string
+        num_bedrooms = meta.get("num_bedrooms", "N/A")
+        num_bathrooms = meta.get("num_bathrooms", "N/A")
+        if num_bedrooms == "0":
+            num_bedrooms = "Studio/Bachelor"
+        bed_and_bath = f"{num_bedrooms}br / {num_bathrooms}ba"
+
+        yield KijijiSpiderItem(
+            post_id=post_id,
+            time_of_post=time_of_post,
+            user_post_title=meta.get("user_post_title", "N/A"),
+            first_pic=meta.get("first_pic", "N/A"),
+            user_meta_tags="N/A",
+            post_url=url,
+            price_of_the_unit=meta.get("price_of_the_unit", "N/A"),
+            num_bedrooms_n_square_feet_sq=num_bedrooms,
+            city_general_area=meta.get("address", "N/A"),
+            address=meta.get("address", "N/A"),
+            bed_and_bath=bed_and_bath,
+            square_feet_unit=meta.get("square_feet", "N/A"),
+            post_description=full_description,
+            rent_period="monthly",
+            latitude=latitude,     
+            longitude=longitude,
+        )

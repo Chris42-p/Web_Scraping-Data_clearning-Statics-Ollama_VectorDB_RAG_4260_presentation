@@ -17,3 +17,5 @@ class KijijiSpiderItem(scrapy.Item):
     square_feet_unit = scrapy.Field()
     post_description = scrapy.Field()
     rent_period = scrapy.Field()
+    latitude = scrapy.Field()
+    longitude = scrapy.Field()

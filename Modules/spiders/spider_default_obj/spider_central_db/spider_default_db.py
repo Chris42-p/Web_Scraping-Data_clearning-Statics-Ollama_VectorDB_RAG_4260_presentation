@@ -4,11 +4,19 @@ Spider Central DB
 Creates and manages the central SQLite database for all spiders.
 All spiders dump their Post_Data objects here.
 
-Table structure (themed, linked by post_id):
+Table structure:
+    -- Rental listings (from Post_Data) --
     posts               - meta info about the post
     listings            - rental basic info
     unit_details        - physical unit details
     parsed_description  - LLM-parsed fields from Post_Description_Parser
+
+    -- Geographic data (from vancouver_zoning + safety_convenience spiders) --
+    zoning_districts    - Vancouver zoning areas (4.2.2.1)
+    transit_stations    - Skytrain stations (4.2.2.3)
+    parks               - Vancouver parks with coordinates (4.2.2.3)
+    schools             - Vancouver schools (4.2.2.3)
+    crime_incidents     - VPD crime data 2020-2025 (4.2.2.3)
 
 Usage:
     from spider_central_db.spider_default_db import SpiderCentralDB
@@ -36,13 +44,13 @@ class SpiderCentralDB:
         # ── Table 1: posts (meta) ──────────────────────────────────────
         conn.execute("""
             CREATE TABLE IF NOT EXISTS posts (
-                post_id         TEXT PRIMARY KEY,
-                source_website  TEXT,
-                post_url        TEXT,
-                time_of_post    TEXT,
-                time_scraped    TEXT,
+                post_id             TEXT PRIMARY KEY,
+                source_website      TEXT,
+                post_url            TEXT,
+                time_of_post        TEXT,
+                time_scraped        TEXT,
                 time_scraped_update TEXT,
-                post_active     INTEGER DEFAULT 1
+                post_active         INTEGER DEFAULT 1
             )
         """)
 
@@ -55,6 +63,10 @@ class SpiderCentralDB:
                 rent_period         TEXT,
                 city_general_area   TEXT,
                 address             TEXT,
+                street_number       TEXT,
+                city                TEXT,
+                province            TEXT,
+                postal_code         TEXT,
                 FOREIGN KEY (post_id) REFERENCES posts(post_id)
             )
         """)
@@ -110,21 +122,88 @@ class SpiderCentralDB:
             )
         """)
 
+        # ── Table 5: zoning_districts (4.2.2.1) ───────────────────────
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS zoning_districts (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                zone_name       TEXT,
+                zone_category   TEXT,
+                geo_json        TEXT,
+                fetched_at      TEXT
+            )
+        """)
+
+        # ── Table 6: transit_stations (4.2.2.3) ───────────────────────
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS transit_stations (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                name        TEXT,
+                line        TEXT,
+                latitude    REAL,
+                longitude   REAL,
+                fetched_at  TEXT
+            )
+        """)
+
+        # ── Table 7: parks (4.2.2.3) ──────────────────────────────────
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS parks (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                name            TEXT,
+                neighbourhood   TEXT,
+                facilities      TEXT,
+                latitude        REAL,
+                longitude       REAL,
+                fetched_at      TEXT
+            )
+        """)
+
+        # ── Table 8: schools (4.2.2.3) ────────────────────────────────
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS schools (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                name        TEXT,
+                category    TEXT,
+                address     TEXT,
+                latitude    REAL,
+                longitude   REAL,
+                fetched_at  TEXT
+            )
+        """)
+
+        # ── Table 9: crime_incidents (4.2.2.3) ────────────────────────
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS crime_incidents (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                year            INTEGER,
+                month           INTEGER,
+                day             INTEGER,
+                hour            INTEGER,
+                minute          INTEGER,
+                offence_type    TEXT,
+                neighbourhood   TEXT,
+                hundred_block   TEXT,
+                latitude        REAL,
+                longitude       REAL,
+                fetched_at      TEXT
+            )
+        """)
+
         conn.commit()
         conn.close()
         print(f"[SpiderCentralDB] Database ready at {self.db_path}")
 
+    # ── Rental listing save ────────────────────────────────────────────
+
     def save(self, post_data):
         """
-        Save a Post_Data object into all themed tables.
-        Accepts a Post_Data instance from spider_default_obj.
+        Save a Post_Data object into all rental themed tables.
         """
         conn = sqlite3.connect(self.db_path)
         p = post_data
         now = datetime.utcnow().isoformat()
 
         try:
-            # posts
             conn.execute("""
                 INSERT OR REPLACE INTO posts
                 (post_id, source_website, post_url, time_of_post, time_scraped, post_active)
@@ -138,59 +217,37 @@ class SpiderCentralDB:
                 1,
             ))
 
-            # listings
             conn.execute("""
                 INSERT OR REPLACE INTO listings
-                (post_id, user_post_title, price_of_the_unit, rent_period, city_general_area, address)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (post_id, user_post_title, price_of_the_unit, rent_period,
+                 city_general_area, address, street_number, city, province, postal_code)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 str(p.post_id),
                 p.user_post_title,
                 p.price_of_the_unit,
                 p.rent_period,
-                p.city_general_area,
-                p.address,
+                getattr(p, "general_area", "N/A"),
+                p.address if hasattr(p, "address") else getattr(p, "street_number", "N/A"),
+                getattr(p, "street_number", "N/A"),
+                getattr(p, "city", "N/A"),
+                getattr(p, "province", "N/A"),
+                getattr(p, "postal_code", "N/A"),
             ))
 
-            # unit_details
             conn.execute("""
                 INSERT OR REPLACE INTO unit_details
-                (post_id, bed_and_bath, square_feet_unit, num_bedrooms_n_square_feet, first_pic, user_meta_tags)
+                (post_id, bed_and_bath, square_feet_unit, num_bedrooms_n_square_feet,
+                 first_pic, user_meta_tags)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (
                 str(p.post_id),
-                p.bed_and_bath,
+                getattr(p, "bed_bath", "N/A"),
                 p.square_feet_unit,
-                p.num_bedrooms_n_square_feet_sq,
+                getattr(p, "sqr_feet", "N/A"),
                 p.first_pic,
                 str(p.user_meta_tags),
             ))
-
-            # parsed_description (from Post_Description_Parser)
-            pd = getattr(p, "_parsed", None)
-            if pd:
-                conn.execute("""
-                    INSERT OR REPLACE INTO parsed_description
-                    (post_id, smoke_free, private_room, living_situation, available_from,
-                     property_type, has_ac, w_d_in_unit, furnished, wheelchair_accessible,
-                     sq_footage, price_per_month, included_utilities, utility_cap,
-                     close_to, travel_convenience, luxuries, llm_model_comments,
-                     pets_okay, cats_okay, dogs_okay,
-                     parking_included, parking_spots, parking_ev_charging, parking_details,
-                     damage_deposit, other_deposits,
-                     req_credit_check, req_references, req_criminal_record, req_other)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """, (
-                    str(p.post_id),
-                    pd.smoke_free, pd.private_room, pd.living_situation, pd.living_situation,
-                    pd.living_situation, pd.has_ac, pd.w_d_in_unit, pd.furnished, pd.wheelchair_accessible,
-                    pd.sq_footage, pd.price_per_month, pd.included_utilities, pd.utility_cap,
-                    pd.close_to, pd.travel_convenience, pd.luxuries, pd.llm_model_comments,
-                    pd.pets_okay, pd.cats_okay, pd.dogs_okay,
-                    pd.parking_included, pd.parking_spots, pd.parking_ev_charging, pd.parking_details,
-                    pd.damage_deposit, pd.other_deposits,
-                    pd.req_credit_check, pd.req_references, pd.req_criminal_record_check, pd.req_other,
-                ))
 
             conn.commit()
             print(f"[SpiderCentralDB] Saved post_id: {p.post_id}")
@@ -199,6 +256,92 @@ class SpiderCentralDB:
             print(f"[SpiderCentralDB] Error saving {p.post_id}: {e}")
         finally:
             conn.close()
+
+    # ── Geographic data save ───────────────────────────────────────────
+
+    def save_zoning(self, records: list[dict]):
+        """Save zoning records from vancouver_zoning spider."""
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("DELETE FROM zoning_districts")
+        fetched_at = datetime.utcnow().isoformat()
+        rows = [(r.get("zone_name",""), r.get("zone_category",""),
+                 r.get("geo_json",""), fetched_at) for r in records]
+        conn.executemany(
+            "INSERT INTO zoning_districts (zone_name, zone_category, geo_json, fetched_at) VALUES (?,?,?,?)",
+            rows
+        )
+        conn.commit()
+        conn.close()
+        print(f"[SpiderCentralDB] Saved {len(rows)} zoning records.")
+
+    def save_transit(self, records: list[dict]):
+        """Save transit station records from safety_convenience spider."""
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("DELETE FROM transit_stations")
+        fetched_at = datetime.utcnow().isoformat()
+        rows = [(r.get("name",""), r.get("line",""),
+                 r.get("latitude"), r.get("longitude"), fetched_at) for r in records]
+        conn.executemany(
+            "INSERT INTO transit_stations (name, line, latitude, longitude, fetched_at) VALUES (?,?,?,?,?)",
+            rows
+        )
+        conn.commit()
+        conn.close()
+        print(f"[SpiderCentralDB] Saved {len(rows)} transit stations.")
+
+    def save_parks(self, records: list[dict]):
+        """Save parks records from safety_convenience spider."""
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("DELETE FROM parks")
+        fetched_at = datetime.utcnow().isoformat()
+        rows = [(r.get("name",""), r.get("neighbourhood",""), r.get("facilities",""),
+                 r.get("latitude"), r.get("longitude"), fetched_at) for r in records]
+        conn.executemany(
+            "INSERT INTO parks (name, neighbourhood, facilities, latitude, longitude, fetched_at) VALUES (?,?,?,?,?,?)",
+            rows
+        )
+        conn.commit()
+        conn.close()
+        print(f"[SpiderCentralDB] Saved {len(rows)} parks.")
+
+    def save_schools(self, records: list[dict]):
+        """Save schools records from safety_convenience spider."""
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("DELETE FROM schools")
+        fetched_at = datetime.utcnow().isoformat()
+        rows = [(r.get("name",""), r.get("category",""), r.get("address",""),
+                 r.get("latitude"), r.get("longitude"), fetched_at) for r in records]
+        conn.executemany(
+            "INSERT INTO schools (name, category, address, latitude, longitude, fetched_at) VALUES (?,?,?,?,?,?)",
+            rows
+        )
+        conn.commit()
+        conn.close()
+        print(f"[SpiderCentralDB] Saved {len(rows)} schools.")
+
+    def save_crime(self, records: list[dict]):
+        """Save VPD crime records from safety_convenience spider."""
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("DELETE FROM crime_incidents")
+        fetched_at = datetime.utcnow().isoformat()
+        rows = [(
+            r.get("year"), r.get("month"), r.get("day"),
+            r.get("hour"), r.get("minute"),
+            r.get("offence_type",""), r.get("neighbourhood",""),
+            r.get("hundred_block",""),
+            r.get("latitude"), r.get("longitude"), fetched_at
+        ) for r in records]
+        conn.executemany("""
+            INSERT INTO crime_incidents
+            (year, month, day, hour, minute, offence_type, neighbourhood,
+             hundred_block, latitude, longitude, fetched_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        """, rows)
+        conn.commit()
+        conn.close()
+        print(f"[SpiderCentralDB] Saved {len(rows)} crime incidents.")
+
+    # ── Query helpers ──────────────────────────────────────────────────
 
     def get_all_posts(self) -> list:
         """Return all posts joined with listing info."""
@@ -217,5 +360,5 @@ class SpiderCentralDB:
 
 if __name__ == "__main__":
     db = SpiderCentralDB()
-    print("Tables created successfully.")
+    print("All tables created successfully.")
     print(f"DB location: {DB_PATH}")

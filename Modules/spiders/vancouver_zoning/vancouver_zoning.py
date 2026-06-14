@@ -95,7 +95,7 @@ class VancouverZoningClient:
         conn = sqlite3.connect(self.db_path)
         conn.execute("DELETE FROM zoning_districts")
 
-        fetched_at = datetime.now(datetime.UTC).isoformat()
+        fetched_at = datetime.utcnow().isoformat()
 
         rows = []
         for r in records:
