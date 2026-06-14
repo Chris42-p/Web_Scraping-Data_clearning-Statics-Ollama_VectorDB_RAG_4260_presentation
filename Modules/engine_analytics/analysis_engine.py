@@ -3,9 +3,15 @@ import sqlite3
 
 class AnalysisEngine:
 
-    def __init__(self):
-        self.conn = sqlite3.connect("real_estate.db")
+    def __init__(self, db_path: str = "real_estate.db"):
+        self.db_path = db_path
+        self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+        
 
     def average_price_by_neighbourhood(self):
 
@@ -61,36 +67,49 @@ class AnalysisEngine:
             FROM rew_listings
             WHERE price IS NOT NULL
         """)
-        avg_price = self.cursor.fetchone()[0]
+        avg_price_row = self.cursor.fetchone()
+        avg_price = avg_price_row[0] if avg_price_row else None
 
         self.cursor.execute("""
             SELECT COUNT(*)
             FROM rew_listings
         """)
-        sales_volume = self.cursor.fetchone()[0]
+        sales_volume_row = self.cursor.fetchone()
+        sales_volume = sales_volume_row[0] if sales_volume_row else 0
 
         self.cursor.execute("""
             SELECT COUNT(*)
             FROM rew_listings
             WHERE date_posted IS NOT NULL
         """)
-        new_listings = self.cursor.fetchone()[0]
+        new_listings_row = self.cursor.fetchone()
+        new_listings = new_listings_row[0] if new_listings_row else 0
 
         self.cursor.execute("""
             SELECT ROUND(AVG(days_on_market), 0)
             FROM rew_listings
             WHERE days_on_market IS NOT NULL
         """)
-        days_on_market = self.cursor.fetchone()[0]
+        days_on_market_row = self.cursor.fetchone()
+        days_on_market = days_on_market_row[0] if days_on_market_row else None
 
-        self.conn.close()
+        self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM rew_listings
+            WHERE date_posted IS NOT NULL
+            AND date(date_posted) >= date('now', '-7 day')
+        """)
+        updates_count_row = self.cursor.fetchone()
+        updates_count = updates_count_row[0] if updates_count_row else 0
 
         return {
             "avgPrice": f"${avg_price:,.0f}" if avg_price is not None else "No data",
             "salesVolume": str(sales_volume or 0),
             "newListings": str(new_listings or 0),
             "daysOnMarket": str(days_on_market or 0),
+            "updatesCount": int(updates_count or 0),
         }
+
 
     def property_type_distribution(self):
 
@@ -110,19 +129,6 @@ class AnalysisEngine:
         for row in rows:
             print(row)
 
-    def run(self):
-
-        self.average_price_by_neighbourhood()
-
-        self.average_price_per_sqft()
-
-        self.property_type_distribution()
-
-        self.average_rooms_by_neighbourhood()
-
-        self.top_5_most_expensive()
-
-        self.conn.close()
     
     def average_rooms_by_neighbourhood(self):
 
@@ -182,6 +188,22 @@ class AnalysisEngine:
                 f"{bedrooms} bd / {bathrooms} ba | "
                 f"{square_feet} sqft"
             )
+
+    def run(self):
+
+        try:
+
+            self.average_price_by_neighbourhood()
+
+            self.average_price_per_sqft()
+
+            self.property_type_distribution()
+
+            self.average_rooms_by_neighbourhood()
+
+            self.top_5_most_expensive()
+        finally:
+            self.close()
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ export interface NavItem {
 }
 
 export interface DocumentItem {
-  id?: string;
+  id?: string | number;
   doc_hash?: string;
   title?: string;
   from?: string;
@@ -78,13 +78,35 @@ export interface GmailFilterPayload {
 }
 
 export interface HousingSummaryResponse {
-  avgPrice: string | number;
-  salesVolume: string | number;
-  newListings: string | number;
-  daysOnMarket: string | number;
+  avgPrice: string;
+  salesVolume: string;
+  newListings: string;
+  daysOnMarket: string;
+  updatesCount?: number;
+  error?: string | null;
 }
 
 export interface SummaryCard {
   label: string;
   value: string | number;
+}
+
+export interface SpiderConfig {
+  enabled: boolean;
+  intervalMinutes: number;
+  region: string;
+  keywords: string;
+  maxPages: number;
+}
+
+export interface SpiderStatus {
+  lastRunAt?: string;
+  nextRunAt?: string;
+  isRunning: boolean;
+}
+
+export interface SpiderRunResponse {
+  message: string;
+  started: boolean;
+  nextRunAt?: string;
 }

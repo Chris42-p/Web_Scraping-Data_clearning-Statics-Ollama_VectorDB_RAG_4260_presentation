@@ -10,7 +10,6 @@ export function SpiderPage() {
     const [spiders, setSpiders] = useState<SpiderItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [result, setResult] = useState<any>(null);
 
     useEffect(() => {
         const loadSpiders = async () => {
@@ -33,7 +32,6 @@ export function SpiderPage() {
         try {
             setLoading(true);
             setError("");
-            setResult(null);
 
             const res = await fetch(`${APP_CONFIG.apiBaseUrl}/spiders/run`, {
                 method: "POST",
@@ -46,7 +44,6 @@ export function SpiderPage() {
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || "Failed to run spider");
-            setResult(data);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");
         } finally {
@@ -55,16 +52,16 @@ export function SpiderPage() {
     };
 
     return (
-        <div>
-            <h1>Spiders</h1>
-            <p>Run rental and neighbourhood data spiders from the dashboard.</p>
+        <div className="dashboard-page spider-page">
+            <div className="dashboard-header"></div>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <p className="settings-error">{error}</p>}
 
-            <div style={{ display: "grid", gap: "12px", marginTop: "16px" }}>
+            <div className="spider-actions">
                 {spiders.map((spider) => (
                     <button
                         key={spider.key}
+                        className="dashboard-button"
                         onClick={() => handleRunSpider(spider.key)}
                         disabled={loading}
                     >
@@ -72,13 +69,6 @@ export function SpiderPage() {
                     </button>
                 ))}
             </div>
-
-            {result && (
-                <div style={{ marginTop: "24px" }}>
-                    <h2>Spider Result</h2>
-                    <pre>{JSON.stringify(result, null, 2)}</pre>
-                </div>
-            )}
         </div>
     );
 }

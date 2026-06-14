@@ -38,6 +38,22 @@ npm run dev
 http://localhost:5173
 ```
 
+6. Frontend Icons: cd to frontend and run the command
+```bash
+npm install lucide-react
+```
+if page stop displaying, then run
+
+```bash
+npm ls react react-dom
+```
+
+or copy to package.json:
+```bash
+"react": "^19.1.0",
+"react-dom": "^19.1.0"
+```
+
 ### Frontend notes
 - Run the frontend command only inside the `front_end` folder.
 - If PowerShell blocks npm, run:

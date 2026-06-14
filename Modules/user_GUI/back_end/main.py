@@ -3,10 +3,15 @@ import mimetypes
 import shutil
 from uuid import uuid4
 from pathlib import Path
+from datetime import datetime, timedelta
+from typing import Optional
+
 from fastapi import FastAPI, Request, HTTPException, UploadFile, Depends
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from apscheduler.schedulers.background import BackgroundScheduler
+
 
 from Modules.user_GUI.back_end.service import load_documents
 from Modules.user_GUI.back_end.session_store import create_session, SESSION_STORE
@@ -16,6 +21,7 @@ from Modules.user_GUI.back_end.main_interface import CONST
 from Modules.gmail_api.gmail_api import GmailIngestor
 from Modules.engine_injesting.injest_engine import Injest_Engine
 from Modules.user_GUI.back_end.spider_service import get_available_spiders, run_spider_by_key
+from Modules.engine_analytics.analysis_engine import AnalysisEngine
 
 
 
@@ -38,6 +44,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+scheduler = BackgroundScheduler()
+
+spider_config_store = {
+    "enabled": True,
+    "intervalMinutes": 30,
+    "region": "Vancouver",
+    "keywords": "rental apartment",
+    "maxPages": 5,
+}
+
+spider_status_store = {
+    "lastRunAt": None,
+    "nextRunAt": None,
+    "isRunning": False,
+}
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -49,8 +71,88 @@ class RegisterRequest(BaseModel):
 class SpiderRunRequest(BaseModel):
     spider_key: str
 
+class SpiderConfigModel(BaseModel):
+    enabled: bool
+    intervalMinutes: int
+    region: str
+    keywords: str
+    maxPages: int
+
+class SpiderStatusModel(BaseModel):
+    lastRunAt: Optional[str] = None
+    nextRunAt: Optional[str] = None
+    isRunning: bool = False
+
+class SpiderRunResponseModel(BaseModel):
+    message: str
+    started: bool
+    nextRunAt: Optional[str] = None
+
 def get_db():
     return SQL_DataBase()
+
+# Timer for spider run
+def run_spider_job():
+    spider_status_store["isRunning"] = True
+    spider_status_store["lastRunAt"] = datetime.now().isoformat()
+
+    if spider_config_store["enabled"]:
+        next_run = datetime.now() + timedelta(minutes=spider_config_store["intervalMinutes"])
+        spider_status_store["nextRunAt"] = next_run.isoformat()
+    else:
+        spider_status_store["nextRunAt"] = None
+
+    spider_status_store["isRunning"] = False
+    print("Running spider...")
+
+@app.on_event("startup")
+def startup_event():
+    scheduler.add_job(
+        run_spider_job,
+        "interval",
+        minutes=spider_config_store["intervalMinutes"],
+        id="spider_job",
+        replace_existing=True,
+    )
+    scheduler.start()
+
+@app.get("/spider/config", response_model=SpiderConfigModel)
+def get_spider_config():
+    return spider_config_store
+
+@app.post("/spider/config", response_model=SpiderConfigModel)
+def update_spider_config(config: SpiderConfigModel):
+    spider_config_store.update(config.dict())
+
+    if spider_config_store["enabled"]:
+        next_run = datetime.now() + timedelta(minutes=spider_config_store["intervalMinutes"])
+        spider_status_store["nextRunAt"] = next_run.isoformat()
+    else:
+        spider_status_store["nextRunAt"] = None
+
+    scheduler.reschedule_job(
+        "spider_job",
+        trigger="interval",
+        minutes=spider_config_store["intervalMinutes"],
+    )
+
+    return spider_config_store
+
+
+@app.get("/spider/status", response_model=SpiderStatusModel)
+def get_spider_status():
+    return spider_status_store
+
+@app.post("/spider/run", response_model=SpiderRunResponseModel)
+def run_spider():
+    run_spider_job()
+    return {
+        "message": "Spider run started successfully",
+        "started": True,
+        "nextRunAt": spider_status_store["nextRunAt"],
+    }
+
+
 
 def get_logged_in_user(request: Request):
     session_id = request.cookies.get(CONST["COOKIE_NAME"])
@@ -233,7 +335,12 @@ def get_current_user(user=Depends(get_logged_in_user)):
 @app.get("/reports/housing/summary")
 def get_housing_summary(user=Depends(get_logged_in_user)):
     engine = AnalysisEngine()
-    return engine.get_dashboard_summary()
+    try:
+        return engine.get_dashboard_summary()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load housing summary data: {str(e)}")
+    finally:
+        engine.close()
 
 @app.get("/documents")
 def get_documents(user=Depends(get_logged_in_user)):
