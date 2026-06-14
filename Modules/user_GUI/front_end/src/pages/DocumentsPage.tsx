@@ -101,12 +101,6 @@ export function DocumentsPage() {
 
     return (
         <div className="documents-page">
-            <div className="documents-header">
-                <h1 className="documents-title">Project documents</h1>
-                <p className="documents-subtitle">
-                    Search uploaded files, indexed reports, and imported housing documents.
-                </p>
-            </div>
 
             {(loading || uploading) && (
                 <div className="documents-message loading">

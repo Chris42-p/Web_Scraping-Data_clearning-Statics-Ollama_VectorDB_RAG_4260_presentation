@@ -62,29 +62,34 @@ export function GmailPage() {
     };
 
     return (
-        <div>
-            <h1>Gmail</h1>
-            <p>Connect a Gmail account and import report emails into the platform.</p>
+        <div className="dashboard-page">
+            <section className="dashboard-card">
+                <p>
+                    <strong>Gmail Status:</strong> {status.connected ? "Connected" : "Not connected"}
+                </p>
 
-            <div>
-                <strong>Status:</strong> {status.connected ? "Connected" : "Not connected"}
-            </div>
+                <div className="dashboard-actions" style={{ marginTop: "16px" }}>
+                    <button className="dashboard-button" onClick={connectGmail}>
+                        Connect Gmail
+                    </button>
+                    <button
+                        className="dashboard-button dashboard-button-secondary"
+                        onClick={importGmail}
+                        disabled={!status.connected || loading}
+                    >
+                        {loading ? "Importing..." : "Import Gmail"}
+                    </button>
+                </div>
 
-            <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
-                <button onClick={connectGmail}>Connect Gmail</button>
-                <button onClick={importGmail} disabled={!status.connected || loading}>
-                    {loading ? "Importing..." : "Import Gmail"}
-                </button>
-            </div>
-
-            {error && <p style={{ color: "red", marginTop: "16px" }}>{error}</p>}
+                {error && <p className="settings-error">{error}</p>}
+            </section>
 
             {result && (
-                <div style={{ marginTop: "24px" }}>
-                    <h2>Import Result</h2>
+                <section className="dashboard-card">
+                    <h3>Import Result</h3>
                     <p>Imported: {result.imported_count}</p>
-                    <pre>{JSON.stringify(result, null, 2)}</pre>
-                </div>
+                    <pre className="gmail-result-pre">{JSON.stringify(result, null, 2)}</pre>
+                </section>
             )}
         </div>
     );

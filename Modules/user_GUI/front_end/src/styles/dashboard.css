@@ -4,16 +4,13 @@
   --bg-panel: #0e2b3f;
   --bg-panel-soft: #12354d;
   --border-soft: rgba(120, 170, 210, 0.16);
-
   --text-main: #f4f7fb;
   --text-muted: #9fb2c4;
-
   --accent-blue: #1f7bff;
   --accent-blue-hover: #1468dd;
   --accent-yellow: #f5b400;
   --accent-red: #ff6b57;
   --accent-green: #66d17a;
-
   --shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.22);
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -547,7 +544,7 @@ video {
   color: var(--text-main);
 }
 
-.auth-card>p {
+.auth-card > p {
   margin: 0;
   color: var(--text-muted);
   line-height: 1.6;
@@ -611,7 +608,6 @@ video {
   font-weight: 700;
 }
 
-/* Desktop full-screen layout + collapsible sidebar */
 html,
 body,
 #root {
@@ -628,7 +624,6 @@ body,
 }
 
 @media (min-width: 921px) {
-
   html,
   body,
   #root {
@@ -816,7 +811,6 @@ body,
 }
 
 @media (max-width: 1200px) {
-
   .dashboard-summary-grid,
   .dashboard-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -829,7 +823,6 @@ body,
 }
 
 @media (max-width: 920px) {
-
   html,
   body,
   #root {
@@ -876,7 +869,6 @@ body,
 }
 
 @media (max-width: 640px) {
-
   .app-content,
   .app-topbar {
     padding-left: 18px;
@@ -949,7 +941,6 @@ body,
   --scrollbar-border: rgba(255, 255, 255, 0.08);
 }
 
-
 html {
   scrollbar-color: var(--scrollbar-thumb-solid) var(--scrollbar-track);
   scrollbar-width: thin;
@@ -963,7 +954,6 @@ html {
   scrollbar-color: var(--scrollbar-thumb-solid) var(--scrollbar-track);
   scrollbar-width: thin;
 }
-
 
 .app-content::-webkit-scrollbar,
 .app-sidebar::-webkit-scrollbar,
@@ -1018,7 +1008,7 @@ html {
   text-align: center;
 }
 
-.app-topbar>div:first-child {
+.app-topbar > div:first-child {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -1033,8 +1023,6 @@ html {
   transform: translateY(-50%);
 }
 
-
-/* ---------- Center shared page headers ---------- */
 .dashboard-header,
 .dashboard-header-centered {
   display: flex;
@@ -1070,7 +1058,6 @@ html {
   color: rgba(244, 247, 251, 0.8);
 }
 
-/* ---------- Settings page form alignment ---------- */
 .form-label {
   width: 100%;
   max-width: 760px;
@@ -1125,7 +1112,6 @@ html {
   accent-color: var(--accent-blue);
 }
 
-/* soften the visual impact of the <br /> tags in SettingsPage */
 .dashboard-card > br {
   display: block;
   content: "";
@@ -1133,7 +1119,6 @@ html {
   line-height: 0;
 }
 
-/* Settings actions/message alignment */
 .dashboard-actions {
   justify-content: center;
   margin-top: 18px;
@@ -1153,14 +1138,12 @@ html {
   color: #ffb4a9;
 }
 
-/* Spider status card text white */
 .dashboard-card strong,
 .dashboard-card p strong,
 .dashboard-panel strong {
   color: var(--text-main);
 }
 
-/* ---------- Documents page layout ---------- */
 .documents-page {
   width: 100%;
   min-width: 0;
@@ -1261,7 +1244,6 @@ html {
   text-align: center;
 }
 
-/* ---------- Mobile ---------- */
 @media (max-width: 920px) {
   .documents-upload-row {
     grid-template-columns: 1fr;
@@ -1277,7 +1259,6 @@ html {
   }
 }
 
-/* Plain page headings inside app content */
 .app-content h1,
 .app-content h2,
 .app-content h3 {
@@ -1291,7 +1272,6 @@ html {
   color: rgba(244, 247, 251, 0.8);
 }
 
-/* More compact Settings page */
 .dashboard-page {
   gap: 16px;
 }
@@ -1365,7 +1345,6 @@ html {
   font-size: 14px;
 }
 
-
 .spider-page {
   display: grid;
   gap: 18px;
@@ -1377,4 +1356,16 @@ html {
   max-width: 980px;
   width: 100%;
   margin: 0 auto;
+}
+
+.gmail-result-pre {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-soft);
+  color: var(--text-main);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
