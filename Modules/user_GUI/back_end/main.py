@@ -86,7 +86,9 @@ class SpiderStatusModel(BaseModel):
 class SpiderRunResponseModel(BaseModel):
     message: str
     started: bool
+    spider: Optional[str] = None
     nextRunAt: Optional[str] = None
+    summary: Optional[dict] = None
 
 def get_db():
     return SQL_DataBase()
@@ -144,13 +146,36 @@ def get_spider_status():
     return spider_status_store
 
 @app.post("/spider/run", response_model=SpiderRunResponseModel)
-def run_spider():
-    run_spider_job()
-    return {
-        "message": "Spider run started successfully",
-        "started": True,
-        "nextRunAt": spider_status_store["nextRunAt"],
-    }
+def run_spider(request: SpiderRunRequest):
+    try:
+        spider_status_store["isRunning"] = True
+        spider_status_store["lastRunAt"] = datetime.now().isoformat()
+
+        result = run_spider_by_key(request.spider_key)
+
+        if spider_config_store["enabled"]:
+            next_run = datetime.now() + timedelta(minutes=spider_config_store["intervalMinutes"])
+            spider_status_store["nextRunAt"] = next_run.isoformat()
+        else:
+            spider_status_store["nextRunAt"] = None
+
+        engine = AnalysisEngine()
+        try:
+            summary = engine.get_dashboard_summary()
+        finally:
+            engine.close()
+
+        return {
+            "message": result.get("message", "Spider completed successfully."),
+            "started": True,
+            "spider": result.get("spider", "rew"),
+            "nextRunAt": spider_status_store["nextRunAt"],
+            "summary": summary,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Spider run failed: {str(e)}")
+    finally:
+        spider_status_store["isRunning"] = False
 
 
 

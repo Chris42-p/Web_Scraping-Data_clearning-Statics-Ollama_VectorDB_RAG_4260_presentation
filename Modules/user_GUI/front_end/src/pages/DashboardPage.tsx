@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
 import type { SummaryCard } from "../interfaces";
 import { loadHousingSummary } from "../services";
 
 export function DashboardPage() {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [summaryCards, setSummaryCards] = useState<SummaryCard[]>([
         { label: "Average Rent", value: "Loading..." },
@@ -15,43 +16,63 @@ export function DashboardPage() {
     ]);
 
     const [loading, setLoading] = useState(true);
-    const [errorMessage, setErrorMessage] = useState("");
     const [updatesCount, setUpdatesCount] = useState(0);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [spiderRunMessage, setSpiderRunMessage] = useState("");
+
+    const fetchDashboardData = useCallback(async () => {
+        try {
+            setLoading(true);
+            setErrorMessage("");
+
+            const data = await loadHousingSummary();
+
+            setUpdatesCount(data?.updatesCount ?? 0);
+            setSummaryCards([
+                { label: "Average Rent", value: data?.avgPrice ?? "No data" },
+                { label: "Listing Volume", value: data?.salesVolume ?? "No data" },
+                { label: "New Listings", value: data?.newListings ?? "No data" },
+                { label: "Days on Market", value: data?.daysOnMarket ?? "No data" },
+            ]);
+
+            if (data?.error) {
+                setErrorMessage(data.error);
+            }
+        } catch (error) {
+            console.error("Failed to load dashboard data:", error);
+
+            setSummaryCards([
+                { label: "Average Rent", value: "No data" },
+                { label: "Listing Volume", value: "No data" },
+                { label: "New Listings", value: "No data" },
+                { label: "Days on Market", value: "No data" },
+            ]);
+
+            setUpdatesCount(0);
+            setErrorMessage("Market summary is temporarily unavailable.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
-        async function fetchDashboardData() {
-            try {
-                setLoading(true);
-                setErrorMessage("");
+        fetchDashboardData();
+    }, [fetchDashboardData]);
 
-                const data = await loadHousingSummary();
-                setUpdatesCount(data?.updatesCount ?? 0);
+    useEffect(() => {
+        const state = location.state as
+            | { refreshDashboard?: boolean; spiderRunMessage?: string }
+            | null;
 
-                setSummaryCards([
-                    { label: "Average Rent", value: data?.avgPrice ?? "No data" },
-                    { label: "Listing Volume", value: data?.salesVolume ?? "No data" },
-                    { label: "New Listings", value: data?.newListings ?? "No data" },
-                    { label: "Days on Market", value: data?.daysOnMarket ?? "No data" },
-                ]);
-            } catch (error) {
-                console.error("Failed to load dashboard data:", error);
-
-                setSummaryCards([
-                    { label: "Average Rent", value: "No data" },
-                    { label: "Listing Volume", value: "No data" },
-                    { label: "New Listings", value: "No data" },
-                    { label: "Days on Market", value: "No data" },
-                ]);
-
-                setUpdatesCount(0);
-                setErrorMessage("Market summary is temporarily unavailable.");
-            } finally {
-                setLoading(false);
-            }
+        if (state?.spiderRunMessage) {
+            setSpiderRunMessage(state.spiderRunMessage);
         }
 
-        fetchDashboardData();
-    }, []);
+        if (state?.refreshDashboard) {
+            fetchDashboardData();
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location.state, location.pathname, navigate, fetchDashboardData]);
 
     return (
         <div className="dashboard-home">
@@ -77,6 +98,12 @@ export function DashboardPage() {
                     </div>
                 )}
 
+                {spiderRunMessage && (
+                    <div className="dashboard-message success">
+                        {spiderRunMessage}
+                    </div>
+                )}
+
                 {errorMessage && (
                     <div className="dashboard-message error">
                         {errorMessage}
@@ -94,16 +121,16 @@ export function DashboardPage() {
             </section>
 
             <section className="dashboard-lower-grid">
-                <div className="dashboard-section">
+                <div className="dashboard-section dashboard-visual-panel">
                     <h2>Trend charts</h2>
-                    <div className="dashboard-placeholder">
+                    <div className="dashboard-visual-body">
                         Housing chart area
                     </div>
                 </div>
 
-                <div className="dashboard-section">
+                <div className="dashboard-section dashboard-visual-panel">
                     <h2>Market map</h2>
-                    <div className="dashboard-placeholder">
+                    <div className="dashboard-visual-body">
                         Listing and neighbourhood map area
                     </div>
                 </div>
@@ -131,19 +158,6 @@ export function DashboardPage() {
                             Run Spiders
                         </button>
                     </div>
-                </div>
-
-                <div className="dashboard-hero-card dashboard-hero-side">
-                    <h3>Project Status</h3>
-                    <p>Current modules connected to the platform workspace.</p>
-                    <ul className="dashboard-status-list">
-                        <li>Document browser available</li>
-                        <li>Document upload available</li>
-                        <li>Gmail integration available</li>
-                        <li>Spider integration available</li>
-                        <li>Reports in progress</li>
-                        <li>Settings in available</li>
-                    </ul>
                 </div>
             </section>
         </div>

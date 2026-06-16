@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
-import { logoutUser } from "../services";
+import { getHousingSummary, logoutUser } from "../services";
 
 const NAV_ITEMS = [
     { to: "/app/dashboard", label: "Dashboard", end: true },
@@ -13,10 +13,12 @@ const NAV_ITEMS = [
     { to: "/app/settings", label: "Settings" },
 ];
 
+
 export function DashboardLayout() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [updatesCount, setUpdatesCount] = useState(0);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isSidebarHoverOpen, setIsSidebarHoverOpen] = useState(false);
 
@@ -65,6 +67,30 @@ export function DashboardLayout() {
             subtitle: "Monitor ingestion, housing data, and project modules from one workspace.",
         };
     }, [location.pathname]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadSummary() {
+            try {
+                const summary = await getHousingSummary();
+                if (isMounted) {
+                    setUpdatesCount(Number(summary?.updatesCount ?? 0));
+                }
+            } catch (error) {
+                console.error("Failed to load housing summary for updates badge:", error);
+                if (isMounted) {
+                    setUpdatesCount(0);
+                }
+            }
+        }
+
+        loadSummary();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     async function handleLogout() {
         try {
@@ -163,6 +189,15 @@ export function DashboardLayout() {
                     </div>
 
                     <div className="app-topbar-actions">
+                        <button
+                            className="app-updates-button"
+                            type="button"
+                            onClick={() => navigate("/app/reports")}
+                        >
+                            Updates
+                            <span className="app-updates-badge">{updatesCount}</span>
+                        </button>
+
                         <button
                             className="app-primary-button"
                             type="button"

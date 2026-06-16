@@ -5,7 +5,8 @@ from pathlib import Path
 class ListingSQLiteStorage:
 
     def __init__(self):
-        self.db_path = Path("real_estate.db")
+        #self.db_path = Path("real_estate.db")
+        self.db_path = (Path(__file__).resolve().parents[4] / "real_estate.db").resolve()
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
 

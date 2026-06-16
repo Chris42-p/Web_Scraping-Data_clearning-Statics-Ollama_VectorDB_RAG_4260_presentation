@@ -183,6 +183,7 @@ def parse_rew_listing(title, listing_url):
     return {
         "title": title,
         "price": extract_price(title),
+        "monthly_rent": None,
         "address": formatted_address,
         "street_address": address_parts["street_address"],
         "neighbourhood": address_parts["neighbourhood"],
@@ -197,8 +198,10 @@ def parse_rew_listing(title, listing_url):
         "facilities": "N/A",
         "agent_name": extract_agent_name(title),
         "brokerage": extract_brokerage(title),
+        "property_manager": "N/A",
         "listing_url": listing_url,
         "source_website": "REW.ca",
+        "listing_type": "sale",
         "first_seen": datetime.now().strftime("%Y-%m-%d"),
         "last_seen": datetime.now().strftime("%Y-%m-%d"),
         "status": "active",

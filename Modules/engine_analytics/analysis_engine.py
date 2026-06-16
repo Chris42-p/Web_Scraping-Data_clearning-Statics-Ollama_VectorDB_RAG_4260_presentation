@@ -1,17 +1,52 @@
 import sqlite3
+from pathlib import Path
 
 
 class AnalysisEngine:
 
-    def __init__(self, db_path: str = "real_estate.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            db_path = Path(__file__).resolve().parents[2] / "real_estate.db"
+        self.db_path = Path(db_path).resolve()
         self.conn = sqlite3.connect(self.db_path)
+        self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
+        self._ensure_rew_table()
 
     def close(self):
         if self.conn:
             self.conn.close()
         
+    def _ensure_rew_table(self):
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS rew_listings (
+            listing_url TEXT PRIMARY KEY,
+            title TEXT,
+            price INTEGER,
+            monthly_rent INTEGER,
+            address TEXT,
+            street_address TEXT,
+            neighbourhood TEXT,
+            city TEXT,
+            province TEXT,
+            bedrooms INTEGER,
+            bathrooms INTEGER,
+            square_feet INTEGER,
+            lot_size TEXT,
+            property_type TEXT,
+            features TEXT,
+            facilities TEXT,
+            agent_name TEXT,
+            brokerage TEXT,
+            property_manager TEXT,
+            source_website TEXT,
+            listing_type TEXT,
+            first_seen TEXT,
+            last_seen TEXT,
+            status TEXT
+        )
+        """)
+        self.conn.commit()
 
     def average_price_by_neighbourhood(self):
 
@@ -80,34 +115,47 @@ class AnalysisEngine:
         self.cursor.execute("""
             SELECT COUNT(*)
             FROM rew_listings
-            WHERE date_posted IS NOT NULL
+            WHERE first_seen IS NOT NULL
         """)
         new_listings_row = self.cursor.fetchone()
         new_listings = new_listings_row[0] if new_listings_row else 0
 
         self.cursor.execute("""
-            SELECT ROUND(AVG(days_on_market), 0)
+            SELECT ROUND(AVG(julianday('now') - julianday(first_seen)), 0)
             FROM rew_listings
-            WHERE days_on_market IS NOT NULL
+            WHERE first_seen IS NOT NULL
+              AND status IS NOT NULL
+              AND LOWER(status) = 'active'
         """)
         days_on_market_row = self.cursor.fetchone()
-        days_on_market = days_on_market_row[0] if days_on_market_row else None
+        days_on_market = int(days_on_market_row[0]) if days_on_market_row and days_on_market_row[0] is not None else None
 
         self.cursor.execute("""
             SELECT COUNT(*)
             FROM rew_listings
-            WHERE date_posted IS NOT NULL
-            AND date(date_posted) >= date('now', '-7 day')
+            WHERE last_seen IS NOT NULL
+            AND date(last_seen) >= date('now', '-7 day')
         """)
         updates_count_row = self.cursor.fetchone()
         updates_count = updates_count_row[0] if updates_count_row else 0
+
+        self.cursor.execute("""
+            SELECT COUNT(*)
+            FROM rew_listings
+            WHERE status IS NOT NULL
+            AND LOWER(status) = 'active'
+        """)
+        active_listings_row = self.cursor.fetchone()
+        active_listings = active_listings_row[0] if active_listings_row else 0
 
         return {
             "avgPrice": f"${avg_price:,.0f}" if avg_price is not None else "No data",
             "salesVolume": str(sales_volume or 0),
             "newListings": str(new_listings or 0),
-            "daysOnMarket": str(days_on_market or 0),
+            "daysOnMarket": str(days_on_market) if days_on_market is not None else "N/A",
             "updatesCount": int(updates_count or 0),
+            "activeListings": str(active_listings or 0),
+            "dbPath": str(self.db_path),
         }
 
 

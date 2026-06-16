@@ -259,6 +259,18 @@ export async function loadSpiderStatus(): Promise<SpiderStatus> {
   });
 }
 
+export async function getHousingSummary() {
+    const response = await fetch("http://localhost:8000/reports/housing/summary", {
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to fetch housing summary");
+    }
+
+    return response.json();
+}
+
 
 
 

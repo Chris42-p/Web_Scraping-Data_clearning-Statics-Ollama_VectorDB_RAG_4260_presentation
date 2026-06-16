@@ -108,5 +108,14 @@ export interface SpiderStatus {
 export interface SpiderRunResponse {
   message: string;
   started: boolean;
-  nextRunAt?: string;
+  spider?: string;
+  nextRunAt?: string | null;
+  summary?: {
+    avgPrice: string;
+    salesVolume: string;
+    newListings: string;
+    daysOnMarket: string;
+    updatesCount: number;
+  };
 }
+

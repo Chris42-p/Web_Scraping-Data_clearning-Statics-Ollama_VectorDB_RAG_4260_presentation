@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from Modules.spiders.spider_vinni_change_me.rew_parser import parse_rew_rental_listing
+from Modules.spiders.Data.spider_vinni_change_me.rew_parser import parse_rew_rental_listing
 
 class REWSpider(scrapy.Spider):
     """
@@ -46,7 +46,7 @@ class REWSpider(scrapy.Spider):
         },
 
         "ITEM_PIPELINES": {
-            "Modules.engine_injesting.scrapy_spiders.pipelines.SQLitePipeline": 300,
+            "Modules.spiders.Data.spider_vinni_change_me.pipelines.SQLitePipeline": 300,
         },
 
     }
@@ -85,12 +85,12 @@ class REWSpider(scrapy.Spider):
 
             yield parse_rew_rental_listing(title, listing_url)
 
-            current_page = response.meta.get("page", 1)
+        current_page = response.meta.get("page", 1)
 
-            next_page = response.css("a[rel='next']::attr(href)").get()
+        next_page = response.css("a[rel='next']::attr(href)").get()
 
-            if next_page:
-                yield response.follow(
-                    next_page,
-                    callback=self.parse
-                )
+        if next_page:
+            yield response.follow(
+                next_page,
+                callback=self.parse
+            )
