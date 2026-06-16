@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
-import { getHousingSummary, logoutUser } from "../services";
+import { loadReportsCount, logoutUser } from "../services";
 
 const NAV_ITEMS = [
     { to: "/app/dashboard", label: "Dashboard", end: true },
@@ -46,7 +46,7 @@ export function DashboardLayout() {
         if (location.pathname.includes("/reports")) {
             return {
                 title: "Reports",
-                subtitle: "Review housing summaries, analytics output, and exported insights.",
+                subtitle: "Review summaries, analytics output, and exported insights.",
             };
         }
         if (location.pathname.includes("/feedback")) {
@@ -71,21 +71,21 @@ export function DashboardLayout() {
     useEffect(() => {
         let isMounted = true;
 
-        async function loadSummary() {
+        async function loadReportCount() {
             try {
-                const summary = await getHousingSummary();
+                const data = await loadReportsCount();
                 if (isMounted) {
-                    setUpdatesCount(Number(summary?.updatesCount ?? 0));
+                    setUpdatesCount(Number(data?.count ?? 0));
                 }
             } catch (error) {
-                console.error("Failed to load housing summary for updates badge:", error);
+                console.error("Failed to load reports count:", error);
                 if (isMounted) {
                     setUpdatesCount(0);
                 }
             }
         }
 
-        loadSummary();
+        loadReportCount();
 
         return () => {
             isMounted = false;
@@ -167,14 +167,14 @@ export function DashboardLayout() {
                     <div className="app-sidebar-footer">
                         <div className="app-assistant-card">
                             <p className="app-assistant-text">
-                                Use the AI assistant to summarize documents, review Gmail content, and ask housing questions.
+                                Use Ollama to summarize uploaded housing documents and review generated report output in the Reports page.
                             </p>
                             <button
                                 className="app-primary-button"
                                 type="button"
-                                onClick={() => navigate("/app/ai")}
+                                onClick={() => navigate("/app/reports")}
                             >
-                                Open AI Assistant
+                                Open AI Generated Report
                             </button>
                         </div>
                     </div>

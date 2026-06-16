@@ -232,7 +232,49 @@ class SQL_DataBase():
                return self.__deserialize_row(row)
 
 
-
+     def get_reports(self) -> list[dict]:
+          sql = """
+               SELECT
+                    d.doc_hash,
+                    d.title,
+                    d.author,
+                    d.time_creation,
+                    d.modified_date,
+                    d.original_filename,
+                    d.mime_type,
+                    a.summary,
+                    a.description,
+                    a.send_reason,
+                    a.keywords,
+                    a.topics,
+                    a.entities,
+                    a.document_type,
+                    a.sentiment,
+                    a.language,
+                    a.date_references
+               FROM documents d
+               INNER JOIN ai_analysis a
+                    ON d.doc_hash = a.doc_hash
+               WHERE a.summary IS NOT NULL
+               AND TRIM(a.summary) <> ''
+               ORDER BY d.modified_date DESC, d.time_creation DESC
+          """
+          with self.__get_conn() as conn:
+               rows = conn.execute(sql).fetchall()
+               return [self.__deserialize_row(row) for row in rows]
+          
+     def get_reports_count(self) -> int:
+          sql = """
+               SELECT COUNT(*)
+               FROM documents d
+               INNER JOIN ai_analysis a
+                    ON d.doc_hash = a.doc_hash
+               WHERE a.summary IS NOT NULL
+               AND TRIM(a.summary) <> ''
+          """
+          with self.__get_conn() as conn:
+               row = conn.execute(sql).fetchone()
+               return int(row[0]) if row else 0
 
      #== Meta
           #===!! danger !!===

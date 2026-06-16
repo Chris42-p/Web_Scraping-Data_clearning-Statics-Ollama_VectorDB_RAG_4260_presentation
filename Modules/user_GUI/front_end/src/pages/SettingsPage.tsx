@@ -15,6 +15,8 @@ const DEFAULT_CONFIG: SpiderConfig = {
     maxPages: 5,
 };
 
+const MAX_SPIDER_PAGES = 100;
+
 const DEFAULT_STATUS: SpiderStatus = {
     lastRunAt: undefined,
     nextRunAt: undefined,
@@ -29,6 +31,7 @@ export function SettingsPage() {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [secondsLeft, setSecondsLeft] = useState<number>(DEFAULT_CONFIG.intervalMinutes * 60);
+    const [selectedSpiderKey, setSelectedSpiderKey] = useState("rew");
 
     useEffect(() => {
         async function initializeSpiderSettings() {
@@ -79,13 +82,39 @@ export function SettingsPage() {
     }, [secondsLeft]);
 
     function handleSpiderChange<K extends keyof SpiderConfig>(key: K, value: SpiderConfig[K]) {
+        let nextValue = value;
+
+        if (key === "intervalMinutes") {
+            const numericValue = Number(value);
+            nextValue = Math.min(Math.max(Number.isFinite(numericValue) ? numericValue : 1, 1), 1440) as SpiderConfig[K];
+        }
+
+        if (key === "maxPages") {
+            const numericValue = Number(value);
+            nextValue = Math.min(Math.max(Number.isFinite(numericValue) ? numericValue : 1, 1), MAX_SPIDER_PAGES) as SpiderConfig[K];
+        }
+
         setSpiderConfig((prev) => ({
             ...prev,
-            [key]: value,
+            [key]: nextValue,
         }));
     }
 
+
     async function handleSaveSpiderConfig() {
+
+        if (spiderConfig.maxPages < 1 || spiderConfig.maxPages > MAX_SPIDER_PAGES) {
+            setError(`Max pages must be between 1 and ${MAX_SPIDER_PAGES}.`);
+            setMessage("");
+            return;
+        }
+
+        if (spiderConfig.intervalMinutes < 1 || spiderConfig.intervalMinutes > 1440) {
+            setError("Interval must be between 1 and 1440 minutes.");
+            setMessage("");
+            return;
+        }
+
         try {
             setIsSavingConfig(true);
             setError("");
@@ -106,20 +135,35 @@ export function SettingsPage() {
         }
     }
 
+    function buildSpiderSuccessMessage(spiderKey: string, result: { message?: string }) {
+        if (spiderKey === "rew") {
+            return result.message || "REW spider completed. Listings in the market summary were refreshed.";
+        }
+
+        if (spiderKey === "safety_convenience") {
+            return (
+                result.message ||
+                "Safety & Convenience spider completed. Transit, parks, schools, and crime datasets were refreshed."
+            );
+        }
+
+        return result.message || "Spider completed successfully.";
+    }
+
     async function handleRunSpiderNow() {
         try {
             setIsRunningSpider(true);
             setError("");
             setMessage("");
 
-            const result = await runSpiderNow();
+            const result = await runSpiderNow(selectedSpiderKey);
             const updatedStatus = await loadSpiderStatus();
 
             setSpiderStatus(updatedStatus);
-            setMessage(result.message);
+            setMessage(buildSpiderSuccessMessage(selectedSpiderKey, result));
         } catch (err) {
             console.error(err);
-            setError("Failed to run spider.");
+            setError(err instanceof Error ? err.message : "Failed to run spider.");
         } finally {
             setIsRunningSpider(false);
         }
@@ -165,13 +209,30 @@ export function SettingsPage() {
                     </label>
 
                     <label className="form-label">
+                        <span>Select Spider to run: </span>
+                        <select
+                            className="form-select"
+                            value={selectedSpiderKey}
+                            onChange={(event) => setSelectedSpiderKey(event.target.value)}
+                        >
+                            <option value="rew">REW Spider</option>
+                            <option value="safety_convenience">Safety & Convenience Spider</option>
+                        </select>
+                    </label>
+
+
+                    <label className="form-label">
                         <span>Interval (minutes): </span>
                         <input
                             type="number"
                             min={1}
+                            max={1440}
                             value={spiderConfig.intervalMinutes}
                             onChange={(event) => handleSpiderChange("intervalMinutes", Number(event.target.value))}
                         />
+                        <small className="form-help-text">
+                            Allowed range: 1 to 1440 minutes.
+                        </small>
                     </label>
 
                     <label className="form-label">
@@ -197,9 +258,13 @@ export function SettingsPage() {
                         <input
                             type="number"
                             min={1}
+                            max={MAX_SPIDER_PAGES}
                             value={spiderConfig.maxPages}
                             onChange={(event) => handleSpiderChange("maxPages", Number(event.target.value))}
                         />
+                        <small className="form-help-text">
+                            Allowed range: 1 to {MAX_SPIDER_PAGES}.
+                        </small>
                     </label>
 
                     <div className="dashboard-actions">
@@ -228,13 +293,43 @@ export function SettingsPage() {
 
                 <section className="dashboard-card">
                     <h3>Spider Status</h3>
-                    <p><strong>Running:</strong> {spiderStatus.isRunning ? "Yes" : "No"}</p><br />
-                    <p><strong>Last run:</strong> {formatDateTime(spiderStatus.lastRunAt)}</p><br />
+
+                    <p>
+                        <strong>Running:</strong>{" "}
+                        <span
+                            className={spiderStatus.isRunning
+                                ? "status-running"
+                                : "status-stopped"}
+                        >
+                            {spiderStatus.isRunning ? "Yes" : "No"}
+                        </span>
+                    </p>
+                    <br />
+
+                    <p>
+                        <strong>Last run:</strong>{" "}
+                        <span className="status-last-run">
+                            {formatDateTime(spiderStatus.lastRunAt)}
+                        </span>
+                    </p>
+                    <br />
+
                     <p>
                         <strong>Next run:</strong>{" "}
-                        {spiderStatus.nextRunAt ? formatDateTime(spiderStatus.nextRunAt) : "Waiting for backend scheduler"}
-                    </p><br />
-                    <p><strong>Countdown:</strong> {spiderConfig.enabled ? formattedTime : "Disabled"}</p>
+                        <span className="status-next-run">
+                            {spiderStatus.nextRunAt
+                                ? formatDateTime(spiderStatus.nextRunAt)
+                                : "Waiting for scheduler"}
+                        </span>
+                    </p>
+                    <br />
+
+                    <p>
+                        <strong>Countdown:</strong>{" "}
+                        <span className="status-countdown">
+                            {spiderConfig.enabled ? formattedTime : "Disabled"}
+                        </span>
+                    </p>
                 </section>
             </div>
         </div>

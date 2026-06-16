@@ -450,6 +450,30 @@ button {
   color: var(--text-main);
 }
 
+.status-running {
+  color: #22c55e; 
+}
+
+.status-last-run {
+  color: #3b82f6;
+}
+
+.status-next-run {
+  color:  #f59e0b; 
+  
+}
+
+.status-countdown {
+  color: #ef4444; 
+}
+
+.status-running {
+  color: #22c55e;
+}
+
+.status-stopped {
+  color: #ef4444;
+}
 
 .dashboard-actions {
   display: flex;
@@ -1452,3 +1476,51 @@ html {
   padding: 24px;
   line-height: 1.6;
 }
+
+.form-select {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  background-color: rgba(15, 23, 42, 0.65);
+  color: #e5e7eb;
+  font: inherit;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.form-select:hover {
+  border-color: rgba(96, 165, 250, 0.45);
+  background-color: rgba(15, 23, 42, 0.78);
+}
+
+.form-select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
+.form-select option {
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.form-help-text {
+  display: block;
+  margin-top: 6px;
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 0.9rem;
+}
+

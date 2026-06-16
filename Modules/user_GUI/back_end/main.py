@@ -6,11 +6,13 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import FastAPI, Request, HTTPException, UploadFile, Depends
-from pydantic import BaseModel
+from fastapi import FastAPI, Request, HTTPException, UploadFile, Depends, APIRouter
+from pydantic import BaseModel, Field
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
+
+from ...engine_injesting.data_base.my_sql_db import SQL_DataBase
 
 
 from Modules.user_GUI.back_end.service import load_documents
@@ -24,8 +26,10 @@ from Modules.user_GUI.back_end.spider_service import get_available_spiders, run_
 from Modules.engine_analytics.analysis_engine import AnalysisEngine
 
 
-
+router = APIRouter()
 app = FastAPI()
+
+app.include_router(router)
 
 GMAIL_OAUTH_STATE = {}
 GMAIL_CONNECTED_ACCOUNTS = {}
@@ -70,13 +74,12 @@ class RegisterRequest(BaseModel):
 
 class SpiderRunRequest(BaseModel):
     spider_key: str
-
 class SpiderConfigModel(BaseModel):
     enabled: bool
-    intervalMinutes: int
+    intervalMinutes: int = Field(..., ge=1, le=1440)
     region: str
     keywords: str
-    maxPages: int
+    maxPages: int = Field(..., ge=1, le=100)
 
 class SpiderStatusModel(BaseModel):
     lastRunAt: Optional[str] = None
@@ -357,6 +360,23 @@ def logout(request: Request):
 def get_current_user(user=Depends(get_logged_in_user)):
     return {"username": user.get("username")}
 
+
+@app.get("/reports")
+def get_reports(user=Depends(get_logged_in_user)):
+    try:
+        db = SQL_DataBase()
+        return {"reports": db.get_reports()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load reports: {str(e)}")
+
+@app.get("/reports/count")
+def get_reports_count(user=Depends(get_logged_in_user)):
+    try:
+        db = SQL_DataBase()
+        return {"count": db.get_reports_count()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load report count: {str(e)}")
+    
 @app.get("/reports/housing/summary")
 def get_housing_summary(user=Depends(get_logged_in_user)):
     engine = AnalysisEngine()

@@ -215,6 +215,19 @@ export async function loadHousingSummary(): Promise<HousingSummaryResponse> {
   }
 }
 
+
+export async function loadReports() {
+  return apiRequest<{ reports: any[] }>("/reports", {
+    method: "GET",
+  });
+}
+
+export async function loadReportsCount() {
+  return apiRequest<{ count: number }>("/reports/count", {
+    method: "GET",
+  });
+}
+
 export async function loadHousingTrends() {
   return apiRequest("/reports/housing/trends", {
     method: "GET",
@@ -247,9 +260,10 @@ export async function saveSpiderConfig(config: SpiderConfig): Promise<SpiderConf
   });
 }
 
-export async function runSpiderNow(): Promise<SpiderRunResponse> {
+export async function runSpiderNow(spiderKey: string): Promise<SpiderRunResponse> {
   return apiRequest<SpiderRunResponse>("/spider/run", {
     method: "POST",
+    body: JSON.stringify({ spider_key: spiderKey }),
   });
 }
 
@@ -259,7 +273,7 @@ export async function loadSpiderStatus(): Promise<SpiderStatus> {
   });
 }
 
-export async function getHousingSummary() {
+/*export async function getHousingSummary() {
     const response = await fetch("http://localhost:8000/reports/housing/summary", {
         credentials: "include",
     });
@@ -269,7 +283,7 @@ export async function getHousingSummary() {
     }
 
     return response.json();
-}
+}*/
 
 
 

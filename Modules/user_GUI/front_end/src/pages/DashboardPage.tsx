@@ -87,7 +87,7 @@ export function DashboardPage() {
 
                     {updatesCount > 0 ? (
                         <div className="dashboard-update-pill">
-                            {updatesCount} update{updatesCount === 1 ? "" : "s"} detected
+                         
                         </div>
                     ) : null}
                 </div>
