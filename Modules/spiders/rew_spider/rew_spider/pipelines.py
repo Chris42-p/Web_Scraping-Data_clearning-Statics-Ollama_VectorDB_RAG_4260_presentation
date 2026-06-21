@@ -1,0 +1,74 @@
+import sys
+from pathlib import Path
+
+SPIDERS_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+
+sys.path.insert(0, str(SPIDERS_ROOT))
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
+
+class RewSpiderPipeline:
+
+    def process_item(self, item, spider):
+
+        post_id = item.get("post_id", "N/A")
+        time_of_post = item.get("time_of_post", "N/A")
+        user_post_title = item.get("user_post_title", "N/A")
+        first_pic = item.get("first_pic", "N/A")
+        user_meta_tags = item.get("user_meta_tags", "N/A")
+        post_url = item.get("post_url", "N/A")
+
+        price_of_the_unit = item.get("price_of_the_unit", "N/A")
+        sqr_feet = item.get("num_bedrooms_n_square_feet_sq", "N/A")
+        general_area = item.get("city_general_area", "N/A")
+
+        address = item.get("address", "N/A")
+        street_number, city, province, postal_code = self.__process_address(address)
+
+        bed_bath = item.get("bed_and_bath", "N/A")
+        square_feet_unit = item.get("square_feet_unit", "N/A")
+        post_description = "N/A"
+        rent_period = item.get("rent_period", "monthly")
+        leasing_agent = item.get("leasing_agent", "N/A")
+
+        spider.logger.info(
+            f"Saving REW item: {post_id} | {user_post_title}"
+        )
+
+        Post_Data(
+            post_id,
+            time_of_post,
+            user_post_title,
+            first_pic,
+            user_meta_tags,
+            post_url,
+            price_of_the_unit,
+            sqr_feet,
+            general_area,
+            street_number,
+            city,
+            province,
+            postal_code,
+            bed_bath,
+            square_feet_unit,
+            post_description,
+            rent_period,
+            leasing_agent,
+        ).save_to_db()
+
+        return item
+
+    def __process_address(self, address):
+        if not address or address == "N/A":
+            return "N/A", "N/A", "N/A", "N/A"
+
+        parts = [part.strip() for part in address.split(",")]
+
+        street_number = parts[0] if len(parts) > 0 else "N/A"
+        city = parts[2] if len(parts) > 2 else "N/A"
+        province = parts[3] if len(parts) > 3 else "N/A"
+        postal_code = "N/A"
+
+        return street_number, city, province, postal_code

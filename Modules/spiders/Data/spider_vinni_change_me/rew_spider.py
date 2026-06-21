@@ -1,11 +1,7 @@
+
 import scrapy
 
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
-from Modules.spiders.Data.spider_vinni_change_me.rew_parser import parse_rew_rental_listing
+from ..rew_parser import parse_rew_rental_listing
 
 class REWSpider(scrapy.Spider):
     """
@@ -57,6 +53,8 @@ class REWSpider(scrapy.Spider):
 
     def parse(self, response):
 
+        current_page = response.meta.get("page", 1)
+
         if response.url in self.visited_pages:
             self.logger.info(f"Skipping already visited page: {response.url}")
             return
@@ -71,7 +69,9 @@ class REWSpider(scrapy.Spider):
 
         cards = response.css("article")
 
-        self.logger.info(f"Found {len(cards)} listing cards")
+        self.logger.info(
+            f"Found {len(cards)} listing cards on page {current_page}"
+        )
 
         for card in cards:
             title = " ".join(
@@ -81,16 +81,27 @@ class REWSpider(scrapy.Spider):
             )
 
             link = card.css("a::attr(href)").get()
-            listing_url = response.urljoin(link) if link else response.url
+
+            if not link:
+                continue
+
+            listing_url = response.urljoin(link)
 
             yield parse_rew_rental_listing(title, listing_url)
 
-        current_page = response.meta.get("page", 1)
+        if current_page >= self.max_pages:
+            self.logger.info(
+                f"Reached max page limit: {self.max_pages}"
+            )
+            return
 
         next_page = response.css("a[rel='next']::attr(href)").get()
 
         if next_page:
             yield response.follow(
                 next_page,
-                callback=self.parse
+                callback=self.parse,
+                meta={"page": current_page + 1}
             )
+        else:
+            self.logger.info("No next page found. Scraping finished.")

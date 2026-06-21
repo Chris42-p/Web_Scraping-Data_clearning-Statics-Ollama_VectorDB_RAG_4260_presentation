@@ -10,6 +10,8 @@ Updated by: Yung (Philip)
 - Added to_dict() for DB/CSV storage
 """
 
+import sqlite3
+from pathlib import Path
 import hashlib
 from bs4 import BeautifulSoup
 import ollama
@@ -51,7 +53,9 @@ class Post_Data():
           self.leasing_agent=leasing_agent
 
 
-          self.parse_description() #call parse description automatically. 
+          if self.post_description not in [None, "N/A", ""]:
+               self.parse_description()
+
           self.get_current_time()
 
      def get_current_time(self):
@@ -66,11 +70,89 @@ class Post_Data():
                post_dec.ingest_post_description(self.post_description)
                
      def save_to_db(self):
+          """
+          Saves the standard Post_Data object into the central spider database.
+
+          The original method only printed a success message and did not persist data.
+          This keeps the intended project architecture:
+          Spider -> Pipeline -> Post_Data -> save_to_db() -> central DB.
+
+          No spider-specific logic is changed here.
+          """
+
+          db_path = (
+               Path(__file__).resolve().parent
+               / "spider_central_db"
+               / "spider_central.db"
+          )
+
+          conn = sqlite3.connect(db_path)
+          cursor = conn.cursor()
+
+          cursor.execute("""
+               INSERT OR REPLACE INTO posts (
+                    post_id,
+                    source_website,
+                    post_url,
+                    time_of_post,
+                    time_scraped,
+                    time_scraped_update,
+                    post_active
+               )
+               VALUES (?, ?, ?, ?, ?, ?, ?)
+          """, (
+               self.post_id,
+               "N/A",
+               self.post_url,
+               self.time_of_post,
+               self.time_scraped,
+               self.time_scraped_update,
+               1
+          ))
+
+          cursor.execute("""
+               INSERT OR REPLACE INTO listings (
+                    post_id,
+                    user_post_title,
+                    price_of_the_unit,
+                    rent_period,
+                    city_general_area,
+                    address
+               )
+               VALUES (?, ?, ?, ?, ?, ?)
+          """, (
+               self.post_id,
+               self.user_post_title,
+               self.price_of_the_unit,
+               self.rent_period,
+               self.general_area,
+               self.street_number
+          ))
+
+          cursor.execute("""
+               INSERT OR REPLACE INTO unit_details (
+                    post_id,
+                    bed_and_bath,
+                    square_feet_unit,
+                    num_bedrooms_n_square_feet,
+                    first_pic,
+                    user_meta_tags
+               )
+               VALUES (?, ?, ?, ?, ?, ?)
+          """, (
+               self.post_id,
+               self.bed_bath,
+               self.square_feet_unit,
+               self.sqr_feet,
+               self.first_pic,
+               str(self.user_meta_tags)
+          ))
+
+          conn.commit()
+          conn.close()
+
           print(self.post_id)
-          print("=========Spider 'Saved' the content=======")
-          #TODO
-               #link this to the DB and make the object savable          
-          pass
+          print("=========Spider saved the content to central DB=======")
 
      class Post_Description_Parser:
           def __init__(self):
