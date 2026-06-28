@@ -106,7 +106,7 @@ class KijijiSpiderPipeline:
             user_post_title=user_post_title, 
             first_img_url=first_pic, 
             user_meta_tags=user_meta_tags, 
-            post_description=None,#post_description,  #<-- tmp mute for dev
+            post_description=post_description,  #<-- tmp mute for dev
             sqr_feet_lot=None #<--- see if you can find this 
 
         ).save_new_post_to_db()

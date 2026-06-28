@@ -26,7 +26,7 @@ CONST = {
     ),
     "ROBOTSTXT_OBEY": False,        # Kijiji blocks scrapers in robots.txt
     "CONCURRENT_REQUESTS_PER_DOMAIN": 1,
-    "DOWNLOAD_DELAY": 2,
+    "DOWNLOAD_DELAY": 25,
     "RANDOMIZE_DOWNLOAD_DELAY": True,
     "COOKIES_ENABLED": False,
     "RETRY_TIMES": 3,

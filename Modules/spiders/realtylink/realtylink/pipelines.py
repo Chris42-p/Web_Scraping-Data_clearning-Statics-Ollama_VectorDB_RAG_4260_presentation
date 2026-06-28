@@ -48,7 +48,7 @@ class RealtylinkPipeline:
             bed=self.get_bed(item),
             bath=self.bed_bath(item) ,
             square_feet_unit=self.square_feet_unit(item) ,
-            post_description=None,#self.post_description(item) ,
+            post_description=self.post_description(item) ,
             rent_period=self.rent_period(item) ,
             leasing_agent=self.leasing_agent(item),
             first_img_url=self.first_img_url(item),
