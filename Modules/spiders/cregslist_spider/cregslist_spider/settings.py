@@ -52,9 +52,9 @@ COOKIES_ENABLED = CONST["COOKIES_ENABLED"]
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "cregslist_spider.middlewares.CregslistSpiderDownloaderMiddleware": 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   "cregslist_spider.middlewares.UserAgentRotationMilleware": 300,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -65,7 +65,7 @@ COOKIES_ENABLED = CONST["COOKIES_ENABLED"]
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "cregslist_spider.pipelines.CregslistSpiderPipeline": 300,
+   "cregslist_spider.pipelines.CregslistSpiderPipeline": 305,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

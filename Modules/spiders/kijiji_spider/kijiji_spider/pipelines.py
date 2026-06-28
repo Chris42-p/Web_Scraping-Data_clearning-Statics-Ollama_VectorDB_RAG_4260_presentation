@@ -17,6 +17,20 @@ import re
 
 from kijiji_spider.spider_interface import CONST
 
+#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
+from pathlib import Path
+import sys
+
+# walk up until we find the folder that contains 'Modules'
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "Modules").exists():
+        sys.path.append(str(parent))
+        break
+
+from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
+#==========================
+
 
 class KijijiSpiderPipeline:
 
@@ -57,7 +71,7 @@ class KijijiSpiderPipeline:
         street_number, city, province, postal_code = self.__process_address(address_raw)
 
         # == bed_bath
-        bed_bath = item.get("bed_and_bath", "N/A")
+        bed,bath = self.__get_bed_bath(item)
 
         # == square_feet_unit
         sqft_raw = str(item.get("square_feet_unit", "N/A"))
@@ -70,9 +84,32 @@ class KijijiSpiderPipeline:
         rent_period = item.get("rent_period", "monthly")
 
         # == Log for now
-        spider.logger.info(
-            f"Item scraped: {post_id} | {user_post_title} | ${price_of_the_unit} | {address_raw} | lat={item.get('latitude')} lon={item.get('longitude')}"
-        )
+        # # spider.logger.info(
+        # #     f"Item scraped: {post_id} | {user_post_title} | ${price_of_the_unit} | {address_raw} | lat={item.get('latitude')} lon={item.get('longitude')}"
+        # )
+        
+        Post_Data(
+            post_id=post_id, 
+            post_url=post_url, 
+            time_of_post=time_of_post, 
+            leasing_agent=None, #leasing_agent, <--- Yung please add this when you can.  
+            general_area=general_area, 
+            street_number=street_number, 
+            city=city, 
+            province=province, 
+            postal_code=postal_code, 
+            price_of_the_unit=price_of_the_unit, 
+            square_feet_unit=square_feet_unit, 
+            bed=bed, 
+            bath=bath, 
+            rent_period=rent_period, 
+            user_post_title=user_post_title, 
+            first_img_url=first_pic, 
+            user_meta_tags=user_meta_tags, 
+            post_description=None,#post_description,  #<-- tmp mute for dev
+            sqr_feet_lot=None #<--- see if you can find this 
+
+        ).save_new_post_to_db()
 
         # TODO: uncomment once spider_default_obj import issue is resolved
         # import sys, os
@@ -85,7 +122,16 @@ class KijijiSpiderPipeline:
         #     bed_bath, square_feet_unit, post_description, rent_period,
         # ).save_to_db()
 
-        return item
+
+    def __get_bed_bath(self,item):
+        if item["bed_and_bath"]== None:
+            return None
+        
+        x=item["bed_and_bath"].split("/")
+        bed=re.search(r'\d+',x[0]).group()
+        bath=re.search(r'\d+',x[1]).group()
+
+        return bed, bath
 
     def __process_address(self, address: str):
         if not address or address == "N/A":

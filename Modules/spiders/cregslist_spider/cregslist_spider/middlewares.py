@@ -8,6 +8,42 @@ from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 
+#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
+from pathlib import Path
+import sys
+
+# walk up until we find the folder that contains 'Modules'
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "Modules").exists():
+        sys.path.append(str(parent))
+        break
+
+from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
+#==========================
+
+
+class UserAgentRotationMilleware:
+    
+    @classmethod
+    def from_crawler(cls, crawler):
+        # This method is used by Scrapy to create your spiders.
+        s = cls()
+        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
+        return s
+
+    def __init__(self):
+        self.user_aget=UserAgentFactory()
+
+    def process_request(self, request, spider): #technical method name
+        headers= self.user_aget.get_headers()
+        for key, value in headers.items():
+            request.headers[key] = value
+        return None
+    
+    def spider_opened(self, spider):
+        spider.logger.info("Spider opened: %s" % spider.name)
+
 
 class CregslistSpiderSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -51,7 +87,6 @@ class CregslistSpiderSpiderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
-
 
 class CregslistSpiderDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,

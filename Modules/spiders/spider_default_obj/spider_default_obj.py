@@ -25,136 +25,153 @@ from .spider_std_obj_interface import CONST
 
 class Post_Data():
      
-     time_scraped=None
-     time_scraped_update =None
-     post_active=None                   #Team IDK how to handle this RN please look over this
-
+     #== Obj variables
+     post_description_obj=None #-- obj with LLM parsed data 
+     
      def __init__(self, 
-               post_id,time_of_post, user_post_title, first_pic, user_meta_tags, post_url, price_of_the_unit, sqr_feet, general_area, street_number, city, province, postal_code, bed_bath, square_feet_unit, post_description, rent_period, leasing_agent
+               post_id,time_of_post, user_post_title, user_meta_tags, post_url, price_of_the_unit, sqr_feet_lot, general_area, street_number, city, province, postal_code, bed,bath, square_feet_unit, post_description, rent_period, leasing_agent, first_img_url
           ):
    
           self.post_id=post_id
           self.time_of_post=time_of_post
           self.user_post_title=user_post_title
-          self.first_pic=first_pic
           self.user_meta_tags=user_meta_tags
           self.post_url=post_url
           self.price_of_the_unit=price_of_the_unit
-          self.sqr_feet=sqr_feet
+          self.sqr_feet_lot=sqr_feet_lot
           self.general_area=general_area
           self.street_number=street_number
           self.city=city
           self.province=province
           self.postal_code=postal_code
-          self.bed_bath=bed_bath
+          self.bed=bed
+          self.bath=bath
           self.square_feet_unit=square_feet_unit
           self.post_description=post_description
           self.rent_period=rent_period
           self.leasing_agent=leasing_agent
+          self.first_img_url=first_img_url
 
-
-          if self.post_description not in [None, "N/A", ""]:
+          if self.post_description not in [None, "N/A", "","None"]:
                self.parse_description()
 
-          self.get_current_time()
-
-     def get_current_time(self):
-          self.time_scraped= datetime.now().strftime("%Y-%m-%d %H:%M:%S")
           
-     def set_time_scrated(self):
-          self.time_scraped_update=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
      def parse_description(self):
           if self.post_description != None:
                post_dec=self.Post_Description_Parser()
                post_dec.ingest_post_description(self.post_description)
-               
-     def save_to_db(self):
-          """
-          Saves the standard Post_Data object into the central spider database.
+               self.post_description_obj= post_dec
+     
+     def __create_db(self):
+          base=Path(__file__).resolve().parent
+          db_path =f"{base}/{CONST["DB_LOCATION"]}/{CONST["DB_NAME"]}" 
 
-          The original method only printed a success message and did not persist data.
-          This keeps the intended project architecture:
-          Spider -> Pipeline -> Post_Data -> save_to_db() -> central DB.
-
-          No spider-specific logic is changed here.
-          """
-
-          db_path = (
-               Path(__file__).resolve().parent
-               / "spider_central_db"
-               / "spider_central.db"
-          )
-
+          #== connect to db 
           conn = sqlite3.connect(db_path)
           cursor = conn.cursor()
+          cursor.execute(CONST["FORIGHN_KEYS_ON"]) #TURN ON FORIGHN KEYS 
+          
+          #== create tables 
+          cursor.execute(CONST["CREATE_TABLE_LISTINGS"]) 
+          cursor.execute(CONST["CREATE_TABLE_POST_DESCRIPTION"])  
+          cursor.execute(CONST["CREATE_TABLE_POST_STATUS"]) 
+          conn.commit()   # ← save changes
 
-          cursor.execute("""
-               INSERT OR REPLACE INTO posts (
-                    post_id,
-                    source_website,
-                    post_url,
-                    time_of_post,
-                    time_scraped,
-                    time_scraped_update,
-                    post_active
-               )
-               VALUES (?, ?, ?, ?, ?, ?, ?)
-          """, (
+          return db_path
+
+     def __conn_to_db(self, db_path):
+          with sqlite3.connect(db_path) as conn:
+               cursor = conn.cursor()
+               return cursor,conn
+
+
+     def save_new_post_to_db(self):
+          # try:
+          db_path=self.__create_db()
+          cursor,conn=self.__conn_to_db(db_path)          
+
+          #== insert the post 
+          cursor.execute(CONST["INSERT_LISTING"], (
                self.post_id,
-               "N/A",
                self.post_url,
                self.time_of_post,
-               self.time_scraped,
-               self.time_scraped_update,
-               1
-          ))
-
-          cursor.execute("""
-               INSERT OR REPLACE INTO listings (
-                    post_id,
-                    user_post_title,
-                    price_of_the_unit,
-                    rent_period,
-                    city_general_area,
-                    address
-               )
-               VALUES (?, ?, ?, ?, ?, ?)
-          """, (
-               self.post_id,
-               self.user_post_title,
-               self.price_of_the_unit,
-               self.rent_period,
+               self.leasing_agent,
                self.general_area,
-               self.street_number
-          ))
-
-          cursor.execute("""
-               INSERT OR REPLACE INTO unit_details (
-                    post_id,
-                    bed_and_bath,
-                    square_feet_unit,
-                    num_bedrooms_n_square_feet,
-                    first_pic,
-                    user_meta_tags
-               )
-               VALUES (?, ?, ?, ?, ?, ?)
-          """, (
-               self.post_id,
-               self.bed_bath,
+               self.street_number,
+               self.city,
+               self.province,
+               self.postal_code,
+               self.price_of_the_unit,
                self.square_feet_unit,
-               self.sqr_feet,
-               self.first_pic,
-               str(self.user_meta_tags)
-          ))
+               self.bed,
+               self.bath,
+               self.rent_period,
+               self.user_post_title,
+               self.first_img_url,        
+               self.user_meta_tags,
+               self.post_description,
+               self.first_img_url,
+               ))#scraped at is auto generated by the database, created at time of inserting record. 
+
+          listing_id=cursor.lastrowid #this is the ID if the insert_post - going to be FK for other tables
+
+          if self.post_description_obj != None: #None if the model fails to parse content
+               #== insert post's meta data from parsing it with LLM
+               cursor.execute(CONST["INSERT_PARSED_POST_DESCRIPTION"], (
+                    listing_id, #this is the forign key which is based on previous insert
+                    self.post_description_obj.smoke_free ,
+                    self.post_description_obj.private_room ,
+                    self.post_description_obj.living_situation ,
+                    self.post_description_obj.wheelchair_accessible ,
+                    self.post_description_obj.has_ac ,
+                    self.post_description_obj.w_d_in_unit ,
+                    self.post_description_obj.furnished ,
+                    self.post_description_obj.luxuries ,
+                    self.post_description_obj.sq_footage ,
+                    self.post_description_obj.price_per_month ,
+                    self.post_description_obj.included_utilities ,
+                    self.post_description_obj.utility_cap ,
+                    self.post_description_obj.close_to ,
+                    self.post_description_obj.travel_convenience ,
+                    self.post_description_obj.pets_okay ,
+                    self.post_description_obj.cats_okay ,
+                    self.post_description_obj.dogs_okay ,
+                    self.post_description_obj.parking_included ,
+                    self.post_description_obj.parking_spots ,
+                    self.post_description_obj.parking_ev_charging ,
+                    self.post_description_obj.parking_details ,
+                    self.post_description_obj.damage_deposit ,
+                    self.post_description_obj.other_deposits ,
+                    self.post_description_obj.req_references ,
+                    self.post_description_obj.req_credit_check ,
+                    self.post_description_obj.req_criminal_record_check ,
+                    self.post_description_obj.req_other ,
+                    self.post_description_obj.llm_model_comments ,
+                    ))
 
           conn.commit()
-          conn.close()
 
-          print(self.post_id)
-          print("=========Spider saved the content to central DB=======")
+          print("\n\n=========Spider Saved Post and Post Description to DB Successfully=======")
+          print(f"row ID: {listing_id}\n\n")
+
+
+          # except Exception as e:
+          #      print(CONST["ERR_MSG_1"])
+          #      print(f"DEV: MUTE BEFORE DEPLOY: \n\n {e} \n\n")
+
+     def update_post_status(self):
+          #spider should check a variable in this object to see if its being asked to check if post is still up based on a list of ID we pull from DB, or if its being asked to scrape. 
+          #TODO:
+               #1: create variable for status checking 
+               # 2: change spider control to eat this variable (which would change starting the spider variable STARTING_URLS )
+               # 3: create a custom method that return true or false if the page loads
+               # 4: in the pipeline: this objects variable is looked at,
+                    # triggers update_post_status
+               #  
+          pass
 
      class Post_Description_Parser:
+
           def __init__(self):
                # Basic Info
                self.smoke_free: Optional[bool] = None
@@ -193,87 +210,97 @@ class Post_Data():
                self.req_references: Optional[bool] = None
                self.req_criminal_record_check: Optional[bool] = None
                self.req_other: Optional[str] = None
+          
+          def parse_llm_response(self, response):
+               data = None
+               try:
+                    # handle both string and dict responses
+                    if isinstance(response, str):
+                         clean = response.replace("```json", "").replace("```", "").strip()
+                         data = json.loads(clean)
+                    else:
+                         data = response
 
-          def __parse_llm(self, response: str | dict):
-               data = json.loads(response) if isinstance(response, str) else response
+               except Exception as e:
+                    self.llm_parsed_successfully = False
+                    print(f"==== LLM FAILED TO PARSE: {e} ====")
+                    return None
 
-               # Basic Info
-               self.smoke_free = data.get("smoke_free")
-               self.private_room = data.get("private_room")
-               self.living_situation = data.get("living_situation")
-               self.living_situation = data.get("available_from")
-               self.living_situation = data.get("property_type")
-               self.has_ac = data.get("has_ac")
-               self.w_d_in_unit = data.get("w_d_in_unit")
-               self.furnished = data.get("furnished")
-               self.wheelchair_accessible = data.get("wheelchair_accessible")
-               self.sq_footage = data.get("sq_footage")
-               self.price_per_month = data.get("price_per_month")
-               self.included_utilities = data.get("included_utilities")
-               self.utility_cap = data.get("utility_cap")
-               self.close_to = data.get("close_to")
-               self.travel_convenience = data.get("travel_convenience")
-               self.luxuries = data.get("luxuries")
-               self.llm_model_comments = data.get("llm_model_comments")
+               self.llm_parsed_successfully = True
 
-               # Pet Policy
-               pets = data.get("pet_friendly", {})
-               self.pets_okay = pets.get("pets_okay")
-               self.cats_okay = pets.get("cats_okay")
-               self.dogs_okay = pets.get("dogs_okay")
+               # basic info
+               self.smoke_free                 = data.get("smoke_free")
+               self.private_room               = data.get("private_room")
+               self.living_situation           = data.get("living_situation")
+               self.available_from             = data.get("available_from")
+               self.property_type              = data.get("property_type")
+               self.has_ac                     = data.get("has_ac")
+               self.w_d_in_unit                = data.get("w_d_in_unit")
+               self.furnished                  = data.get("furnished")
+               self.wheelchair_accessible      = data.get("wheelchair_accessible")
+               self.sq_footage                 = data.get("sq_footage")
+               self.price_per_month            = data.get("price_per_month")
+               self.included_utilities         = data.get("included_utilities")
+               self.utility_cap                = data.get("utility_cap")
+               self.close_to                   = data.get("close_to")
+               self.travel_convenience         = data.get("travel_convenience")
+               self.luxuries                   = data.get("luxuries")
+               # pets
+               self.pets_okay                  = data.get("pets_okay")
+               self.cats_okay                  = data.get("cats_okay")
+               self.dogs_okay                  = data.get("dogs_okay")
+               # parking
+               self.parking_included           = data.get("parking_included")
+               self.parking_spots              = data.get("parking_spots")
+               self.parking_ev_charging        = data.get("parking_ev_charging")
+               self.parking_details            = data.get("parking_details")
+               # deposits
+               self.damage_deposit             = data.get("damage_deposit")
+               self.other_deposits             = data.get("other_deposits")
+               # requirements
+               self.req_credit_check           = data.get("req_credit_check")
+               self.req_references             = data.get("req_references")
+               self.req_criminal_record_check  = data.get("req_criminal_record_check")
+               self.req_other                  = data.get("req_other")
+               # comments
+               self.llm_model_comments         = data.get("llm_model_comments")
 
-               # Parking
-               parking = data.get("parking", {})
-               self.parking_included = parking.get("included")
-               self.parking_spots = parking.get("spots")
-               self.parking_ev_charging = parking.get("ev_charging")
-               self.parking_details = parking.get("details")
+               return self
 
-               # Deposit
-               deposit = data.get("deposit", {})
-               self.damage_deposit = deposit.get("damage_deposit")
-               self.other_deposits = deposit.get("other_deposits")
-
-               # Requirements
-               req = data.get("requirements", {})
-               self.req_credit_check = req.get("credit_check")
-               self.req_references = req.get("references")
-               self.req_criminal_record_check = req.get("criminal_record_check")
-               self.req_other = req.get("other")
-     
           def ingest_post_description(self, document):       #private method
                #ref: https://github.com/ollama/ollama-python
                crashes=0
                response=""
                while crashes<CONST["LLM_CRASH_LIMIT"]:
-                    try:
-                         print("\n====== Parsing Description Using LLM ===========\n") 
-                         instruction= f"{CONST["LLM_OUTPUT_OBJ_INSTRUCTIONS"]} Document:{document}"
-                         
-                         response=ollama.chat(
-                              model=CONST["MODEL_NAME"],          
-                              messages=[
-                                   {"role": "system","content": CONST["SYSTEM_ROLE"]},
-                                   {"role": "user","content":instruction}],
-                                   stream= True
-                              )
-                         full_response = ""
-                         for chunk in response:
-                              token = chunk['message']['content']
-                              # print(token, end='', flush=True)
-                              full_response += token
+                    # try:
+                    print("\n====== Parsing Description Using LLM ===========\n") 
+                    print(f"The description: \n{document}")
+                    print("\n\n")
+                    instruction= f"{CONST["LLM_OUTPUT_OBJ_INSTRUCTIONS"]} Document:{document}"
+                    
+                    response=ollama.chat(
+                         model=CONST["MODEL_NAME"],          
+                         messages=[
+                              {"role": "system","content": CONST["SYSTEM_ROLE"]},
+                              {"role": "user","content":instruction}],
+                              stream= True
+                         )
+                    full_response = ""
+                    for chunk in response:
+                         token = chunk['message']['content']
+                         # print(token, end='', flush=True)
+                         full_response += token
 
-                         self.__parse_llm(full_response)
-                         return full_response
+                    self.parse_llm_response(full_response)
+                    return full_response
 
-                    except Exception as e:
-                         crashes+=1
-                         print(f"Ollama call:  {e}"  )
-                         print("Model Crashed")               
+               # except Exception as e:
+               #      crashes+=1
+               #      print(f"Ollama call:  {e}"  )
+               #      print("Model Crashed")               
 
-               # return response #return empty string if the model keeps crashing.
-
-
+          # return response #return empty string if the model keeps crashing.
+     
 
 
 

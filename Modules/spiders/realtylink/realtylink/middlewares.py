@@ -8,8 +8,8 @@ from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 
-
 from spider_default_obj.spider_user_agent_factor import UserAgentFactory
+
 class UserAgentRotationMilleware:
     
     @classmethod

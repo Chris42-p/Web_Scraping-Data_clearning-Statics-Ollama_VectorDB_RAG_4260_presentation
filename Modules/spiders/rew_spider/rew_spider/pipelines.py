@@ -1,13 +1,20 @@
 import sys
 from pathlib import Path
 
-SPIDERS_ROOT = Path(__file__).resolve().parents[2]
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
+#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
+from pathlib import Path
+import sys
+import re
 
-sys.path.insert(0, str(SPIDERS_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT))
+# walk up until we find the folder that contains 'Modules'
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "Modules").exists():
+        sys.path.append(str(parent))
+        break
 
 from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
+
 
 class RewSpiderPipeline:
 
@@ -27,7 +34,7 @@ class RewSpiderPipeline:
         address = item.get("address", "N/A")
         street_number, city, province, postal_code = self.__process_address(address)
 
-        bed_bath = item.get("bed_and_bath", "N/A")
+        bed,bath = self.__get_bed_bath(item)
         square_feet_unit = item.get("square_feet_unit", "N/A")
         post_description = "N/A"
         rent_period = item.get("rent_period", "monthly")
@@ -51,14 +58,28 @@ class RewSpiderPipeline:
             city,
             province,
             postal_code,
-            bed_bath,
+            bed,
+            bath,
             square_feet_unit,
             post_description,
             rent_period,
             leasing_agent,
-        ).save_to_db()
+        ).save_new_post_to_db()
 
         return item
+
+    def __get_bed_bath(self, item):
+        if item["bed_and_bath"]==None:
+            return None
+        
+        x=item.get["bed_and_bath"].split("/")
+        bed=int(re.search(r'\d+',x[0]).group())
+        bath=int(re.search(r'\d+',x[1]).group())
+
+
+        # print(f"\n\n\n  {x} \n\n")
+
+        # return bed, bath
 
     def __process_address(self, address):
         if not address or address == "N/A":

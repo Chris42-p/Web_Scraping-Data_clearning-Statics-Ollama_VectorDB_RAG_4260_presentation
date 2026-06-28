@@ -23,6 +23,8 @@ from ..spider_interface import CONST
 from kijiji_spider.items import KijijiSpiderItem
 
 
+
+
 class KijijiRentalsSpider(scrapy.Spider):
 
     name = CONST["BOT_NAME"]

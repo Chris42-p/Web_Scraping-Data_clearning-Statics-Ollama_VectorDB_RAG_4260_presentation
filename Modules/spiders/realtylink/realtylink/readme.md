@@ -19,9 +19,29 @@ fetch(
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 OPR/69.0.3686.57",
     "Accept-Language": "en-US,en;q=0.9",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-}) # might need to change headers when you use it next time --use: https://useragents.io/random?limit=1500
+}) 
+#### might need to change headers when you use it next time --use: https://useragents.io/random?limit=1500
 
 
+
+## fetch a card 
+fetch(
+    "https://realtylink.org/en/apartment~for-rent~vancouver/263099040",
+ headers={
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 OPR/69.0.3686.57",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+})
+
+
+
+## see all results. 
+
+
+running the spider:
+1) cd 4260_presentation/Modules/spiders/realtylink
+
+2) scrapy crawl realtylink_spider
 
 
 

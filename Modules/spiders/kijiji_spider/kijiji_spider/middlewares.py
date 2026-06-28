@@ -6,8 +6,22 @@ from scrapy import signals
 from itemadapter import ItemAdapter
 
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'spider_default_obj'))
-from spider_user_agent_factor import UserAgentFactory
+
+#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
+from pathlib import Path
+import sys
+
+# walk up until we find the folder that contains 'Modules'
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "Modules").exists():
+        sys.path.append(str(parent))
+        break
+
+from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
+#==========================
+
+
 
 
 class UserAgentRotationMiddleware:

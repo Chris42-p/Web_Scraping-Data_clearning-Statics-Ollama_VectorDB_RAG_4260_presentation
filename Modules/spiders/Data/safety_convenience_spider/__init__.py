@@ -1,1 +1,0 @@
-from .safety_convenience_spider import SafetyConvenienceSpider
