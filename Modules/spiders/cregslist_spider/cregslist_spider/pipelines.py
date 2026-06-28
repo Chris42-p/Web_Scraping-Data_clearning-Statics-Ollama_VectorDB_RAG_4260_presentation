@@ -37,8 +37,6 @@ from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 #==========================
 
 
-
-
 class CregslistSpiderPipeline:
     def process_item(self, item, spider):
         print("\n\n======== GOING TO PARSE THE OBJECT ========\n")
@@ -63,7 +61,7 @@ class CregslistSpiderPipeline:
             rent_period=self.get_rent_period(item),
             user_post_title=self.get_user_post_title(item),
             user_meta_tags=self.get_user_meta_tags(item),
-            post_description=None,#self.get_post_description(item),
+            post_description=self.get_post_description(item),
             first_img_url=self.get_first_pic(item),
             sqr_feet_lot=None, #not provided by Cregs list
         ).save_new_post_to_db()

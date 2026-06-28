@@ -4,8 +4,8 @@ This is a repo for Big Data class. We're going to demo a vector database.
 # Installing dependenices. 
 - Make virtual Env for packages:~/Desktop/4260_presentation$ sudo python3 -m venv package_manager
 - Activate package manager: ~/Desktop/4260_presentation$ source ./package_manager/bin/activate
-- Deactivating the Env: (package_manager) chris@chris-DevBox:~/Desktop/4260_presentation$ deactivate
 - Installing dependences: pip install -r requirements.txt 
+- Deactivating the Env: (package_manager) chris@chris-DevBox:~/Desktop/4260_presentation$ deactivate
 
 # Ollama install 
 curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION=0.3.14 sh

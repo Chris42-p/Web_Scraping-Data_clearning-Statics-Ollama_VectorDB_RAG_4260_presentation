@@ -4,7 +4,7 @@ Cregs list is implemented as a infinate scroll and not pagination, so it only lo
 
 
 ## cd to the right dir. 
-~/Desktop/4260_presentation/Modules/spiders/cregslist_spider$
+~/Desktop/4260_presentation/Modules/spiders/cregslist_spider
 
 ## run the spider
 
