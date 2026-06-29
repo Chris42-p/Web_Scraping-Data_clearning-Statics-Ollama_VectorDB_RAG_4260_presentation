@@ -18,6 +18,7 @@ import ollama
 from datetime import datetime
 from typing import Optional
 import json
+from typing import Optional
 
 #======= Custom libs 
 from .spider_std_obj_interface import CONST
@@ -27,7 +28,8 @@ class Post_Data():
      
      #== Obj variables
      post_description_obj=None #-- obj with LLM parsed data 
-     
+     db_path=None
+
      def __init__(self, 
                post_id,time_of_post, user_post_title, user_meta_tags, post_url, price_of_the_unit, sqr_feet_lot, general_area, street_number, city, province, postal_code, bed,bath, square_feet_unit, post_description, rent_period, leasing_agent, first_img_url
           ):
@@ -54,8 +56,7 @@ class Post_Data():
 
           if self.post_description not in [None, "N/A", "","None"]:
                self.parse_description()
-
-          
+         
      def parse_description(self):
           if self.post_description != None:
                post_dec=self.Post_Description_Parser()
@@ -64,10 +65,10 @@ class Post_Data():
      
      def __create_db(self):
           base=Path(__file__).resolve().parent
-          db_path =f"{base}/{CONST["DB_LOCATION"]}/{CONST["DB_NAME"]}" 
+          self.db_path =f"{base}/{CONST["DB_LOCATION"]}/{CONST["DB_NAME"]}" 
 
           #== connect to db 
-          conn = sqlite3.connect(db_path)
+          conn = sqlite3.connect(self. db_path)
           cursor = conn.cursor()
           cursor.execute(CONST["FORIGHN_KEYS_ON"]) #TURN ON FORIGHN KEYS 
           
@@ -77,18 +78,15 @@ class Post_Data():
           cursor.execute(CONST["CREATE_TABLE_POST_STATUS"]) 
           conn.commit()   # ← save changes
 
-          return db_path
-
-     def __conn_to_db(self, db_path):
-          with sqlite3.connect(db_path) as conn:
+     def __conn_to_db(self):
+          self.__create_db()
+          with sqlite3.connect(self.db_path) as conn:
                cursor = conn.cursor()
                return cursor,conn
 
-
      def save_new_post_to_db(self):
           # try:
-          db_path=self.__create_db()
-          cursor,conn=self.__conn_to_db(db_path)          
+          cursor,conn=self.__conn_to_db(self.db_path)          
 
           #== insert the post 
           cursor.execute(CONST["INSERT_LISTING"], (
@@ -159,16 +157,47 @@ class Post_Data():
           #      print(CONST["ERR_MSG_1"])
           #      print(f"DEV: MUTE BEFORE DEPLOY: \n\n {e} \n\n")
 
-     def update_post_status(self):
-          #spider should check a variable in this object to see if its being asked to check if post is still up based on a list of ID we pull from DB, or if its being asked to scrape. 
-          #TODO:
-               #1: create variable for status checking 
-               # 2: change spider control to eat this variable (which would change starting the spider variable STARTING_URLS )
-               # 3: create a custom method that return true or false if the page loads
-               # 4: in the pipeline: this objects variable is looked at,
-                    # triggers update_post_status
-               #  
-          pass
+     def get_record_by_url(self, url) -> Optional[list]:
+          #this method checks if the post exists in db based on it's url. 
+          sql_query = CONST["SQL_GET_ROW_BY_URL"] 
+
+          cursor,conn=self.__conn_to_db()
+          cursor.execute(sql_query,(url) )
+          data= cursor.fetchone() #single row 
+          conn.close()
+
+          return data #[1, "address"]
+
+     def update_post_last_active(self,scraped_at,active_post=bool,row_id=int ):
+          cursor,conn=self.__conn_to_db()
+
+          #determin time on market based off scraped at:  2026-06-28 02:19:09
+          days_on_market=self.__get_days_on_market(scraped_at)
+          cursor.execute(CONST["INSERT_POST_STATUS"],(active_post, days_on_market,row_id)) #post status, time_on_market, listing_id
+
+          conn.close()
+
+
+     def __get_current_time(self):
+          return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+     
+     def __get_days_on_market(self, scraped_at_previously):
+          # parse the stored date string back to datetime
+          posted_date = datetime.strptime(f"{scraped_at_previously}", "%Y-%m-%d %H:%M:%S")
+
+          # subtract from today
+          days_on_market = (datetime.now() - posted_date).days
+
+          return days_on_market  # 0, 5, 30 etc
+
+     def DEV_drop_table_manual(self,):
+          #making it namual so you'll have do it intentially.
+
+          cursor,conn=self.__conn_to_db()
+
+          cursor.execute("DROP TABLE IF EXISTS post_status")
+          conn.commit()  # ← must have this
+
 
      class Post_Description_Parser:
 

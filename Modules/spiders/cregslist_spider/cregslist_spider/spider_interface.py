@@ -20,7 +20,7 @@ CONST={
      "HTTPCACHE_ENABLED":True, 
      "HTTPCACHE_EXPIRATION_SECS":1,
      "HTTPCACHE_DIR": "~/Desktop/4260_presentation/httpcache",
-     "HTTPCACHE_IGNORE_HTTP_CODES":[503, 504, 505, 500, 403, 404,301],
+     "HTTPCACHE_IGNORE_HTTP_CODES":[503, 504, 505, 500, 403, 301],
      "HTTPCACHE_STORAGE": "scrapy.extensions.httpcache.FilesystemCacheStorage",
      "FEED_EXPORT_ENCODING":"utf-8",
      "LOG_LEVEL":"DEBUG",

@@ -24,6 +24,8 @@ npm run dev
 
 or use the appropriate Python command if the backend is not Node.
 
+defult credentials ("admin", "password123")
+
 ---
 
 ## Troubleshooting

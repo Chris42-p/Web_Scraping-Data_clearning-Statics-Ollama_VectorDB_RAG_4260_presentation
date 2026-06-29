@@ -23,7 +23,7 @@ from Modules.user_GUI.back_end.main_interface import CONST
 from Modules.gmail_api.gmail_api import GmailIngestor
 from Modules.engine_injesting.injest_engine import Injest_Engine
 from Modules.user_GUI.back_end.spider_service import get_available_spiders, run_spider_by_key
-from Modules.engine_analytics.analysis_engine import AnalysisEngine
+from Modules.engine_analytics.z_previous_version import AnalysisEngine
 
 
 router = APIRouter()

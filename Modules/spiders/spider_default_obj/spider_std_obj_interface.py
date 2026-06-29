@@ -5,6 +5,10 @@
 CONST={
      "ERR_MSG_1":"Database post inset failed",
 
+#======= Database queries. 
+     "SQL_GET_ROW_BY_URL":"SELECT id,street_number FROM listings WHERE post_url = ?",
+    
+
 #======= Database configuration 
      "DB_LOCATION":"spider_central_db",
      "DB_NAME":"listings_db.db",
@@ -87,8 +91,8 @@ CREATE TABLE IF NOT EXISTS parsed_descriptions (
      "CREATE_TABLE_POST_STATUS":"""
 CREATE TABLE IF NOT EXISTS post_status(
      id INTEGER PRIMARY KEY AUTOINCREMENT,  
-     last_time_scraped   DATETIME,
-     post_status         INTEGER,   
+     last_time_scraped   DATETIME DEFAULT CURRENT_TIMESTAMP,
+     post_status         BOOLEAN,   
      time_on_market      INTEGER,
      listing_id INTEGER UNIQUE,     
      FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE);
@@ -150,7 +154,17 @@ INSERT OR REPLACE INTO parsed_descriptions (
      req_other,
      llm_model_comments
 )VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+     "INSERT_POST_STATUS":"""
+INSERT OR REPLACE INTO post_status(
+     post_status, 
+     time_on_market, 
+     listing_id, 
 
+)VALUES(?,?,?)
+
+
+
+""",
 
 
 
