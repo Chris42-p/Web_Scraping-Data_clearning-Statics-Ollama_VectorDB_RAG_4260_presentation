@@ -92,7 +92,7 @@ class KijijiSpiderPipeline:
             post_id=post_id, 
             post_url=post_url, 
             time_of_post=time_of_post, 
-            leasing_agent=None, #leasing_agent, <--- Yung please add this when you can.  
+            leasing_agent=item.get("leasing_agent", "N/A"),  
             general_area=general_area, 
             street_number=street_number, 
             city=city, 
@@ -107,7 +107,7 @@ class KijijiSpiderPipeline:
             first_img_url=first_pic, 
             user_meta_tags=user_meta_tags, 
             post_description=post_description,  #<-- tmp mute for dev
-            sqr_feet_lot=None #<--- see if you can find this 
+            sqr_feet_lot=item.get("sqr_feet_lot", "N/A"), 
 
         ).save_new_post_to_db()
 
@@ -124,12 +124,16 @@ class KijijiSpiderPipeline:
 
 
     def __get_bed_bath(self,item):
-        if item["bed_and_bath"]== None:
-            return None
-        
-        x=item["bed_and_bath"].split("/")
-        bed=re.search(r'\d+',x[0]).group()
-        bath=re.search(r'\d+',x[1]).group()
+        bed_bath_str = item.get("bed_and_bath")
+        if not bed_bath_str:
+            return "N/A", "N/A"
+
+        x = bed_bath_str.split("/")
+        bed_match = re.search(r'\d+', x[0]) if len(x) > 0 else None
+        bath_match = re.search(r'\d+', x[1]) if len(x) > 1 else None
+
+        bed = bed_match.group() if bed_match else "N/A"
+        bath = bath_match.group() if bath_match else "N/A"
 
         return bed, bath
 

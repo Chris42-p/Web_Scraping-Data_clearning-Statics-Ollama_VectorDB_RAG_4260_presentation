@@ -3,7 +3,11 @@ Kijiji Vancouver Rental Spider
 
 Two-step scraping:
   1. parse()      - Search results page, get listing URLs from JSON-LD
-  2. parse_page() - Detail page, get full data from meta tags + JSON-LD
+  2. parse_page() - Detail page, parse __NEXT_DATA__ (Next.js Apollo state)
+                     for complete and reliable listing data, including the
+                     full address (search-page JSON-LD only gives a rough
+                     neighbourhood-level address, which caused missing
+                     street numbers).
 
 Follows cregslist_spider pattern:
 - Spider only scrapes, no data processing
@@ -21,8 +25,6 @@ import re
 
 from ..spider_interface import CONST
 from kijiji_spider.items import KijijiSpiderItem
-
-
 
 
 class KijijiRentalsSpider(scrapy.Spider):
@@ -64,24 +66,11 @@ class KijijiRentalsSpider(scrapy.Spider):
                 if url == "N/A":
                     continue
 
-                # Pass basic info from search results to detail page
-                meta = {
-                    "post_url": url,
-                    "user_post_title": d.get("name", "N/A"),
-                    "price_of_the_unit": d.get("offers", {}).get("price", "N/A"),
-                    "address": d.get("address", "N/A"),
-                    "num_bedrooms": str(d.get("numberOfBedrooms", "N/A")),
-                    "num_bathrooms": str(d.get("numberOfBathroomsTotal", "N/A")),
-                    "square_feet": str(d.get("floorSize", {}).get("value", "N/A")),
-                    "first_pic": d.get("image", "N/A"),
-                    "pets_allowed": str(d.get("petsAllowed", "N/A")),
-                }
-
                 listings_found += 1
                 yield scrapy.Request(
                     url=url,
                     callback=self.parse_page,
-                    meta=meta,
+                    meta={"post_url": url},
                     headers={"Referer": response.url},
                 )
 
@@ -99,59 +88,130 @@ class KijijiRentalsSpider(scrapy.Spider):
             )
 
     def parse_page(self, response):
-        """Step 2: Detail page — enrich with meta tags and JSON-LD."""
+        """
+        Step 2: Detail page — parse __NEXT_DATA__ (Apollo state) for
+        complete, reliable listing data including full address.
+        """
         meta = response.meta
-
-        # Extract listing ID from URL
-        post_id = "N/A"
         url = meta.get("post_url", response.url)
+
+        post_id = "N/A"
         match = re.search(r"/(\d+)$", url)
         if match:
             post_id = match.group(1)
 
-        # == Coordinates from og: meta tags
-        latitude = response.css('meta[property="og:latitude"]::attr(content)').get("N/A")
-        longitude = response.css('meta[property="og:longitude"]::attr(content)').get("N/A")
+        listing = self.__get_listing_from_next_data(response, post_id)
 
-        # == Full description from og:description (more complete than JSON-LD snippet)
-        full_description = response.css('meta[property="og:description"]::attr(content)').get(
-            meta.get("post_url", "N/A")
-        )
+        if listing is None:
+            self.logger.warning(f"Could not find __NEXT_DATA__ listing for {url}")
+            return
 
-        # == Time of post from JSON-LD on detail page
-        time_of_post = "N/A"
-        scripts = response.css('script[type="application/ld+json"]::text').getall()
-        for script in scripts:
-            try:
-                data = json.loads(script)
-                if data.get("@type") in ("Product", "Offer", "RentalAction"):
-                    time_of_post = data.get("datePosted", "N/A")
-                    break
-            except json.JSONDecodeError:
-                continue
+        # == location (this is the fix — full address, not the rough
+        #    neighbourhood-level one from the search results JSON-LD)
+        location = listing.get("location", {}) or {}
+        address = location.get("address", "N/A")
+        coordinates = location.get("coordinates", {}) or {}
+        latitude = coordinates.get("latitude", "N/A")
+        longitude = coordinates.get("longitude", "N/A")
+        city_name = location.get("name", "N/A")
 
-        # == bed/bath string
-        num_bedrooms = meta.get("num_bedrooms", "N/A")
-        num_bathrooms = meta.get("num_bathrooms", "N/A")
-        if num_bedrooms == "0":
+        # == price
+        price_obj = listing.get("price", {}) or {}
+        price = price_obj.get("amount", "N/A")
+
+        # == title / description
+        user_post_title = listing.get("title", "N/A")
+        post_description = listing.get("description", "N/A")
+
+        # == time of post
+        time_of_post = listing.get("activationDate", "N/A")
+
+        # == images
+        image_urls = listing.get("imageUrls", []) or []
+        first_pic = image_urls[0] if image_urls else "N/A"
+
+        # == attributes (bedrooms, bathrooms, sqft, etc. — list of key/value pairs)
+        attrs = self.__parse_attributes(listing)
+        num_bedrooms = attrs.get("numberbedrooms", attrs.get("bedrooms", "N/A"))
+        num_bathrooms = attrs.get("numberbathrooms", attrs.get("bathrooms", "N/A"))
+        square_feet = attrs.get("areainfeet", attrs.get("size", "N/A"))
+
+        if num_bedrooms in ("0", 0):
             num_bedrooms = "Studio/Bachelor"
         bed_and_bath = f"{num_bedrooms}br / {num_bathrooms}ba"
+
+        # == leasing agent — from posterInfo (no company name field on Kijiji,
+        #    so we combine phone + website as the agent identifier)
+        poster_info = listing.get("posterInfo", {}) or {}
+        agent_phone = poster_info.get("phoneNumber", "N/A")
+        agent_website = poster_info.get("websiteUrl", "N/A")
+        leasing_agent = f"{agent_website} | {agent_phone}" if agent_website != "N/A" else agent_phone
+
+        # == lot size — Kijiji rentals don't expose lot size (that's a
+        #    sale-listing concept); always N/A for rentals
+        sqr_feet_lot = "N/A"
 
         yield KijijiSpiderItem(
             post_id=post_id,
             time_of_post=time_of_post,
-            user_post_title=meta.get("user_post_title", "N/A"),
-            first_pic=meta.get("first_pic", "N/A"),
+            user_post_title=user_post_title,
+            first_pic=first_pic,
             user_meta_tags="N/A",
             post_url=url,
-            price_of_the_unit=meta.get("price_of_the_unit", "N/A"),
+            price_of_the_unit=price,
             num_bedrooms_n_square_feet_sq=num_bedrooms,
-            city_general_area=meta.get("address", "N/A"),
-            address=meta.get("address", "N/A"),
+            city_general_area=city_name,
+            address=address,
             bed_and_bath=bed_and_bath,
-            square_feet_unit=meta.get("square_feet", "N/A"),
-            post_description=full_description,
+            square_feet_unit=square_feet,
+            post_description=post_description,
             rent_period="monthly",
-            latitude=latitude,     
+            latitude=latitude,
             longitude=longitude,
+            leasing_agent=leasing_agent,
+            sqr_feet_lot=sqr_feet_lot,
         )
+
+    # ------------------------------------------------------------------ #
+    #  __NEXT_DATA__ / Apollo state helpers
+    # ------------------------------------------------------------------ #
+
+    def __get_listing_from_next_data(self, response, post_id: str) -> dict | None:
+        """
+        Parses the __NEXT_DATA__ script tag and pulls out the
+        RealEstateListing:{post_id} object from the Apollo cache.
+        """
+        next_data_raw = response.css('script#__NEXT_DATA__::text').get()
+        if not next_data_raw:
+            return None
+
+        try:
+            next_data = json.loads(next_data_raw)
+        except json.JSONDecodeError:
+            return None
+
+        apollo_state = (
+            next_data.get("props", {})
+            .get("pageProps", {})
+            .get("__APOLLO_STATE__", {})
+        )
+
+        listing_key = f"RealEstateListing:{post_id}"
+        return apollo_state.get(listing_key)
+
+    def __parse_attributes(self, listing: dict) -> dict:
+        """
+        Flattens the listing's attributes.all list (machineKey -> value)
+        into a simple lowercase-keyed dict for easy lookup.
+        e.g. [{"machineKey": "numberbedrooms", "values": ["2"]}, ...]
+        """
+        flat = {}
+        attrs = listing.get("attributes", {}) or {}
+        for attr in attrs.get("all", []) or []:
+            key = (attr.get("machineKey") or "").lower()
+            values = attr.get("values") or attr.get("value")
+            if isinstance(values, list):
+                flat[key] = values[0] if values else "N/A"
+            elif values is not None:
+                flat[key] = values
+        return flat
