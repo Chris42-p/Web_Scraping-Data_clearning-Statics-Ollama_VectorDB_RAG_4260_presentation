@@ -52,7 +52,7 @@ class CregslistSpiderSpider(scrapy.Spider):
 
                 if row_id !=None:
                     #update when the post was seen again. 
-                    post_.DEV_drop_table_manual() #just first run. reset tables: wrong values in a field.  
+                    #post_.DEV_drop_table_manual() #just first run. reset tables: wrong values in a field.  
 
                     #send a request to the website 
                     yield scrapy.Request(url,

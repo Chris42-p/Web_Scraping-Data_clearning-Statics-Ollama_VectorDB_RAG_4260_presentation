@@ -6,7 +6,7 @@ sys.path.append(
     str(Path(__file__).resolve().parents[2] / "spider_default_obj")
 )
 
-from spider_user_agent_factor import UserAgentFactory
+from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
 
 
 class UserAgentRotationMiddleware:

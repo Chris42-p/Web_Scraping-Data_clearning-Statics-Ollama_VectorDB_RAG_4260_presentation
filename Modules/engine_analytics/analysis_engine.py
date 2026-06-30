@@ -6,9 +6,12 @@ class AnalysisEngine:
 
     def __init__(self, db_path: str = None):
         if db_path is None:
-            db_path = Path(__file__).resolve().parents[2] / "real_estate.db"
+            db_path = Path(__file__).resolve().parents[1] / "spiders" / "z_not_spiders" / "spider_central.db"
         self.db_path = Path(db_path).resolve()
-        self.conn = sqlite3.connect(self.db_path)
+        if not self.db_path.exists():
+            raise FileNotFoundError(f"Database not found: {self.db_path}")
+        db_uri = f"file:{self.db_path.as_posix()}?mode=rw"
+        self.conn = sqlite3.connect(db_uri, uri=True)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
         self._ensure_rew_table()

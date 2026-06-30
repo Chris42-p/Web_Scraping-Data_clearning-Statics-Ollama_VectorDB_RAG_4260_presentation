@@ -9,7 +9,7 @@ Two-step scraping:
                      neighbourhood-level address, which caused missing
                      street numbers).
 
-Follows cregslist_spider pattern:
+Follows cragslist_spider pattern:
 - Spider only scrapes, no data processing
 - All processing happens in pipelines.py
 - Fields match Post_Data from spider_default_obj

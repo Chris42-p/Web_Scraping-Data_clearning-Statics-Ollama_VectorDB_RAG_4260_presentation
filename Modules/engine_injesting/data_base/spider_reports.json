@@ -1,0 +1,22 @@
+[
+  {
+    "type": "spider",
+    "id": "rep_2",
+    "spider": "rew",
+    "title": "Spider Market Update",
+    "summary": "0 new listings and 0 updated listings today. There are 592 active listings in the REW dataset, with an average monthly rent of $3,424. Top neighbourhoods: West End (85), Downtown West (77), Yaletown (57).",
+    "report_type": "market",
+    "model_name": "ollama",
+    "created_at": "2026-06-24T16:25:03.541557"
+  },
+  {
+    "type": "spider",
+    "id": "rep_1",
+    "spider": "rew",
+    "title": "Spider Market Update",
+    "summary": "503 new listings and 0 updated listings today. There are 592 active listings in the REW dataset, with an average monthly rent of $3,424. Top neighbourhoods: West End (85), Downtown West (77), Yaletown (57).",
+    "report_type": "market",
+    "model_name": "ollama",
+    "created_at": "2026-06-20T17:07:47.965804"
+  }
+]

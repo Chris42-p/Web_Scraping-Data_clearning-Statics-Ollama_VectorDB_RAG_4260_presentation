@@ -26,7 +26,7 @@ class XX():
 
 
      def __strip_extra_spaces(self, text) :
-        text=text.replace("     ",",").replace("   ","") #custom for cregslist prasing of data 
+        text=text.replace("     ",",").replace("   ","") #custom for cragslist prasing of data 
         return text.split(",")
         
      def __strip_spaces(self, text):

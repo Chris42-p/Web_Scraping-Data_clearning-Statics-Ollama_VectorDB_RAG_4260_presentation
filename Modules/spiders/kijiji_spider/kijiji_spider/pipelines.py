@@ -1,7 +1,7 @@
 """
 Kijiji Spider Pipeline
 
-Follows cregslist_spider pipeline pattern:
+Follows cragslist_spider pipeline pattern:
 - Cleans raw scraped fields
 - Maps into Post_Data from spider_default_obj
 - Post_Data handles LLM parsing of post_description automatically
@@ -15,7 +15,7 @@ Post_Data parameter order (as of latest spider_default_obj.py):
 
 import re
 
-from kijiji_spider.spider_interface import CONST
+from Modules.spiders.kijiji_spider.kijiji_spider.spider_interface import CONST
 
 #== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
 from pathlib import Path
@@ -110,7 +110,7 @@ class KijijiSpiderPipeline:
             sqr_feet_lot=item.get("sqr_feet_lot", "N/A"), 
 
         ).save_new_post_to_db()
-
+        return item
         # TODO: uncomment once spider_default_obj import issue is resolved
         # import sys, os
         # sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'spider_default_obj'))

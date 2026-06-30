@@ -3,15 +3,15 @@ from pathlib import Path
 
 
 CONST={
-     "HTTPCACHE_DIR": "cregslist_spider_cache", #set this one dynamically #get_cache_path(),
-     # cregslist_spider.py
+     "HTTPCACHE_DIR": "cragslist_spider_cache", #set this one dynamically #get_cache_path(),
+     # cragslist_spider.py
      "ALLOWED_DOMAINS":["craigslist.org"],
      "START_URL":["https://www.craigslist.org/search/subarea/van?cat=hhh"],
      
 
      #settings.py
           #== meta
-     "BOT_NAME":"cregslist_spider",
+     "BOT_NAME":"cragslist_spider",
      "ROBOTSTXT_OBEY":False,
      "CONCURRENT_REQUESTS_PER_DOMAIN":1,
      "DOWNLOAD_DELAY": 20,  #sec #slow it down for LLM to process obj

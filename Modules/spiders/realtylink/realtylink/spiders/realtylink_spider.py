@@ -10,7 +10,7 @@ import sys
 from ..realtylink_interface import CONST
 
 #=== custom imports 
-sys.path.append("/home/chris/Desktop/4260_presentation/Modules/spiders") #this is how to import std.obj
+#sys.path.append("/home/chris/Desktop/4260_presentation/Modules/spiders") #this is how to import std.obj
 
 
 
@@ -57,6 +57,7 @@ class RealtylinkSpiderSpider(scrapy.Spider):
             self.page_num+=1
             
             yield scrapy.Request(url, callback=self.parse)
+            
 
 
     def parse_page(self, response):

@@ -2,8 +2,8 @@ from .spider_interface import CONST
 
 BOT_NAME = CONST["BOT_NAME"]
 
-SPIDER_MODULES = ["rew_spider.spiders"]
-NEWSPIDER_MODULE = "rew_spider.spiders"
+SPIDER_MODULES = ["Modules.spiders.rew_spider.rew_spider.spiders"]
+NEWSPIDER_MODULE = "Modules.spiders.rew_spider.rew_spider.spiders"
 
 ROBOTSTXT_OBEY = CONST["ROBOTSTXT_OBEY"]
 
@@ -12,11 +12,11 @@ DOWNLOAD_DELAY = CONST["DOWNLOAD_DELAY"]
 COOKIES_ENABLED = CONST["COOKIES_ENABLED"]
 
 ITEM_PIPELINES = {
-    "rew_spider.pipelines.RewSpiderPipeline": 300,
+     "Modules.spiders.rew_spider.rew_spider.pipelines.RewSpiderPipeline": 300,
 }
 
 DOWNLOADER_MIDDLEWARES = {
-    "rew_spider.middlewares.UserAgentRotationMiddleware": 400,
+    "Modules.spiders.rew_spider.rew_spider.middlewares.UserAgentRotationMiddleware": 400,
 }
 
 HTTPCACHE_ENABLED = CONST["HTTPCACHE_ENABLED"]

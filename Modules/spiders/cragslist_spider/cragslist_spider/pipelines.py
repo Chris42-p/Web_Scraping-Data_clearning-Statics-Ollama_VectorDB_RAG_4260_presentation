@@ -65,7 +65,7 @@ class CregslistSpiderPipeline:
             first_img_url=self.get_first_pic(item),
             sqr_feet_lot=None, #not provided by Cregs list
         ).save_new_post_to_db()
-        # return item
+        return item
   
     def get_post_id(self,item):
         if item["post_id"]==None:
@@ -195,7 +195,7 @@ class CregslistSpiderPipeline:
         return street_number, city, province, postal_code
 
     def __strip_extra_spaces(self, text) :
-        text=text.replace("     ",",").replace("   ","") #custom for cregslist prasing of data 
+        text=text.replace("     ",",").replace("   ","") #custom for cragslist prasing of data 
         return text.split(",")
         
     def __strip_spaces(self, text):

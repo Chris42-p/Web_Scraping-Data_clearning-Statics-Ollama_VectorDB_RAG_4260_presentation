@@ -1,9 +1,10 @@
 import scrapy
+from scrapy.http import HtmlResponse
 
-from ..spider_interface import CONST
-from ..items import RewSpiderItem
+from Modules.spiders.rew_spider.rew_spider.spider_interface import CONST
+from Modules.spiders.rew_spider.rew_spider.items import RewSpiderItem
 
-from ..rew_parser import (
+from Modules.spiders.rew_spider.rew_spider.rew_parser import (
     extract_price,
     extract_square_feet,
     extract_address,
@@ -11,6 +12,10 @@ from ..rew_parser import (
     split_address,
     build_bed_bath,
     extract_post_id,
+    extract_days_on_rew,
+    extract_mls_number,
+    extract_year_built,
+    extract_building_age,
 )
 
 
@@ -20,24 +25,45 @@ class RewSpider(scrapy.Spider):
     allowed_domains = CONST["ALLOWED_DOMAINS"]
     start_urls = CONST["START_URL"]
 
+    def __init__(self, max_pages=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_pages = int(max_pages or CONST["DEFAULT_MAX_PAGES"])
+        self.visited_pages = set()
+
     def start_requests(self):
         for url in self.start_urls:
             yield scrapy.Request(
-                url=url,
+                url,
                 callback=self.parse,
                 meta={"page": 1}
             )
 
     def parse(self, response):
+        current_page = response.meta.get("page", 1)
+
+        self.logger.info("REW response url=%s", response.url)
+        self.logger.info("REW response class=%s", response.__class__.__name__)
+        self.logger.info("REW content-type=%s", response.headers.get("Content-Type"))
+
+        if not isinstance(response, HtmlResponse):
+            self.logger.error("Non-HTML response received from %s", response.url)
+            return
+
+        if response.url in self.visited_pages:
+            self.logger.info("Skipping visited page: %s", response.url)
+            return
+
+        self.visited_pages.add(response.url)
+
+        if response.status in [403, 429]:
+            self.logger.warning("Blocked or rate limited: %s - %s", response.status, response.url)
+            return
 
         cards = response.css("article")
 
-        self.logger.info(
-            f"Found {len(cards)} listing cards"
-        )
+        self.logger.info("Page %s: found %s listing cards", current_page, len(cards))
 
         for card in cards:
-
             title = " ".join(
                 text.strip()
                 for text in card.css("::text").getall()
@@ -45,19 +71,12 @@ class RewSpider(scrapy.Spider):
             )
 
             link = card.css("a::attr(href)").get()
-
             if not link:
                 continue
 
             listing_url = response.urljoin(link)
-
-            formatted_address = format_address(
-                extract_address(title)
-            )
-
-            address_parts = split_address(
-                formatted_address
-            )
+            formatted_address = format_address(extract_address(title))
+            address_parts = split_address(formatted_address)
 
             yield response.follow(
                 listing_url,
@@ -66,9 +85,30 @@ class RewSpider(scrapy.Spider):
                     "title": title,
                     "listing_url": listing_url,
                     "formatted_address": formatted_address,
-                    "address_parts": address_parts,
+                    "street_address": address_parts["street_address"],
+                    "neighbourhood": address_parts["neighbourhood"],
+                    "city": address_parts["city"],
+                    "province": address_parts["province"],
+                    "postal_code": address_parts["postal_code"],
+                    "price": extract_price(title),
+                    "square_feet": extract_square_feet(title),
+                    "bed_bath": build_bed_bath(title),
                 }
             )
+
+        if current_page >= self.max_pages:
+            self.logger.info("Reached max page limit: %s", self.max_pages)
+            return
+
+        next_page = response.css("a[rel='next']::attr(href)").get()
+        if next_page:
+            yield response.follow(
+                next_page,
+                callback=self.parse,
+                meta={"page": current_page + 1}
+            )
+        else:
+            self.logger.info("No next page found.")
 
     def parse_page(self, response):
 

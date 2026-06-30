@@ -7,8 +7,8 @@ from .spider_interface import CONST
 
 BOT_NAME = CONST["BOT_NAME"]
 
-SPIDER_MODULES = ["kijiji_spider.spiders"]
-NEWSPIDER_MODULE = "kijiji_spider.spiders"
+SPIDER_MODULES = ["Modules.spiders.kijiji_spider.kijiji_spider.spiders"]
+NEWSPIDER_MODULE = "Modules.spiders.kijiji_spider.kijiji_spider.spiders"
 
 ADDONS = {}
 
@@ -36,12 +36,12 @@ HTTPCACHE_IGNORE_HTTP_CODES = CONST["HTTPCACHE_IGNORE_HTTP_CODES"]
 HTTPCACHE_STORAGE = CONST["HTTPCACHE_STORAGE"]
 
 ITEM_PIPELINES = {
-    "kijiji_spider.pipelines.KijijiSpiderPipeline": 300,
+    "Modules.spiders.kijiji_spider.kijiji_spider.pipelines.KijijiSpiderPipeline": 300,
 }
 
 DOWNLOADER_MIDDLEWARES = {
-    "kijiji_spider.middlewares.UserAgentRotationMiddleware": 400,
-    "kijiji_spider.middlewares.KijijiSpiderDownloaderMiddleware": 543,
+    "Modules.spiders.kijiji_spider.kijiji_spider.middlewares.UserAgentRotationMiddleware": 400,
+    "Modules.spiders.kijiji_spider.kijiji_spider.middlewares.KijijiSpiderDownloaderMiddleware": 543,
 }
 
 FEED_EXPORT_ENCODING = CONST["FEED_EXPORT_ENCODING"]

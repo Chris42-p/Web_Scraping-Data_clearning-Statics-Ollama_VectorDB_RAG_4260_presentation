@@ -22,8 +22,10 @@ from Modules.engine_injesting.data_base.my_sql_db import SQL_DataBase
 from Modules.user_GUI.back_end.main_interface import CONST
 from Modules.gmail_api.gmail_api import GmailIngestor
 from Modules.engine_injesting.injest_engine import Injest_Engine
-from Modules.user_GUI.back_end.spider_service import get_available_spiders, run_spider_by_key
-from Modules.engine_analytics.z_previous_version import AnalysisEngine
+from Modules.user_GUI.back_end.spider_service import RUNNING_JOBS, run_spider_by_key, SpiderJob
+from Modules.engine_analytics.analysis_engine import AnalysisEngine
+from Modules.user_GUI.back_end.spider_config import SPIDER_STATUS_CONFIG, SPIDER_CONFIGS, SPIDER_REGISTRY
+
 
 
 router = APIRouter()
@@ -50,19 +52,7 @@ app.add_middleware(
 
 scheduler = BackgroundScheduler()
 
-spider_config_store = {
-    "enabled": True,
-    "intervalMinutes": 30,
-    "region": "Vancouver",
-    "keywords": "rental apartment",
-    "maxPages": 5,
-}
 
-spider_status_store = {
-    "lastRunAt": None,
-    "nextRunAt": None,
-    "isRunning": False,
-}
 
 class LoginRequest(BaseModel):
     username: str
@@ -93,92 +83,97 @@ class SpiderRunResponseModel(BaseModel):
     nextRunAt: Optional[str] = None
     summary: Optional[dict] = None
 
+class SpiderRuntimeStatus(BaseModel):
+    lastRunAt: str | None = None
+    nextRunAt: str | None = None
+    isRunning: bool = False
+
 def get_db():
     return SQL_DataBase()
 
 # Timer for spider run
-def run_spider_job():
-    spider_status_store["isRunning"] = True
-    spider_status_store["lastRunAt"] = datetime.now().isoformat()
+def run_spider_job(spider_key: str):
+    SPIDER_STATUS_CONFIG[spider_key]["isRunning"] = True
+    SPIDER_STATUS_CONFIG[spider_key]["lastRunAt"] = datetime.now().isoformat()
 
-    if spider_config_store["enabled"]:
-        next_run = datetime.now() + timedelta(minutes=spider_config_store["intervalMinutes"])
-        spider_status_store["nextRunAt"] = next_run.isoformat()
-    else:
-        spider_status_store["nextRunAt"] = None
-
-    spider_status_store["isRunning"] = False
-    print("Running spider...")
+    try:
+        run_spider_by_key(spider_key)
+    finally:
+        SPIDER_STATUS_CONFIG[spider_key]["isRunning"] = False
+        if SPIDER_CONFIGS[spider_key]["enabled"]:
+            next_run = datetime.now() + timedelta(minutes=SPIDER_CONFIGS[spider_key]["intervalMinutes"])
+            SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = next_run.isoformat()
+        else:
+            SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = None
 
 @app.on_event("startup")
 def startup_event():
-    scheduler.add_job(
-        run_spider_job,
-        "interval",
-        minutes=spider_config_store["intervalMinutes"],
-        id="spider_job",
-        replace_existing=True,
-    )
+    for spider_key, config in SPIDER_CONFIGS.items():
+        if spider_key not in SPIDER_REGISTRY or spider_key not in SPIDER_STATUS_CONFIG:
+            continue
+        if config["enabled"]:
+            scheduler.add_job(
+                run_spider_job,
+                "interval",
+                minutes=config["intervalMinutes"],
+                id=f"spider_job_{spider_key}",
+                replace_existing=True,
+                kwargs={"spider_key": spider_key},
+                max_instances=1,
+            )
+            SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = (
+                datetime.now() + timedelta(minutes=config["intervalMinutes"])
+            ).isoformat()
     scheduler.start()
 
-@app.get("/spider/config", response_model=SpiderConfigModel)
-def get_spider_config():
-    return spider_config_store
+@app.get("/spider/config/{spider_key}", response_model=SpiderConfigModel)
+def get_spider_config(spider_key: str):
+    if spider_key not in SPIDER_CONFIGS:
+        raise HTTPException(status_code=404, detail=f"Unknown spider: {spider_key}")
+    return SPIDER_CONFIGS[spider_key]
 
-@app.post("/spider/config", response_model=SpiderConfigModel)
-def update_spider_config(config: SpiderConfigModel):
-    spider_config_store.update(config.dict())
+@app.post("/spider/config/{spider_key}", response_model=SpiderConfigModel)
+def update_spider_config(spider_key: str, config: SpiderConfigModel):
+    if spider_key not in SPIDER_CONFIGS:
+        raise HTTPException(status_code=404, detail=f"Unknown spider: {spider_key}")
 
-    if spider_config_store["enabled"]:
-        next_run = datetime.now() + timedelta(minutes=spider_config_store["intervalMinutes"])
-        spider_status_store["nextRunAt"] = next_run.isoformat()
-    else:
-        spider_status_store["nextRunAt"] = None
+    SPIDER_CONFIGS[spider_key] = config.dict()
+    job_id = f"spider_job_{spider_key}"
 
-    scheduler.reschedule_job(
-        "spider_job",
-        trigger="interval",
-        minutes=spider_config_store["intervalMinutes"],
-    )
-
-    return spider_config_store
-
-
-@app.get("/spider/status", response_model=SpiderStatusModel)
-def get_spider_status():
-    return spider_status_store
-
-@app.post("/spider/run", response_model=SpiderRunResponseModel)
-def run_spider(request: SpiderRunRequest):
-    try:
-        spider_status_store["isRunning"] = True
-        spider_status_store["lastRunAt"] = datetime.now().isoformat()
-
-        result = run_spider_by_key(request.spider_key)
-
-        if spider_config_store["enabled"]:
-            next_run = datetime.now() + timedelta(minutes=spider_config_store["intervalMinutes"])
-            spider_status_store["nextRunAt"] = next_run.isoformat()
+    if config.enabled:
+        if scheduler.get_job(job_id):
+            scheduler.reschedule_job(job_id, trigger="interval", minutes=config.intervalMinutes)
         else:
-            spider_status_store["nextRunAt"] = None
+            scheduler.add_job(
+                run_spider_job,
+                "interval",
+                minutes=config.intervalMinutes,
+                id=job_id,
+                replace_existing=True,
+                kwargs={"spider_key": spider_key},
+                max_instances=1,
+            )
+        SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = (
+            datetime.now() + timedelta(minutes=config.intervalMinutes)
+        ).isoformat()
+    else:
+        if scheduler.get_job(job_id):
+            scheduler.remove_job(job_id)
+        SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = None
 
-        engine = AnalysisEngine()
-        try:
-            summary = engine.get_dashboard_summary()
-        finally:
-            engine.close()
+    return SPIDER_CONFIGS[spider_key]
 
-        return {
-            "message": result.get("message", "Spider completed successfully."),
-            "started": True,
-            "spider": result.get("spider", "rew"),
-            "nextRunAt": spider_status_store["nextRunAt"],
-            "summary": summary,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Spider run failed: {str(e)}")
-    finally:
-        spider_status_store["isRunning"] = False
+@app.get("/spider/status/{spider_key}", response_model=SpiderStatusModel)
+def get_single_spider_status(spider_key: str):
+    if spider_key not in SPIDER_STATUS_CONFIG:
+        raise HTTPException(status_code=404, detail=f"Unknown spider: {spider_key}")
+    return SPIDER_STATUS_CONFIG[spider_key]
+
+
+@app.get("/spider/status", response_model=dict[str, SpiderRuntimeStatus])
+def get_all_spider_status():
+    return SPIDER_STATUS_CONFIG
+
 
 
 
@@ -250,6 +245,14 @@ def debug_routes():
         "routes": [route.path for route in app.routes]
     }
 
+@app.get("/debug/spider-keys")
+def debug_spider_keys():
+    return {
+        "registry": list(SPIDER_REGISTRY.keys()),
+        "configs": list(SPIDER_CONFIGS.keys()),
+        "status": list(SPIDER_STATUS_CONFIG.keys()),
+    }
+
 @app.get("/auth/google/callback")
 def google_callback(code: str, state: str, user=Depends(get_logged_in_user)):
     state_data = GMAIL_OAUTH_STATE.get(state)
@@ -292,18 +295,92 @@ def gmail_import(max_emails: int = 10, user=Depends(get_logged_in_user)):
 
 @app.get("/spiders")
 def get_spiders(user=Depends(get_logged_in_user)):
-    return {"spiders": get_available_spiders()}
+    return {
+        "spiders": [
+            {"key": key, "label": value["label"]}
+            for key, value in SPIDER_REGISTRY.items()
+        ]
+    }
 
-@app.post("/spiders/run")
-def run_spider(request: SpiderRunRequest, user=Depends(get_logged_in_user)):
+@app.post("/spiders/run", response_model=SpiderRunResponseModel)
+def run_selected_spider(request: SpiderRunRequest, user=Depends(get_logged_in_user)):
+    spider_key = request.spider_key
+
+    if spider_key not in SPIDER_REGISTRY:
+        raise HTTPException(status_code=404, detail=f"Unknown spider: {spider_key}")
+
+    if spider_key not in SPIDER_STATUS_CONFIG:
+        raise HTTPException(status_code=500, detail=f"Spider status not configured: {spider_key}")
+
     try:
-        result = run_spider_by_key(request.spider_key)
+        SPIDER_STATUS_CONFIG[spider_key]["isRunning"] = True
+        SPIDER_STATUS_CONFIG[spider_key]["lastRunAt"] = datetime.now().isoformat()
+
+        run_spider_by_key(spider_key)
+
+        if SPIDER_CONFIGS.get(spider_key, {}).get("enabled"):
+            SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = (
+                datetime.now() + timedelta(minutes=SPIDER_CONFIGS[spider_key]["intervalMinutes"])
+            ).isoformat()
+        else:
+            SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = None
+
+        engine = AnalysisEngine()
+        try:
+            summary = engine.get_dashboard_summary()
+        finally:
+            engine.close()
+
         return {
-            "message": f"{request.spider_key} run finished",
-            "result": result,
+            "message": f"{spider_key} run finished",
+            "started": True,
+            "spider": spider_key,
+            "nextRunAt": SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"],
+            "summary": summary,
         }
+
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Spider run failed: {str(e)}")
+    finally:
+        SPIDER_STATUS_CONFIG[spider_key]["isRunning"] = False
+
+
+
+
+@app.post("/spiders/{spider_name}/run")
+def run_spider(spider_name: str):
+    job = spider_service.run_spider(spider_name)
+    return {
+        "job_id": job.job_id,
+        "spider": job.spider_name,
+        "status": job.status,
+        "started_at": job.started_at,
+    }
+
+@app.post("/spiders/{job_id}/abort")
+def abort_spider(job_id: str):
+    ok = spider_service.abort_spider(job_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Running job not found")
+    return {"job_id": job_id, "status": "aborted"}
+
+@app.get("/spiders/jobs")
+def list_jobs():
+    return [
+        {
+            "job_id": job.job_id,
+            "spider": job.spider_name,
+            "status": job.status,
+            "started_at": job.started_at,
+            "finished_at": job.finished_at,
+            "error": job.error,
+        }
+        for job in RUNNING_JOBS.values()
+    ]
+
+
 
 
 # Register New User

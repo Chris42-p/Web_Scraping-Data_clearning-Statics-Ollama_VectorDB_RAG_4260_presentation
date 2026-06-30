@@ -154,16 +154,12 @@ INSERT OR REPLACE INTO parsed_descriptions (
      req_other,
      llm_model_comments
 )VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-     "INSERT_POST_STATUS":"""
+     "INSERT_POST_STATUS": """
 INSERT OR REPLACE INTO post_status(
-     post_status, 
-     time_on_market, 
-     listing_id, 
-
-)VALUES(?,?,?)
-
-
-
+    post_status,
+    time_on_market,
+    listing_id
+) VALUES (?, ?, ?)
 """,
 
 

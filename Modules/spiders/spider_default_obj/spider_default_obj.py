@@ -65,7 +65,7 @@ class Post_Data():
      
      def __create_db(self):
           base=Path(__file__).resolve().parent
-          self.db_path =f"{base}/{CONST["DB_LOCATION"]}/{CONST["DB_NAME"]}" 
+          self.db_path = f"{base}/{CONST['DB_LOCATION']}/{CONST['DB_NAME']}"
 
           #== connect to db 
           conn = sqlite3.connect(self. db_path)
@@ -86,7 +86,7 @@ class Post_Data():
 
      def save_new_post_to_db(self):
           # try:
-          cursor,conn=self.__conn_to_db(self.db_path)          
+          cursor, conn = self.__conn_to_db()        
 
           #== insert the post 
           cursor.execute(CONST["INSERT_LISTING"], (
@@ -162,7 +162,7 @@ class Post_Data():
           sql_query = CONST["SQL_GET_ROW_BY_URL"] 
 
           cursor,conn=self.__conn_to_db()
-          cursor.execute(sql_query,(url) )
+          cursor.execute(sql_query, (url,))
           data= cursor.fetchone() #single row 
           conn.close()
 
