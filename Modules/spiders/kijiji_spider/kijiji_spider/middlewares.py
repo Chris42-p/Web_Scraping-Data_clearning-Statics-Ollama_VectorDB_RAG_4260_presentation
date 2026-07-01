@@ -7,18 +7,10 @@ from itemadapter import ItemAdapter
 
 import sys, os
 
-#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
+
 from pathlib import Path
 import sys
 
-# walk up until we find the folder that contains 'Modules'
-current = Path(__file__).resolve()
-for parent in current.parents:
-    if (parent / "Modules").exists():
-        sys.path.append(str(parent))
-        break
-
-from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
 #==========================
 
 
@@ -33,6 +25,16 @@ class UserAgentRotationMiddleware:
         return s
 
     def __init__(self):
+        #== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
+        from pathlib import Path
+        import sys
+        current = Path(__file__).resolve()
+        for parent in current.parents:
+            if (parent / "Modules").exists():
+                if str(parent) not in sys.path:
+                    sys.path.append(str(parent))
+                break
+        from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
         self.user_agent = UserAgentFactory()
 
     def process_request(self, request, spider):

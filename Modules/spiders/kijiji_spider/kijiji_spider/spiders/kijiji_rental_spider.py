@@ -9,10 +9,15 @@ Two-step scraping:
                      neighbourhood-level address, which caused missing
                      street numbers).
 
-Follows cragslist_spider pattern:
+Follows cregslist_spider pattern:
 - Spider only scrapes, no data processing
 - All processing happens in pipelines.py
 - Fields match Post_Data from spider_default_obj
+
+TODO: Add check_status / re-scrape detection logic once Chris updates
+      Post_Data.__init__() to not require all 19 fields upfront.
+      (get_record_by_url and update_post_last_active should be callable
+       without constructing a full listing object first.)
 
 Usage:
     cd Modules/spiders/kijiji_spider
@@ -67,27 +72,12 @@ class KijijiRentalsSpider(scrapy.Spider):
                     continue
 
                 listings_found += 1
-
-                # Check if this listing was already scraped before.
-                # If so, only do a lightweight status check instead of a
-                # full re-scrape (per Chris's algorithm).
-                record = self.__check_existing_record(url)
-
-                if record is not None:
-                    row_id, scraped_at = record
-                    yield scrapy.Request(
-                        url=url,
-                        callback=self.check_status,
-                        cb_kwargs={"row_id": row_id, "scraped_at": scraped_at},
-                        headers={"Referer": response.url},
-                    )
-                else:
-                    yield scrapy.Request(
-                        url=url,
-                        callback=self.parse_page,
-                        meta={"post_url": url},
-                        headers={"Referer": response.url},
-                    )
+                yield scrapy.Request(
+                    url=url,
+                    callback=self.parse_page,
+                    meta={"post_url": url},
+                    headers={"Referer": response.url},
+                )
 
         # Pagination
         if self.current_page < self.max_pages and listings_found > 0:
@@ -121,8 +111,7 @@ class KijijiRentalsSpider(scrapy.Spider):
             self.logger.warning(f"Could not find __NEXT_DATA__ listing for {url}")
             return
 
-        # == location (this is the fix — full address, not the rough
-        #    neighbourhood-level one from the search results JSON-LD)
+        # == location — full address from Apollo state
         location = listing.get("location", {}) or {}
         address = location.get("address", "N/A")
         coordinates = location.get("coordinates", {}) or {}
@@ -145,7 +134,7 @@ class KijijiRentalsSpider(scrapy.Spider):
         image_urls = listing.get("imageUrls", []) or []
         first_pic = image_urls[0] if image_urls else "N/A"
 
-        # == attributes (bedrooms, bathrooms, sqft, etc. — list of key/value pairs)
+        # == attributes (bedrooms, bathrooms, sqft, etc.)
         attrs = self.__parse_attributes(listing)
         num_bedrooms = attrs.get("numberbedrooms", attrs.get("bedrooms", "N/A"))
         num_bathrooms = attrs.get("numberbathrooms", attrs.get("bathrooms", "N/A"))
@@ -155,15 +144,13 @@ class KijijiRentalsSpider(scrapy.Spider):
             num_bedrooms = "Studio/Bachelor"
         bed_and_bath = f"{num_bedrooms}br / {num_bathrooms}ba"
 
-        # == leasing agent — from posterInfo (no company name field on Kijiji,
-        #    so we combine phone + website as the agent identifier)
+        # == leasing agent — from posterInfo
         poster_info = listing.get("posterInfo", {}) or {}
         agent_phone = poster_info.get("phoneNumber", "N/A")
         agent_website = poster_info.get("websiteUrl", "N/A")
         leasing_agent = f"{agent_website} | {agent_phone}" if agent_website != "N/A" else agent_phone
 
-        # == lot size — Kijiji rentals don't expose lot size (that's a
-        #    sale-listing concept); always N/A for rentals
+        # == lot size — not available on Kijiji rental listings
         sqr_feet_lot = "N/A"
 
         yield KijijiSpiderItem(
@@ -186,70 +173,6 @@ class KijijiRentalsSpider(scrapy.Spider):
             leasing_agent=leasing_agent,
             sqr_feet_lot=sqr_feet_lot,
         )
-
-    def check_status(self, response, row_id, scraped_at):
-        """
-        Lightweight re-scrape: check if a previously-seen listing is
-        still active, and update its last-active timestamp.
-
-        A removed/expired Kijiji listing returns the page but with a
-        "There is nothing here" style message, or a 404 status.
-        """
-        post_data = self.__get_post_data_class()
-        if post_data is None:
-            return
-
-        removed_text = response.css('body::text').re_first(r"[Tt]here is nothing here") or ""
-        is_removed = bool(removed_text) or response.status == 404
-
-        active_post = not is_removed
-
-        post_data().update_post_last_active(
-            scraped_at=scraped_at,
-            active_post=active_post,
-            row_id=row_id,
-        )
-
-        self.logger.info(
-            f"[check_status] row_id={row_id} active={active_post} url={response.url}"
-        )
-
-    def __check_existing_record(self, url: str):
-        """
-        Looks up whether this listing URL is already in the DB.
-        Returns (row_id, scraped_at) if found, else None.
-        """
-        post_data = self.__get_post_data_class()
-        if post_data is None:
-            return None
-
-        record = post_data().get_record_by_url(url)
-        if not record:
-            return None
-
-        # record is [row_id, address] per spider_default_obj.py —
-        # scraped_at isn't returned by this query, so we re-derive it
-        # at check time inside update_post_last_active instead.
-        row_id = record[0]
-        scraped_at = None
-        return row_id, scraped_at
-
-    def __get_post_data_class(self):
-        """Lazily imports Post_Data to avoid breaking spider startup
-        if the module path isn't resolvable in this environment."""
-        try:
-            from pathlib import Path
-            import sys
-            current = Path(__file__).resolve()
-            for parent in current.parents:
-                if (parent / "Modules").exists():
-                    sys.path.append(str(parent))
-                    break
-            from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
-            return Post_Data
-        except Exception as e:
-            self.logger.warning(f"Could not import Post_Data: {e}")
-            return None
 
     # ------------------------------------------------------------------ #
     #  __NEXT_DATA__ / Apollo state helpers
@@ -282,7 +205,6 @@ class KijijiRentalsSpider(scrapy.Spider):
         """
         Flattens the listing's attributes.all list (machineKey -> value)
         into a simple lowercase-keyed dict for easy lookup.
-        e.g. [{"machineKey": "numberbedrooms", "values": ["2"]}, ...]
         """
         flat = {}
         attrs = listing.get("attributes", {}) or {}
