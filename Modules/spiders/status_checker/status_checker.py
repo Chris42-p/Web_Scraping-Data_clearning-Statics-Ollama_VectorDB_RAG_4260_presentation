@@ -5,7 +5,7 @@ Dedicated spider for checking if previously scraped listings are still active.
 
 Flow:
     1. Reads all listing URLs from DB via Post_Data().get_urls()
-    2. For each URL, sends a lightweight request
+    2. For each URL, sends a lightweight request with rotating user agent
     3. Checks if the page is still active or removed (404 / "There is nothing here")
     4. Updates post_status via Post_Data().update_post_last_active()
 
@@ -36,15 +36,28 @@ class StatusCheckerSpider(scrapy.Spider):
         "FEED_EXPORT_ENCODING": "utf-8",
     }
 
-    def __get_post_data(self):
-        """Import Post_Data dynamically from project root."""
-        project_root = os.path.abspath(
+    def __get_project_root(self):
+        """Return absolute path to project root (folder containing Modules/)."""
+        return os.path.abspath(
             os.path.join(os.path.dirname(__file__), "..", "..", "..")
         )
+
+    def __add_project_to_path(self):
+        project_root = self.__get_project_root()
         if project_root not in sys.path:
             sys.path.insert(0, project_root)
+
+    def __get_post_data(self):
+        """Import Post_Data dynamically from project root."""
+        self.__add_project_to_path()
         from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
         return Post_Data
+
+    def __get_user_agent(self):
+        """Get a random user agent from UserAgentFactory."""
+        self.__add_project_to_path()
+        from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
+        return UserAgentFactory().get()
 
     async def start(self):
         """
@@ -76,6 +89,7 @@ class StatusCheckerSpider(scrapy.Spider):
                 cb_kwargs={"row_id": row_id, "scraped_at": scraped_at},
                 errback=self.handle_error,
                 meta={"row_id": row_id, "scraped_at": scraped_at},
+                headers={"User-Agent": self.__get_user_agent()},
             )
 
     def check_status(self, response, row_id, scraped_at):
