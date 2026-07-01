@@ -17,7 +17,8 @@ CONST = {
     "LOCATION_CODE": "l1700287",    # Vancouver, BC
     "CATEGORY_CODE": "c37",         # Apartments & Condos
     "DEFAULT_MAX_PAGES": 3,
-
+    "DUPEFILTER_CLASS": "scrapy.dupefilters.RFPDupeFilter",  # enable-duplicates
+    
     # == Anti-bot settings
     "USER_AGENT": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
