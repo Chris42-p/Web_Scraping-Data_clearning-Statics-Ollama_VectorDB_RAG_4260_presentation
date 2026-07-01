@@ -1,7 +1,7 @@
 """
 Kijiji Spider Interface
 All hardcoded config values go here — keeping spider/pipeline/settings clean.
-Following project convention from cregslist_spider.
+Following project convention from cragslist_spider.
 """
 
 from pathlib import Path

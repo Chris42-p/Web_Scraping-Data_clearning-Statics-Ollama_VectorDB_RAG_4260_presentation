@@ -11,8 +11,8 @@ from .realtylink_interface import CONST
 
 BOT_NAME = CONST["SPIDER_NAME_WEB_CRAWLER"]
 
-SPIDER_MODULES = ["realtylink.spiders"]
-NEWSPIDER_MODULE = "realtylink.spiders"
+SPIDER_MODULES = ["Modules.spiders.realtylink.realtylink.spiders"]
+NEWSPIDER_MODULE = "Modules.spiders.realtylink.realtylink.spiders"
 
 ADDONS = {}
 
@@ -51,7 +51,7 @@ COOKIES_ENABLED = CONST["COOKIES_ENABLED"]
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   "realtylink.middlewares.UserAgentRotationMilleware": 300,
+   "Modules.spiders.realtylink.realtylink.middlewares.UserAgentRotationMilleware": 300,
 }
 
 # Enable or disable extensions
@@ -63,7 +63,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = { #item pipeline after downloader millerware. 
-   "realtylink.pipelines.RealtylinkPipeline": 305,
+   "Modules.spiders.realtylink.realtylink.pipelines.RealtylinkPipeline": 305,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

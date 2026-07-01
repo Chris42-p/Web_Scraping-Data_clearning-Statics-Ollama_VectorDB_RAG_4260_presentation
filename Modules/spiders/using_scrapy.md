@@ -5,7 +5,7 @@ tutorial ref: https://thepythonscrapyplaybook.com/scrapy-beginners-guide/
 ## scrapy startproject <name_of_project>
 
 
-# step 2: create a scrapy spider:  scrapy genspider cregslist_spider <website_irl>
+# step 2: create a scrapy spider:  scrapy genspider cragslist_spider <website_irl>
 
 # step 3: add  "shell=ipython" to scrapy.cfg
 
@@ -26,9 +26,9 @@ tutorial ref: https://thepythonscrapyplaybook.com/scrapy-beginners-guide/
 
 
 ## testing spider
-/home/chris/Desktop/4260_presentation/Modules/spiders/cregslist_spider
+/home/chris/Desktop/4260_presentation/Modules/spiders/cragslist_spider
 
-scrapy crawl cregslist_spider
+scrapy crawl cragslist_spider
  
 
 

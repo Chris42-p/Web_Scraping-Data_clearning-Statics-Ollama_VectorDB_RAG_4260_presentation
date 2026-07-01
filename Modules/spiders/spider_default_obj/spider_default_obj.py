@@ -36,7 +36,7 @@ class Post_Data():
 #=== Connecting to Db
      def __create_db(self):
           base=Path(__file__).resolve().parent
-          self.db_path =f"{base}/{CONST["DB_LOCATION"]}/{CONST["DB_NAME"]}" 
+          self.db_path = f"{base}/{CONST['DB_LOCATION']}/{CONST['DB_NAME']}"
 
           #== connect to db 
           conn = sqlite3.connect(self. db_path)
@@ -65,7 +65,11 @@ class Post_Data():
                self.parse_description(post_description)
    
           # try:
+<<<<<<< HEAD
           cursor,conn=self.__conn_to_db()          
+=======
+          cursor, conn = self.__conn_to_db()        
+>>>>>>> ab6416e419e181b8d96a1250cd7b33ed8c696de5
 
           #== insert the post 
           cursor.execute(CONST["INSERT_LISTING"], (
@@ -143,7 +147,11 @@ class Post_Data():
           sql_query = CONST["SQL_GET_ROW_BY_URL"] 
 
           cursor,conn=self.__conn_to_db()
+<<<<<<< HEAD
           cursor.execute(sql_query,(url,) ) #url needs , to be a tuple else it'll break 
+=======
+          cursor.execute(sql_query, (url,))
+>>>>>>> ab6416e419e181b8d96a1250cd7b33ed8c696de5
           data= cursor.fetchone() #single row 
           conn.close()
 

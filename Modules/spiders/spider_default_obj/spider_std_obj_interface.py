@@ -171,6 +171,70 @@ CREATE TABLE IF NOT EXISTS post_status(
      FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE);
      """,
 
+     #== add listing into db 
+     "INSERT_LISTING":"""
+INSERT OR REPLACE INTO listings (
+     post_id,
+     post_url,
+     time_of_post,
+     leasing_agent,
+     general_area,
+     street_number,
+     city,
+     province,
+     postal_code,
+     price,
+     sqr_feet,
+     bed,
+     bath,
+     rent_period,
+     user_post_title,
+     first_pic,
+     user_meta_tags,
+     post_description,
+     img_url
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", #18 fields that're going to be added -- scraped at is auto generated
+     "INSERT_PARSED_POST_DESCRIPTION":"""
+INSERT OR REPLACE INTO parsed_descriptions (
+     listing_id,
+     smoke_free,
+     private_room,
+     living_situation,
+     wheelchair_accessible,
+     has_ac,
+     w_d_in_unit,
+     furnished,
+     luxuries,
+     sq_footage,
+     price_per_month,
+     included_utilities,
+     utility_cap,
+     close_to,
+     travel_convenience,
+     pets_okay,
+     cats_okay,
+     dogs_okay,
+     parking_included,
+     parking_spots,
+     parking_ev_charging,
+     parking_details,
+     damage_deposit,
+     other_deposits,
+     req_references,
+     req_credit_check,
+     req_criminal_record_check,
+     req_other,
+     llm_model_comments
+)VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+     "INSERT_POST_STATUS": """
+INSERT OR REPLACE INTO post_status(
+    post_status,
+    time_on_market,
+    listing_id
+) VALUES (?, ?, ?)
+""",
+
 
 
 #======== AI configuration 

@@ -3,7 +3,6 @@ import type { SpiderConfig, SpiderStatus } from "../interfaces";
 import {
     loadSpiderConfig,
     loadSpiderStatus,
-    runSpiderNow,
     saveSpiderConfig,
 } from "../services";
 
@@ -27,11 +26,9 @@ export function SettingsPage() {
     const [spiderConfig, setSpiderConfig] = useState<SpiderConfig>(DEFAULT_CONFIG);
     const [spiderStatus, setSpiderStatus] = useState<SpiderStatus>(DEFAULT_STATUS);
     const [isSavingConfig, setIsSavingConfig] = useState(false);
-    const [isRunningSpider, setIsRunningSpider] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [secondsLeft, setSecondsLeft] = useState<number>(DEFAULT_CONFIG.intervalMinutes * 60);
-    const [selectedSpiderKey, setSelectedSpiderKey] = useState("rew");
 
     useEffect(() => {
         async function initializeSpiderSettings() {
@@ -135,39 +132,7 @@ export function SettingsPage() {
         }
     }
 
-    function buildSpiderSuccessMessage(spiderKey: string, result: { message?: string }) {
-        if (spiderKey === "rew") {
-            return result.message || "REW spider completed. Listings in the market summary were refreshed.";
-        }
 
-        if (spiderKey === "safety_convenience") {
-            return (
-                result.message ||
-                "Safety & Convenience spider completed. Transit, parks, schools, and crime datasets were refreshed."
-            );
-        }
-
-        return result.message || "Spider completed successfully.";
-    }
-
-    async function handleRunSpiderNow() {
-        try {
-            setIsRunningSpider(true);
-            setError("");
-            setMessage("");
-
-            const result = await runSpiderNow(selectedSpiderKey);
-            const updatedStatus = await loadSpiderStatus();
-
-            setSpiderStatus(updatedStatus);
-            setMessage(buildSpiderSuccessMessage(selectedSpiderKey, result));
-        } catch (err) {
-            console.error(err);
-            setError(err instanceof Error ? err.message : "Failed to run spider.");
-        } finally {
-            setIsRunningSpider(false);
-        }
-    }
 
     const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -206,18 +171,6 @@ export function SettingsPage() {
                             checked={spiderConfig.enabled}
                             onChange={(event) => handleSpiderChange("enabled", event.target.checked)}
                         />
-                    </label>
-
-                    <label className="form-label">
-                        <span>Select Spider to run: </span>
-                        <select
-                            className="form-select"
-                            value={selectedSpiderKey}
-                            onChange={(event) => setSelectedSpiderKey(event.target.value)}
-                        >
-                            <option value="rew">REW Spider</option>
-                            <option value="safety_convenience">Safety & Convenience Spider</option>
-                        </select>
                     </label>
 
 
@@ -277,14 +230,6 @@ export function SettingsPage() {
                             {isSavingConfig ? "Saving..." : "Save Config"}
                         </button>
 
-                        <button
-                            className="dashboard-button dashboard-button-secondary"
-                            type="button"
-                            onClick={handleRunSpiderNow}
-                            disabled={isRunningSpider}
-                        >
-                            {isRunningSpider ? "Running..." : "Run Now"}
-                        </button>
                     </div>
 
                     {message ? <p className="settings-success">{message}</p> : null}

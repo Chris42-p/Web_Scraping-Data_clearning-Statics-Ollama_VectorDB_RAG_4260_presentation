@@ -7,34 +7,32 @@ Follows cregslist_spider pipeline pattern:
 - Post_Data handles LLM parsing of post_description automatically
 
 Post_Data parameter order (as of latest spider_default_obj.py):
-    post_id, time_of_post, user_post_title, first_pic, user_meta_tags,
-    post_url, price_of_the_unit, sqr_feet, general_area,
-    street_number, city, province, postal_code,
-    bed_bath, square_feet_unit, post_description, rent_period
+    post_id, post_url, time_of_post, leasing_agent, general_area,
+    street_number, city, province, postal_code, price_of_the_unit,
+    square_feet_unit, bed, bath, rent_period, user_post_title,
+    first_img_url, user_meta_tags, post_description, sqr_feet_lot
 """
 
 import re
-
-from kijiji_spider.spider_interface import CONST
-
-#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
 from pathlib import Path
 import sys
 
-# walk up until we find the folder that contains 'Modules'
-current = Path(__file__).resolve()
-for parent in current.parents:
-    if (parent / "Modules").exists():
-        sys.path.append(str(parent))
-        break
-
-from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
-#==========================
+from kijiji_spider.spider_interface import CONST
 
 
 class KijijiSpiderPipeline:
 
     def process_item(self, item, spider):
+
+        # == Dynamically import Post_Data at runtime to avoid
+        #    ModuleNotFoundError on Scrapy startup
+        current = Path(__file__).resolve()
+        for parent in current.parents:
+            if (parent / "Modules").exists():
+                if str(parent) not in sys.path:
+                    sys.path.append(str(parent))
+                break
+        from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 
         # == post_id
         post_id = str(item.get("post_id", "N/A")).strip()
@@ -58,7 +56,7 @@ class KijijiSpiderPipeline:
         price_raw = str(item.get("price_of_the_unit", "N/A"))
         price_of_the_unit = re.sub(r"[^\d.]", "", price_raw) or "N/A"
 
-        # == sqr_feet — from num_bedrooms_n_square_feet_sq
+        # == sqr_feet — bedrooms count from spider
         sqr_feet = str(item.get("num_bedrooms_n_square_feet_sq", "N/A"))
         if sqr_feet == "0":
             sqr_feet = "Studio/Bachelor"
@@ -70,8 +68,8 @@ class KijijiSpiderPipeline:
         address_raw = item.get("address", "N/A")
         street_number, city, province, postal_code = self.__process_address(address_raw)
 
-        # == bed_bath
-        bed,bath = self.__get_bed_bath(item)
+        # == bed / bath
+        bed, bath = self.__get_bed_bath(item)
 
         # == square_feet_unit
         sqft_raw = str(item.get("square_feet_unit", "N/A"))
@@ -83,53 +81,47 @@ class KijijiSpiderPipeline:
         # == rent_period
         rent_period = item.get("rent_period", "monthly")
 
-        # == Log for now
-        # # spider.logger.info(
-        # #     f"Item scraped: {post_id} | {user_post_title} | ${price_of_the_unit} | {address_raw} | lat={item.get('latitude')} lon={item.get('longitude')}"
-        # )
-        
-        Post_Data(
-            post_id=post_id, 
-            post_url=post_url, 
-            time_of_post=time_of_post, 
-            leasing_agent=None, #leasing_agent, <--- Yung please add this when you can.  
-            general_area=general_area, 
-            street_number=street_number, 
-            city=city, 
-            province=province, 
-            postal_code=postal_code, 
-            price_of_the_unit=price_of_the_unit, 
-            square_feet_unit=square_feet_unit, 
-            bed=bed, 
-            bath=bath, 
-            rent_period=rent_period, 
-            user_post_title=user_post_title, 
-            first_img_url=first_pic, 
-            user_meta_tags=user_meta_tags, 
-            post_description=post_description,  #<-- tmp mute for dev
-            sqr_feet_lot=None #<--- see if you can find this 
+        # == leasing_agent
+        leasing_agent = item.get("leasing_agent", "N/A")
 
+        # == sqr_feet_lot — not available on Kijiji rentals
+        sqr_feet_lot = item.get("sqr_feet_lot", "N/A")
+
+        Post_Data(
+            post_id=post_id,
+            post_url=post_url,
+            time_of_post=time_of_post,
+            leasing_agent=leasing_agent,
+            general_area=general_area,
+            street_number=street_number,
+            city=city,
+            province=province,
+            postal_code=postal_code,
+            price_of_the_unit=price_of_the_unit,
+            square_feet_unit=square_feet_unit,
+            bed=bed,
+            bath=bath,
+            rent_period=rent_period,
+            user_post_title=user_post_title,
+            first_img_url=first_pic,
+            user_meta_tags=user_meta_tags,
+            post_description=post_description,
+            sqr_feet_lot=sqr_feet_lot,
         ).save_new_post_to_db()
 
-        # TODO: uncomment once spider_default_obj import issue is resolved
-        # import sys, os
-        # sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'spider_default_obj'))
-        # from spider_default_obj import Post_Data
-        # Post_Data(
-        #     post_id, time_of_post, user_post_title, first_pic, user_meta_tags,
-        #     post_url, price_of_the_unit, sqr_feet, general_area,
-        #     street_number, city, province, postal_code,
-        #     bed_bath, square_feet_unit, post_description, rent_period,
-        # ).save_to_db()
+        return item
 
+    def __get_bed_bath(self, item):
+        bed_bath_str = item.get("bed_and_bath")
+        if not bed_bath_str:
+            return "N/A", "N/A"
 
-    def __get_bed_bath(self,item):
-        if item["bed_and_bath"]== None:
-            return None
-        
-        x=item["bed_and_bath"].split("/")
-        bed=re.search(r'\d+',x[0]).group()
-        bath=re.search(r'\d+',x[1]).group()
+        x = bed_bath_str.split("/")
+        bed_match = re.search(r'\d+', x[0]) if len(x) > 0 else None
+        bath_match = re.search(r'\d+', x[1]) if len(x) > 1 else None
+
+        bed = bed_match.group() if bed_match else "N/A"
+        bath = bath_match.group() if bath_match else "N/A"
 
         return bed, bath
 

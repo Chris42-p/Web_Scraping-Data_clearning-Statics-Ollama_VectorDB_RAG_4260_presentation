@@ -4,7 +4,7 @@ from .spider_interface import CONST
 
 #============
 
-# Scrapy settings for cregslist_spider project
+# Scrapy settings for cragslist_spider project
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
 #
@@ -14,15 +14,15 @@ from .spider_interface import CONST
 
 BOT_NAME = CONST["BOT_NAME"]
 
-SPIDER_MODULES = ["cregslist_spider.spiders"]
-NEWSPIDER_MODULE = "cregslist_spider.spiders"
+SPIDER_MODULES = ["Modules.spiders.cragslist_spider.cragslist_spider.spiders"]
+NEWSPIDER_MODULE = "Modules.spiders.cragslist_spider.cragslist_spider.spiders"
 
 ADDONS = {}
 
 DUPEFILTER_CLASS = CONST["DUPEFILTER_CLASS"] #enable duplicates 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "cregslist_spider (+http://www.yourdomain.com)"
+#USER_AGENT = "cragslist_spider (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = CONST["ROBOTSTXT_OBEY"]
@@ -48,13 +48,13 @@ COOKIES_ENABLED = CONST["COOKIES_ENABLED"]
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    "cregslist_spider.middlewares.CregslistSpiderSpiderMiddleware": 543,
+#    "cragslist_spider.middlewares.CregslistSpiderSpiderMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   "cregslist_spider.middlewares.UserAgentRotationMilleware": 300,
+   "Modules.spiders.cragslist_spider.cragslist_spider.middlewares.UserAgentRotationMilleware": 400,
 }
 
 # Enable or disable extensions
@@ -66,7 +66,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "cregslist_spider.pipelines.CregslistSpiderPipeline": 305,
+   "Modules.spiders.cragslist_spider.cragslist_spider.pipelines.CragslistSpiderPipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

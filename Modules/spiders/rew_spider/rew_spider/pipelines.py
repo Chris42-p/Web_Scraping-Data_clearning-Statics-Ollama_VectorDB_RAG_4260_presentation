@@ -36,7 +36,7 @@ class RewSpiderPipeline:
 
         bed,bath = self.__get_bed_bath(item)
         square_feet_unit = item.get("square_feet_unit", "N/A")
-        post_description = "N/A"
+        post_description = item.get("post_description", "N/A")
         rent_period = item.get("rent_period", "monthly")
         leasing_agent = item.get("leasing_agent", "N/A")
 
@@ -67,12 +67,27 @@ class RewSpiderPipeline:
         ).save_new_post_to_db()
 
         return item
-
+    
     def __get_bed_bath(self, item):
+        bed_bath = item.get("bed_and_bath")
+        if not bed_bath or bed_bath == "N/A":
+            return "N/A", "N/A"
+
+        parts = bed_bath.split("/")
+
+        bed_match = re.search(r"\d+", parts[0]) if len(parts) > 0 else None
+        bath_match = re.search(r"\d+", parts[1]) if len(parts) > 1 else None
+
+        bed = int(bed_match.group()) if bed_match else "N/A"
+        bath = int(bath_match.group()) if bath_match else "N/A"
+
+        return bed, bath
+
+    #def __get_bed_bath(self, item):
         if item["bed_and_bath"]==None:
             return None
         
-        x=item.get["bed_and_bath"].split("/")
+        x = item.get("bed_and_bath", "N/A").split("/")
         bed=int(re.search(r'\d+',x[0]).group())
         bath=int(re.search(r'\d+',x[1]).group())
 

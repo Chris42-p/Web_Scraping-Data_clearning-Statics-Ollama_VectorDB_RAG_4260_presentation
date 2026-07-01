@@ -1,9 +1,9 @@
 import scrapy
 
-from ..spider_interface import CONST
-from ..items import RewSpiderItem
+from Modules.spiders.rew_spider.rew_spider.spider_interface import CONST
+from Modules.spiders.rew_spider.rew_spider.items import RewSpiderItem
 
-from ..rew_parser import (
+from Modules.spiders.rew_spider.rew_spider.rew_parser import (
     extract_price,
     extract_square_feet,
     extract_address,

@@ -14,6 +14,10 @@ import sqlite3
 import json
 import os
 import logging
+import io
+import zipfile
+
+
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -225,10 +229,11 @@ class SafetyConvenienceSpider:
 
         for year in years:
             filename = f"crimedata_csv_AllNeighbourhoods_{year}.csv"
-            filepath = os.path.join(vpd_dir, filename)
+            #filepath = os.path.join(vpd_dir, filename)
+            filepath = self._ensure_vpd_csv(year, vpd_dir)
 
             if not os.path.exists(filepath):
-                logger.warning(f"[VPD] File not found: {filename}")
+                logger.warning(f"[VPD] Could not prepare CSV for year {year}")
                 continue
 
             logger.info(f"[VPD] Reading {filename}...")
@@ -279,6 +284,34 @@ class SafetyConvenienceSpider:
         self.fetch_schools()
         self.fetch_crime_data()
         logger.info("=== Done ===")
+
+
+    def _ensure_vpd_csv(self, year: int, target_dir: str) -> str | None:
+        os.makedirs(target_dir, exist_ok=True)
+        csv_name = f"crimedata_csv_AllNeighbourhoods_{year}.csv"
+        csv_path = os.path.join(target_dir, csv_name)
+
+        if os.path.exists(csv_path):
+            return csv_path
+
+        url = VPD_CSV_URL.format(year=year)
+        try:
+            r = requests.get(url, timeout=60)
+            r.raise_for_status()
+            with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
+                for member in zf.namelist():
+                    if member.lower().endswith(".csv"):
+                        zf.extract(member, target_dir)
+                        extracted = os.path.join(target_dir, member)
+                        if extracted != csv_path and os.path.exists(extracted):
+                            os.replace(extracted, csv_path)
+                        return csv_path
+        except requests.RequestException as e:
+            logger.error(f"[VPD] Download failed for {year}: {e}")
+        except zipfile.BadZipFile as e:
+            logger.error(f"[VPD] Bad zip for {year}: {e}")
+
+        return None
 
 
 if __name__ == "__main__":
