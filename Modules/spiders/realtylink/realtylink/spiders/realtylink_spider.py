@@ -9,15 +9,27 @@ import sys
 #===== Interface
 from ..realtylink_interface import CONST
 
-#=== custom imports 
-sys.path.append("/home/chris/Desktop/4260_presentation/Modules/spiders") #this is how to import std.obj
+
+#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
+from pathlib import Path
+import sys
+
+# walk up until we find the folder that contains 'Modules'
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "Modules").exists():
+        sys.path.append(str(parent))
+        break
+
+from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
+#==========================
 
 
-
+#this is going to scrape websites for data. 
 class RealtylinkSpiderSpider(scrapy.Spider):
-    name = CONST["SPIDER_NAME"] #"realtylink_spider"
+    name = CONST["SPIDER_NAME_WEB_CRAWLER"] #"realtylink_spider"
     allowed_domains = CONST["ALLOWED_DOMAINS"] #"realtylink.org"]
-    start_urls =CONST["START_URL"] #["https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12&page=1"]
+    start_urls =CONST["START_URL"] 
 
     first_loop=True
     total_pages=0
@@ -42,16 +54,15 @@ class RealtylinkSpiderSpider(scrapy.Spider):
             url_of_a_post=p_num.css(f"div.shell:nth-child(1) a::attr(href)").get()
 
             url=f"{base_url}{url_of_a_post}"
-            yield scrapy.Request(url, callback=self.parse_page)
-        #read a card's data
 
+            yield scrapy.Request(url, callback=self.parse_page)
+                
+        #read a card's data
         if self.first_loop:
             self.total_pages=total_pages
             self.first_loop=False
 
-
         #=== Read next page
-
         while (self.page_num <  self.total_pages):
             url=f"https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12&page={self.page_num}"
             self.page_num+=1
@@ -107,3 +118,5 @@ class RealtylinkSpiderSpider(scrapy.Spider):
             "property_metadata":property_metadata,
             "broker_agency":broker_agency,
         }
+
+

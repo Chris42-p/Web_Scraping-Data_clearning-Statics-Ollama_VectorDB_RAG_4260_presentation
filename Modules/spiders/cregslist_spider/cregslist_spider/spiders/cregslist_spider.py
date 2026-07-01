@@ -41,31 +41,15 @@ class CregslistSpiderSpider(scrapy.Spider):
             yield scrapy.Request(url, callback=self.parse) # one URL 
 
     def parse(self, response): #get the result of the first page
+        
         for entry in response.css("li.cl-static-search-result"):
             url = entry.css("a::attr(href)").get()
             if url:
+                #update when the post was seen again. 
+                
+                yield scrapy.Request(url, callback=self.parse_page)
 
-                post_=Post_Data() #standarad object that's saved to db. 
 
-                #address- mightbe over thinking its Sunday 10:45 pm ... 
-                row_id,address,scraped_at =post_.get_record_by_url(url) #
-
-                if row_id !=None:
-                    #update when the post was seen again. 
-                    post_.DEV_drop_table_manual() #just first run. reset tables: wrong values in a field.  
-
-                    #send a request to the website 
-                    yield scrapy.Request(url,
-                                        callback=self.check_status,
-                                        cb_kwargs={#args into method
-                                            "row_id":row_id,
-                                            # "address":address,
-                                            "scraped_at":scraped_at
-                                        }
-                                        )                    
-                else:
-                    #scrape for the first time 
-                    yield scrapy.Request(url, callback=self.parse_page)
 
     def parse_page(self, response ):  #calls when the response comes back -- what do you want from the page
         #parse pages after first. 
@@ -89,20 +73,6 @@ class CregslistSpiderSpider(scrapy.Spider):
         }
 
         #last post return null 
-
-
-    def check_status(self,response, row_id, scraped_at):
-        active_post=None
-
-        #post is expired    ------assuming the post is given a 404
-        expired = response.css("blockquote >p::text").get() == 'There is nothing here'
-        if expired or response.status == 404:
-            self.update_post_status(response.url, status="removed")
-            active_post=False
-        else:#post is still active
-            active_post=True
-        
-        Post_Data().update_post_last_active(scraped_at,active_post,row_id )
 
 
 

@@ -39,13 +39,15 @@ from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 
 class CregslistSpiderPipeline:
     def process_item(self, item, spider):
-        print("\n\n======== GOING TO PARSE THE OBJECT ========\n")
-        print(f"{item}\n\n")
+        if CONST["DISPLAY_TEXT"]:
+            print("\n\n======== GOING TO PARSE THE OBJECT ========\n")
+            print(f"{item}\n\n")
+
         street_number, city, province, postal_code = self.__process_address(item)
         bed, bath=self.get_bed_bath(item)
         
-        Post_Data(
-            post_id=self.get_post_id(item),
+        Post_Data().save_new_post_to_db(
+            post_id=self.get_post_id(item), 
             post_url=self.get_post_url(item),
             time_of_post=self.get_time_of_post(item),
             leasing_agent=self.get_leasing_agent(item),
@@ -64,7 +66,7 @@ class CregslistSpiderPipeline:
             post_description=self.get_post_description(item),
             first_img_url=self.get_first_pic(item),
             sqr_feet_lot=None, #not provided by Cregs list
-        ).save_new_post_to_db()
+        )
         # return item
   
     def get_post_id(self,item):
@@ -130,7 +132,7 @@ class CregslistSpiderPipeline:
 
     def get_bed_bath(self,item):
         if item["bed_and_bath"]==None:
-            return None
+            return 0,0
 
         bed_bath=self.__strip_html(item["bed_and_bath"]).strip()
         x=bed_bath.split("/")

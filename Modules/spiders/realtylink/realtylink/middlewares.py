@@ -7,8 +7,18 @@ from scrapy import signals
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from pathlib import Path
+import sys
 
-from spider_default_obj.spider_user_agent_factor import UserAgentFactory
+# walk up until we find the folder that contains 'Modules'
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "Modules").exists():
+        sys.path.append(str(parent))
+        break
+
+from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
+#==========================
 
 class UserAgentRotationMilleware:
     

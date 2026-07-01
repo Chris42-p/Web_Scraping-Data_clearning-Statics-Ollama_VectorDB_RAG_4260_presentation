@@ -9,12 +9,14 @@
 
 from .realtylink_interface import CONST
 
-BOT_NAME = CONST["SPIDER_NAME"]
+BOT_NAME = CONST["SPIDER_NAME_WEB_CRAWLER"]
 
 SPIDER_MODULES = ["realtylink.spiders"]
 NEWSPIDER_MODULE = "realtylink.spiders"
 
 ADDONS = {}
+
+DUPEFILTER_CLASS = CONST["DUPEFILTER_CLASS"] #enable duplicates 
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

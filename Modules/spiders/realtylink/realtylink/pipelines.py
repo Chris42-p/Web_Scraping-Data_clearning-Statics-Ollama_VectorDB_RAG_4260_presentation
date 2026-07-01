@@ -6,6 +6,7 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from .realtylink_interface import CONST
 #=== Scrapy import 
 
 from datetime import datetime 
@@ -29,10 +30,10 @@ from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 
 class RealtylinkPipeline:
     def process_item(self, item, spider):
-        print("\n\n====== PARSING THE CRAWLED OBJECT ======\n\n")
-        print(f"going to parse the following: {item}")
+        if CONST["SHOW_TEXT"]:
+            print(f"\n\n====== PARSING THE CRAWLED OBJECT ======\n\n {item} \n\n")
 
-        Post_Data(
+        Post_Data().save_new_post_to_db(
             post_id=self.get_post_id(item),
             time_of_post=self.time_of_post(item) ,
             user_post_title=self.user_post_title(item) ,
@@ -52,9 +53,7 @@ class RealtylinkPipeline:
             rent_period=self.rent_period(item) ,
             leasing_agent=self.leasing_agent(item),
             first_img_url=self.first_img_url(item),
-
-        ).save_new_post_to_db()
-        print("================\n\n\n\n\n")
+        )
 
         return item
     

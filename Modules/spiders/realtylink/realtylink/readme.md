@@ -38,11 +38,18 @@ fetch(
 ## see all results. 
 
 
-running the spider:
+
+# create a scrapy spider:  scrapy genspider status_checker "https://realtylink.org/en/apartment~for-rent~vancouver?listingnotfound=363162355&q=H4sIAAAAAAAACmWPQUvEMBCF_0vOVRa8eSs9iAgiVvay7GFMX9vBNAmTtBKW_nen7Arrepv33veGmZOZXDKPZmcq8ynhC9KEDmqoDn3PFi8oZzknPCEMQnEs7UgR2ttVJm3jnvGt8nBUDRI7vtJ02dKzy5BL2DNcl_bk5q19OJ2N507RhjKGIEUry5ar9Y7EHXxmcmatruEWzrEfPkrEH97nG_BNQoTkckPWkSRP__GmbusrzAaf5kmv54y73-fZ1gJ6uF_I2zAvELMe1x80wRVsSAEAAA&sortSeed=410379507&sort=DateDesc&pageSize=12"
+
+
+## change to the right directory 
 1) cd 4260_presentation/Modules/spiders/realtylink
 
+## running the spider 
 2) scrapy crawl realtylink_spider
 
+## running the checker. 
+3) scrapy crawl status_checker
 
 
 

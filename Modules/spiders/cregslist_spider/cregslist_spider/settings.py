@@ -19,6 +19,7 @@ NEWSPIDER_MODULE = "cregslist_spider.spiders"
 
 ADDONS = {}
 
+DUPEFILTER_CLASS = CONST["DUPEFILTER_CLASS"] #enable duplicates 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "cregslist_spider (+http://www.yourdomain.com)"

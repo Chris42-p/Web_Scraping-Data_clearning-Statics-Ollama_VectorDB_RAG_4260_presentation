@@ -7,5 +7,8 @@ Cregs list is implemented as a infinate scroll and not pagination, so it only lo
 ~/Desktop/4260_presentation/Modules/spiders/cregslist_spider
 
 ## run the spider
-
 scrapy crawl cregslist_spider
+
+
+## run the status checker
+scrapy crawl status_checker 

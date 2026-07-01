@@ -3,17 +3,90 @@
 
 
 CONST={
+#====== Dev 
+     "DISPLAY_TEXT":True,
+
+
+#======= Custom Errror message text
      "ERR_MSG_1":"Database post inset failed",
 
 #======= Database queries. 
-     "SQL_GET_ROW_BY_URL":"SELECT id,street_number FROM listings WHERE post_url = ?",
-    
+     "SQL_GET_ROW_BY_URL":"SELECT id,street_number,scraped_at FROM listings WHERE post_url = ?",
+     
 
 #======= Database configuration 
      "DB_LOCATION":"spider_central_db",
      "DB_NAME":"listings_db.db",
 
      "FORIGHN_KEYS_ON":"PRAGMA foreign_keys = ON",
+
+     #== DB getters
+     "GET_URLS":"SELECT id, post_url, scraped_at from listings;",
+
+     #== insert into DB.  
+     "INSERT_LISTING":"""
+INSERT OR REPLACE INTO listings (
+     post_id,
+     post_url,
+     time_of_post,
+     leasing_agent,
+     general_area,
+     street_number,
+     city,
+     province,
+     postal_code,
+     price,
+     sqr_feet,
+     bed,
+     bath,
+     rent_period,
+     user_post_title,
+     first_pic,
+     user_meta_tags,
+     post_description,
+     img_url
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", #18 fields that're going to be added -- scraped at is auto generated
+     "INSERT_PARSED_POST_DESCRIPTION":"""
+INSERT OR REPLACE INTO parsed_descriptions (
+     listing_id,
+     smoke_free,
+     private_room,
+     living_situation,
+     wheelchair_accessible,
+     has_ac,
+     w_d_in_unit,
+     furnished,
+     luxuries,
+     sq_footage,
+     price_per_month,
+     included_utilities,
+     utility_cap,
+     close_to,
+     travel_convenience,
+     pets_okay,
+     cats_okay,
+     dogs_okay,
+     parking_included,
+     parking_spots,
+     parking_ev_charging,
+     parking_details,
+     damage_deposit,
+     other_deposits,
+     req_references,
+     req_credit_check,
+     req_criminal_record_check,
+     req_other,
+     llm_model_comments
+)VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+     "INSERT_POST_STATUS":"""
+INSERT OR REPLACE INTO post_status(
+     post_status, 
+     time_on_market, 
+     listing_id
+
+)VALUES(?,?,?)""",
+
      #== create tables     
      "CREATE_TABLE_LISTINGS":"""
 CREATE TABLE IF NOT EXISTS listings (
@@ -98,78 +171,10 @@ CREATE TABLE IF NOT EXISTS post_status(
      FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE);
      """,
 
-     #== add listing into db 
-     "INSERT_LISTING":"""
-INSERT OR REPLACE INTO listings (
-     post_id,
-     post_url,
-     time_of_post,
-     leasing_agent,
-     general_area,
-     street_number,
-     city,
-     province,
-     postal_code,
-     price,
-     sqr_feet,
-     bed,
-     bath,
-     rent_period,
-     user_post_title,
-     first_pic,
-     user_meta_tags,
-     post_description,
-     img_url
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-""", #18 fields that're going to be added -- scraped at is auto generated
-     "INSERT_PARSED_POST_DESCRIPTION":"""
-INSERT OR REPLACE INTO parsed_descriptions (
-     listing_id,
-     smoke_free,
-     private_room,
-     living_situation,
-     wheelchair_accessible,
-     has_ac,
-     w_d_in_unit,
-     furnished,
-     luxuries,
-     sq_footage,
-     price_per_month,
-     included_utilities,
-     utility_cap,
-     close_to,
-     travel_convenience,
-     pets_okay,
-     cats_okay,
-     dogs_okay,
-     parking_included,
-     parking_spots,
-     parking_ev_charging,
-     parking_details,
-     damage_deposit,
-     other_deposits,
-     req_references,
-     req_credit_check,
-     req_criminal_record_check,
-     req_other,
-     llm_model_comments
-)VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-     "INSERT_POST_STATUS":"""
-INSERT OR REPLACE INTO post_status(
-     post_status, 
-     time_on_market, 
-     listing_id, 
-
-)VALUES(?,?,?)
-
-
-
-""",
-
 
 
 #======== AI configuration 
-     "MODEL_NAME":"qwen2.5:1.5b", #, #Select AI model?
+     "MODEL_NAME":"llama3.2:latest",#"qwen2.5:1.5b", #, #Select AI model?
      "LLM_CRASH_LIMIT":4,
      "SYSTEM_ROLE": # what is the role given to the system ?
 """
