@@ -1,0 +1,130 @@
+[33mcommit 751bb4b12c3eb3429f4156043b1252ded90a23fd[m
+Author: Philip W <158708523+PhilipYYW@users.noreply.github.com>
+Date:   Mon Jun 29 00:00:27 2026 -0700
+
+    kijiji updated
+
+[1mdiff --git a/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/items.cpython-314.pyc b/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/items.cpython-314.pyc[m
+[1mindex 019f52e..2f24fef 100644[m
+Binary files a/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/items.cpython-314.pyc and b/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/items.cpython-314.pyc differ
+[1mdiff --git a/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/pipelines.cpython-314.pyc b/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/pipelines.cpython-314.pyc[m
+[1mindex 0872d95..4d1ad02 100644[m
+Binary files a/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/pipelines.cpython-314.pyc and b/Modules/spiders/kijiji_spider/kijiji_spider/__pycache__/pipelines.cpython-314.pyc differ
+[1mdiff --git a/Modules/spiders/kijiji_spider/kijiji_spider/spiders/__pycache__/kijiji_rental_spider.cpython-314.pyc b/Modules/spiders/kijiji_spider/kijiji_spider/spiders/__pycache__/kijiji_rental_spider.cpython-314.pyc[m
+[1mindex e14cefb..6fe3c3e 100644[m
+Binary files a/Modules/spiders/kijiji_spider/kijiji_spider/spiders/__pycache__/kijiji_rental_spider.cpython-314.pyc and b/Modules/spiders/kijiji_spider/kijiji_spider/spiders/__pycache__/kijiji_rental_spider.cpython-314.pyc differ
+[1mdiff --git a/Modules/spiders/kijiji_spider/kijiji_spider/spiders/kijiji_rental_spider.py b/Modules/spiders/kijiji_spider/kijiji_spider/spiders/kijiji_rental_spider.py[m
+[1mindex 4d365d5..d8ce2be 100644[m
+[1m--- a/Modules/spiders/kijiji_spider/kijiji_spider/spiders/kijiji_rental_spider.py[m
+[1m+++ b/Modules/spiders/kijiji_spider/kijiji_spider/spiders/kijiji_rental_spider.py[m
+[36m@@ -67,12 +67,27 @@[m [mclass KijijiRentalsSpider(scrapy.Spider):[m
+                     continue[m
+ [m
+                 listings_found += 1[m
+[31m-                yield scrapy.Request([m
+[31m-                    url=url,[m
+[31m-                    callback=self.parse_page,[m
+[31m-                    meta={"post_url": url},[m
+[31m-                    headers={"Referer": response.url},[m
+[31m-                )[m
+[32m+[m
+[32m+[m[32m                # Check if this listing was already scraped before.[m
+[32m+[m[32m                # If so, only do a lightweight status check instead of a[m
+[32m+[m[32m                # full re-scrape (per Chris's algorithm).[m
+[32m+[m[32m                record = self.__check_existing_record(url)[m
+[32m+[m
+[32m+[m[32m                if record is not None:[m
+[32m+[m[32m                    row_id, scraped_at = record[m
+[32m+[m[32m                    yield scrapy.Request([m
+[32m+[m[32m                        url=url,[m
+[32m+[m[32m                        callback=self.check_status,[m
+[32m+[m[32m                        cb_kwargs={"row_id": row_id, "scraped_at": scraped_at},[m
+[32m+[m[32m                        headers={"Referer": response.url},[m
+[32m+[m[32m                    )[m
+[32m+[m[32m                else:[m
+[32m+[m[32m                    yield scrapy.Request([m
+[32m+[m[32m                        url=url,[m
+[32m+[m[32m                        callback=self.parse_page,[m
+[32m+[m[32m                        meta={"post_url": url},[m
+[32m+[m[32m                        headers={"Referer": response.url},[m
+[32m+[m[32m                    )[m
+ [m
+         # Pagination[m
+         if self.current_page < self.max_pages and listings_found > 0:[m
+[36m@@ -172,6 +187,70 @@[m [mclass KijijiRentalsSpider(scrapy.Spider):[m
+             sqr_feet_lot=sqr_feet_lot,[m
+         )[m
+ [m
+[32m+[m[32m    def check_status(self, response, row_id, scraped_at):[m
+[32m+[m[32m        """[m
+[32m+[m[32m        Lightweight re-scrape: check if a previously-seen listing is[m
+[32m+[m[32m        still active, and update its last-active timestamp.[m
+[32m+[m
+[32m+[m[32m        A removed/expired Kijiji listing returns the page but with a[m
+[32m+[m[32m        "There is nothing here" style message, or a 404 status.[m
+[32m+[m[32m        """[m
+[32m+[m[32m        post_data = self.__get_post_data_class()[m
+[32m+[m[32m        if post_data is None:[m
+[32m+[m[32m            return[m
+[32m+[m
+[32m+[m[32m        removed_text = response.css('body::text').re_first(r"[Tt]here is nothing here") or ""[m
+[32m+[m[32m        is_removed = bool(removed_text) or response.status == 404[m
+[32m+[m
+[32m+[m[32m        active_post = not is_removed[m
+[32m+[m
+[32m+[m[32m        post_data().update_post_last_active([m
+[32m+[m[32m            scraped_at=scraped_at,[m
+[32m+[m[32m            active_post=active_post,[m
+[32m+[m[32m            row_id=row_id,[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        self.logger.info([m
+[32m+[m[32m            f"[check_status] row_id={row_id} active={active_post} url={response.url}"[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m    def __check_existing_record(self, url: str):[m
+[32m+[m[32m        """[m
+[32m+[m[32m        Looks up whether this listing URL is already in the DB.[m
+[32m+[m[32m        Returns (row_id, scraped_at) if found, else None.[m
+[32m+[m[32m        """[m
+[32m+[m[32m        post_data = self.__get_post_data_class()[m
+[32m+[m[32m        if post_data is None:[m
+[32m+[m[32m            return None[m
+[32m+[m
+[32m+[m[32m        record = post_data().get_record_by_url(url)[m
+[32m+[m[32m        if not record:[m
+[32m+[m[32m            return None[m
+[32m+[m
+[32m+[m[32m        # record is [row_id, address] per spider_default_obj.py —[m
+[32m+[m[32m        # scraped_at isn't returned by this query, so we re-derive it[m
+[32m+[m[32m        # at check time inside update_post_last_active instead.[m
+[32m+[m[32m        row_id = record[0][m
+[32m+[m[32m        scraped_at = None[m
+[32m+[m[32m        return row_id, scraped_at[m
+[32m+[m
+[32m+[m[32m    def __get_post_data_class(self):[m
+[32m+[m[32m        """Lazily imports Post_Data to avoid breaking spider startup[m
+[32m+[m[32m        if the module path isn't resolvable in this environment."""[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            from pathlib import Path[m
+[32m+[m[32m            import sys[m
+[32m+[m[32m            current = Path(__file__).resolve()[m
+[32m+[m[32m            for parent in current.parents:[m
+[32m+[m[32m                if (parent / "Modules").exists():[m
+[32m+[m[32m                    sys.path.append(str(parent))[m
+[32m+[m[32m                    break[m
+[32m+[m[32m            from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data[m
+[32m+[m[32m            return Post_Data[m
+[32m+[m[32m        except Exception as e:[m
+[32m+[m[32m            self.logger.warning(f"Could not import Post_Data: {e}")[m
+[32m+[m[32m            return None[m
+[32m+[m
+     # ------------------------------------------------------------------ #[m
+     #  __NEXT_DATA__ / Apollo state helpers[m
+     # ------------------------------------------------------------------ #[m
+[1mdiff --git a/Modules/spiders/spider_default_obj/__pycache__/spider_default_obj.cpython-314.pyc b/Modules/spiders/spider_default_obj/__pycache__/spider_default_obj.cpython-314.pyc[m
+[1mindex 28c1883..b0234f3 100644[m
+Binary files a/Modules/spiders/spider_default_obj/__pycache__/spider_default_obj.cpython-314.pyc and b/Modules/spiders/spider_default_obj/__pycache__/spider_default_obj.cpython-314.pyc differ
+[1mdiff --git a/Modules/spiders/spider_default_obj/__pycache__/spider_std_obj_interface.cpython-314.pyc b/Modules/spiders/spider_default_obj/__pycache__/spider_std_obj_interface.cpython-314.pyc[m
+[1mindex 61ec9fb..65f8ad3 100644[m
+Binary files a/Modules/spiders/spider_default_obj/__pycache__/spider_std_obj_interface.cpython-314.pyc and b/Modules/spiders/spider_default_obj/__pycache__/spider_std_obj_interface.cpython-314.pyc differ
