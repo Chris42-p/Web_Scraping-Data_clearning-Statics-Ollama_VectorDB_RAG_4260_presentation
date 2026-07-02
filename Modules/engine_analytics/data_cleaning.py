@@ -21,6 +21,7 @@ import sys
 import pandas as pd
 import numpy as np
 import importlib
+from geopy.geocoders import Nominatim
 
 
 import re 
@@ -47,45 +48,146 @@ class Data_Cleaner():
           listings= post.get_all_listings()
           return listings
      
-     def clean_column_general_area(self):
-          listings=self.__get_listings()
+     def clean_column_general_area(self,listings, display=False): #TODO: minimize count: rn 89/ 
 
-
-
-          #--case:   ' vancouver',' Vancouver' 
+     #--case:   ' vancouver',' Vancouver' 
                #Capitalise & strip of white space  
           listings["general_area"]= listings["general_area"].str.strip() 
           listings["general_area"]= listings["general_area"].str.upper() 
 
-          #-- case: 406XX W 14TH AVE VANCOUVER','34XXX W 19TH AVE VANCOUVER','38XXX W 35TH AVE VANCOUVER',
-               #regex patterns: number (W) number(TH) (AVE) 
-          re_pattern=(r"[\dX]+ W \d+TH AVE")
+     #-- case: NAN 
+          listings["general_area"]= listings["general_area"].fillna("VANCOUVER")
+
+     #-- case: S W
+          re_pattern5=r"S\s+W\s+MARINE"
+          listings["general_area"] = listings["general_area"].replace(re_pattern5,"MARINE", regex=True)
+
+     #--: UBC, Vancouver UBC, UBC Campus. 
+          re_pattern6=r".*UBC.*"
+          listings["general_area"] = listings["general_area"].replace(re_pattern6,"UBC", regex=True)
+
+
+     #-- case: OAKRIDGE VW,VICTORIA VE,KILLARNEY VE
+               #remove the VE/VW
+          re_pattern1=(r" V[EW]|W[V]") #vatch V [E or W]
+          listings["general_area"]=listings["general_area"].str.replace(re_pattern1,"", regex=True)
+
+     #-- case: DOWNTOWN VANCOUVER GRANVILLE AND DUNSMUIR, DOWNTOWN COAL HARBOUR, DOWNTOWN VANCOUVER, VANCOUVER DOWNTOWN
+          re_pattern7 = r".*(?:VANCOUVER DOWNTOWN|DOWNTOWN VANCOUVER).*"
+          listings["general_area"]=listings["general_area"].str.replace(re_pattern7,"DOWNTOWN", regex=True)
 
 
 
 
-          # print(listings["general_area"].unique())
-          # print(matched_df)
 
-          #-----case :  '3 Beds 2 Baths Top Floor Suite Utilities Included',
-          #-----case :  '3 Bedrooms 1.5 Bathrooms Middle Floor Suite Utilities Included',
+     #-- case: HASTINGS-SUNRISE)
+               #remove -special characters
+          re_pattern2=(r"[)-/–+|✨]") #match [ - or / or.. ]
+          listings["general_area"]=listings["general_area"].str.replace(re_pattern2," ", regex=True)
 
-
-
-
+     #-- case: SUITE AVAIL NOW, 1 BEDROOM   DEN
 
 
+     # -- Case: VANCOUVER WEST DUNBAR AREA,VANCOUVER WEST, VANCOUVER WEST OAK ST,VANCOUVER WEST
+          # re_pattern4= r"(VANCOUVER (WEST|EAST|SOUTH))"
+          re_pattern4 = r"\b(VANCOUVER\s+(?:[^,\n]*?\s+)?(?:WEST|EAST|SOUTH))\b"
+          matched=listings["general_area"].str.extractall(re_pattern4)
+
+          for matched_index in range(len(matched)):
+               index_in_matched_pd=matched.index.get_level_values(0)[matched_index]
+               listings.loc[index_in_matched_pd,"general_area"]= matched.loc[index_in_matched_pd][0][0]
+     
+     # #-- case: BRAND NEW 1 BEDROOM  FLEX  BOUTIQUE CONCRETE HOME AT OKU,COZY 2 BED2BATH1 FLEX PENTHOUSE UNIT AT RIVER DISTRICT, PET FRIENDLY ONE BEDROOM APARTMENT IN MOUNT PLEASANT,
+          re_pattern3 = r"\b(?:AT|IN|OF)\b\s+(\S+(?:\s+\S+)?)" #the regex pattern that matches the stirngs
+
+          # Get the matching data 
+          matched=listings["general_area"].str.extractall(re_pattern3) #get the rows that match pattern --30 min find
+
+          #replace the values in the OG dataframe
+          for index_of_str_matched in range(len(matched.index.get_level_values(0))):
+               index_in_matched_pd=matched.index.get_level_values(0)[index_of_str_matched]
+               listings.loc[index_in_matched_pd,"general_area"]= matched.loc[index_in_matched_pd][0][0]
+     
+
+
+     # -- Engine: display -- goal is to minimize count (reduce uniques)
+          if display:
+               count=0
+               print(f"\n\n")
+               for x in (listings["general_area"].unique()):
+                    print(f"{x}")
+                    count+=1
+               print(f"length: {count}")
+          
+
+
+          return listings
+     
+     def clean_street_number(self, listings, display): #the data is fine ish
+          col_pd="street_number"
+
+          # listings[col_pd].fillna("0 abc road")
 
 
 
 
 
+
+
+
+     # -- Engine: display -- goal is to minimize count (reduce uniques)
+          if display:
+               count=0
+               print(f"\n\n")
+               for x in (listings[col_pd].unique()):
+                    print(f"{x}")
+                    count+=1
+               print(f"length: {count}")
+
+          pass
+
+     def clean_postal_code(self, listings, display):
+          #TODO: look up the address with the geopy library fill what i can. 
+
+          col_pd_postal="postal_code"
+          col_pd_address="street_number"
+          # listings[col_pd] 
+
+
+
+          # geolocator = Nominatim(user_agent="postal_lookup")
+          # for x in listings[col_pd_address]:
+          #      # location = geolocator.geocode(listings[col_pd_address])
+          #      print(x)
+          
+          print(listings[col_pd_address][0][1])
+
+
+     # -- Engine: display -- goal is to minimize count (reduce uniques)
+          if False:
+               count=0
+               print(f"\n\n")
+               for x in (listings[col_pd_postal].unique()):
+                    
+                    print(f"{x}\t{listings[col_pd_address][count]  }")
+
+                    count+=1
+               print(f"length: {count}")
+
+          pass
 
 
      def control(self):
+          listings=self.__get_listings()
+          
+          self.clean_column_general_area(listings,False)
+          self.clean_street_number(listings, False)
+          self.clean_postal_code(listings, True)
 
-          self.clean_column_general_area()
-          pass
+
+
+
+
 
 
 Data_Cleaner().control()

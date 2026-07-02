@@ -66,13 +66,8 @@ class CregslistSpiderPipeline:
             post_description=self.get_post_description(item),
             first_img_url=self.get_first_pic(item),
             sqr_feet_lot=None, #not provided by Cregs list
-<<<<<<< HEAD:Modules/spiders/cregslist_spider/cregslist_spider/pipelines.py
-        )
-        # return item
-=======
         ).save_new_post_to_db()
         return item
->>>>>>> ab6416e419e181b8d96a1250cd7b33ed8c696de5:Modules/spiders/cragslist_spider/cragslist_spider/pipelines.py
   
     def get_post_id(self,item):
         if item["post_id"]==None:

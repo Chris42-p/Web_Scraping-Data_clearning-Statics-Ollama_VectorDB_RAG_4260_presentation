@@ -19,6 +19,8 @@ pandas==3.0.3
 numpy==2.5.0
 ipykernel==7.3.0
 jupyter==1.1.1
+#== ML: data cleaning
+geopy==2.4.1
 
 # === API / Server
 fastapi==0.136.3

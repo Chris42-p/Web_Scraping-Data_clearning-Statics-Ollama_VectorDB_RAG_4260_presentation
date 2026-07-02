@@ -39,7 +39,8 @@ class Post_Data():
                post_dec=self.Post_Description_Parser()
                post_dec.ingest_post_description(self.post_description)
                self.post_description_obj= post_dec
-     
+
+#==== Create the DB     
      @staticmethod
      def __create_db():
           base=Path(__file__).resolve().parent
@@ -215,6 +216,15 @@ class Post_Data():
           days_on_market = (datetime.now() - posted_date).days
 
           return days_on_market  # 0, 5, 30 etc
+
+     def get_all_listings(self):
+          cursor, conn=self.__conn_to_db()
+          rows=pd.read_sql(CONST["GET_ALL_LISTINGS"],conn)
+          conn.close()
+
+          return rows
+
+          
 
 #=== Dev 
      def DEV_drop_table_manual(self,):
