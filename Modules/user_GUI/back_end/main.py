@@ -28,7 +28,7 @@ from Modules.user_GUI.back_end.spider_service import (
     abort_spider_job,
     run_spider_by_key,
 )
-from Modules.engine_analytics.analysis_engine import AnalysisEngine
+from Modules.engine_analytics.z_analysis_engine import AnalysisEngine
 from Modules.user_GUI.back_end.spider_config import (
     SPIDER_STATUS_CONFIG, 
     SPIDER_CONFIGS, 
