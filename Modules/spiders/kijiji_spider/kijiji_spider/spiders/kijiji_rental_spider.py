@@ -28,8 +28,8 @@ import scrapy
 import json
 import re
 
-from Modules.spiders.kijiji_spider.kijiji_spider.spider_interface import CONST
-from Modules.spiders.kijiji_spider.kijiji_spider.items import KijijiSpiderItem
+from ..spider_interface import CONST
+from kijiji_spider.items import KijijiSpiderItem
 
 
 class KijijiRentalsSpider(scrapy.Spider):

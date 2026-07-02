@@ -4,10 +4,10 @@ Status Checker Spider
 Dedicated spider for checking if previously scraped listings are still active.
 
 Flow:
-    1. Reads all listing URLs from DB via Post_Data().get_urls()
+    1. Reads all listing URLs from DB via Post_Data.get_urls()
     2. For each URL, sends a lightweight request with rotating user agent
     3. Checks if the page is still active or removed (404 / "There is nothing here")
-    4. Updates post_status via Post_Data().update_post_last_active()
+    4. Updates post_status via Post_Data.update_post_last_active()
 
 Per team decision (7/1/2026): status checking is a separate spider,
 not embedded in individual scrapers. Named "status_checker" per Chris.
@@ -63,12 +63,12 @@ class StatusCheckerSpider(scrapy.Spider):
         """
         Fetch all listing URLs from DB and send a request for each.
         Uses Scrapy 2.x async start() instead of start_requests().
-        Post_Data().get_urls() returns rows of (id, post_url, scraped_at).
+        Post_Data.get_urls() returns rows of (id, post_url, scraped_at).
         """
         self.logger.info("[status_checker] Starting — fetching URLs from DB...")
 
         Post_Data = self.__get_post_data()
-        rows = Post_Data().get_urls()
+        rows = Post_Data.get_urls()
 
         count = len(rows) if rows else 0
         self.logger.info(f"[status_checker] Found {count} listings to check.")
@@ -113,7 +113,7 @@ class StatusCheckerSpider(scrapy.Spider):
         active_post = not is_removed
 
         Post_Data = self.__get_post_data()
-        Post_Data().update_post_last_active(
+        Post_Data.update_post_last_active(
             scraped_at=scraped_at,
             active_post=active_post,
             row_id=row_id,
@@ -136,7 +136,7 @@ class StatusCheckerSpider(scrapy.Spider):
 
         if row_id and scraped_at:
             Post_Data = self.__get_post_data()
-            Post_Data().update_post_last_active(
+            Post_Data.update_post_last_active(
                 scraped_at=scraped_at,
                 active_post=False,
                 row_id=row_id,

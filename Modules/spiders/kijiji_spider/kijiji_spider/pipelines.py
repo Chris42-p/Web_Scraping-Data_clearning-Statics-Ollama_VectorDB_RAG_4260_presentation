@@ -6,11 +6,11 @@ Follows cregslist_spider pipeline pattern:
 - Maps into Post_Data from spider_default_obj
 - Post_Data handles LLM parsing of post_description automatically
 
-Post_Data parameter order (as of latest spider_default_obj.py):
-    post_id, post_url, time_of_post, leasing_agent, general_area,
-    street_number, city, province, postal_code, price_of_the_unit,
-    square_feet_unit, bed, bath, rent_period, user_post_title,
-    first_img_url, user_meta_tags, post_description, sqr_feet_lot
+save_new_post_to_db() parameter order (as of latest spider_default_obj.py):
+    post_id, time_of_post, user_post_title, user_meta_tags, post_url,
+    price_of_the_unit, sqr_feet_lot, general_area, street_number, city,
+    province, postal_code, bed, bath, square_feet_unit, post_description,
+    rent_period, leasing_agent, first_img_url
 """
 
 import re
@@ -19,13 +19,32 @@ import sys
 
 from kijiji_spider.spider_interface import CONST
 
+# Known Vancouver cities and neighbourhoods for general_area normalization.
+VANCOUVER_AREAS = [
+    # Cities / municipalities
+    "Vancouver", "North Vancouver", "West Vancouver", "Burnaby", "Richmond",
+    "Surrey", "Coquitlam", "Port Coquitlam", "Port Moody", "New Westminster",
+    "White Rock", "Langley", "Abbotsford", "Delta", "Maple Ridge", "Squamish",
+    "Pitt Meadows", "Mission", "Chilliwack",
+    # Vancouver neighbourhoods
+    "Downtown Vancouver", "Downtown", "West End", "Yaletown", "Gastown",
+    "Chinatown", "Mount Pleasant", "Fairview", "Kitsilano", "Point Grey",
+    "Dunbar", "Kerrisdale", "Marpole", "South Granville", "Cambie",
+    "Riley Park", "Sunset", "Victoria", "Hastings", "East Vancouver",
+    "Commercial Drive", "Grandview", "Renfrew", "Collingwood", "Fraserview",
+    "Killarney", "Champlain Heights", "Oakridge", "Shaughnessy",
+    "Arbutus Ridge", "West Side", "East Side", "River District",
+    "False Creek", "Coal Harbour", "Strathcona", "Main Street",
+    "South Vancouver", "Metrotown", "Brentwood", "Lougheed",
+    "Joyce", "Nanaimo", "Rupert", "Renfrew Heights",
+]
+
 
 class KijijiSpiderPipeline:
 
     def process_item(self, item, spider):
 
-        # == Dynamically import Post_Data at runtime to avoid
-        #    ModuleNotFoundError on Scrapy startup
+        # == Dynamically import Post_Data at runtime
         current = Path(__file__).resolve()
         for parent in current.parents:
             if (parent / "Modules").exists():
@@ -44,7 +63,7 @@ class KijijiSpiderPipeline:
         user_post_title = item.get("user_post_title", "N/A")
 
         # == first_pic
-        first_pic = item.get("first_pic", "N/A")
+        first_img_url = item.get("first_pic", "N/A")
 
         # == user_meta_tags
         user_meta_tags = item.get("user_meta_tags", "N/A")
@@ -56,12 +75,7 @@ class KijijiSpiderPipeline:
         price_raw = str(item.get("price_of_the_unit", "N/A"))
         price_of_the_unit = re.sub(r"[^\d.]", "", price_raw) or "N/A"
 
-        # == sqr_feet — bedrooms count from spider
-        sqr_feet = str(item.get("num_bedrooms_n_square_feet_sq", "N/A"))
-        if sqr_feet == "0":
-            sqr_feet = "Studio/Bachelor"
-
-        # == general_area — city level
+        # == general_area — fuzzy matched to known Vancouver areas
         general_area = self.__extract_city(item.get("city_general_area", "N/A"))
 
         # == address parsing — split into components
@@ -87,27 +101,27 @@ class KijijiSpiderPipeline:
         # == sqr_feet_lot — not available on Kijiji rentals
         sqr_feet_lot = item.get("sqr_feet_lot", "N/A")
 
-        Post_Data(
+        Post_Data().save_new_post_to_db(
             post_id=post_id,
-            post_url=post_url,
             time_of_post=time_of_post,
-            leasing_agent=leasing_agent,
+            user_post_title=user_post_title,
+            user_meta_tags=user_meta_tags,
+            post_url=post_url,
+            price_of_the_unit=price_of_the_unit,
+            sqr_feet_lot=sqr_feet_lot,
             general_area=general_area,
             street_number=street_number,
             city=city,
             province=province,
             postal_code=postal_code,
-            price_of_the_unit=price_of_the_unit,
-            square_feet_unit=square_feet_unit,
             bed=bed,
             bath=bath,
-            rent_period=rent_period,
-            user_post_title=user_post_title,
-            first_img_url=first_pic,
-            user_meta_tags=user_meta_tags,
+            square_feet_unit=square_feet_unit,
             post_description=post_description,
-            sqr_feet_lot=sqr_feet_lot,
-        ).save_new_post_to_db()
+            rent_period=rent_period,
+            leasing_agent=leasing_agent,
+            first_img_url=first_img_url,
+        )
 
         return item
 
@@ -140,14 +154,30 @@ class KijijiSpiderPipeline:
         except Exception:
             return address, "N/A", "N/A", "N/A"
 
-    def __extract_city(self, address: str) -> str:
-        cities = [
-            "North Vancouver", "West Vancouver", "Burnaby", "Richmond",
-            "Surrey", "Coquitlam", "Port Coquitlam", "Port Moody",
-            "New Westminster", "White Rock", "Langley", "Abbotsford",
-            "Delta", "Maple Ridge",
-        ]
-        for city in cities:
-            if city.lower() in str(address).lower():
-                return city
+    def __extract_city(self, raw: str) -> str:
+        """
+        Normalize general_area to a known Vancouver city or neighbourhood.
+        Uses rapidfuzz for fuzzy matching to handle variations like:
+        - "VANCOUVER WEST SIDE" -> "West Vancouver"
+        - "SOUTH GRANVILLE" -> "South Granville"
+        - "24XX E 29TH AVE" -> "Vancouver" (fallback)
+        """
+        if not raw or raw == "N/A":
+            return "Vancouver"
+
+        try:
+            from rapidfuzz import process, fuzz
+            result = process.extractOne(
+                raw,
+                VANCOUVER_AREAS,
+                scorer=fuzz.token_set_ratio,
+                score_cutoff=80,
+            )
+            if result:
+                return result[0]
+        except ImportError:
+            for area in VANCOUVER_AREAS:
+                if area.lower() in raw.lower():
+                    return area
+
         return "Vancouver"
