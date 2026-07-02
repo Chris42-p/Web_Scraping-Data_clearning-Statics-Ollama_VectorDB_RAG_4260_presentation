@@ -19,6 +19,7 @@ from datetime import datetime
 from typing import Optional
 import json
 from typing import Optional
+import pandas as pd
 
 #======= Custom libs 
 from .spider_std_obj_interface import CONST
@@ -162,7 +163,17 @@ class Post_Data():
 
           conn.close()
           return rows #id, post_url, scraped_at
+
+     def get_all_listings(self):
+          cursor, conn=self.__conn_to_db()
+          
+          all_data_listings=pd.read_sql(CONST["GET_ALL_LISTINGS"], conn)
+          conn.close()
+
+          return all_data_listings
      
+     def test_connection_to_post_data_object(self):
+          print("\n\n\nCONNECTED TO POST DATA SUCCESSFULLY\n\n\n")     
 
 #==== Post last active 
      def update_post_last_active(self,scraped_at,active_post=bool,row_id=int ):

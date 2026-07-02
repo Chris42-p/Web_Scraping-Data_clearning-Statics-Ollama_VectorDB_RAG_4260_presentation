@@ -23,7 +23,7 @@ from Modules.user_GUI.back_end.main_interface import CONST
 from Modules.gmail_api.gmail_api import GmailIngestor
 from Modules.engine_injesting.injest_engine import Injest_Engine
 from Modules.user_GUI.back_end.spider_service import RUNNING_JOBS, run_spider_by_key, SpiderJob
-from Modules.engine_analytics.analysis_engine import AnalysisEngine
+from Modules.engine_analytics.z_analysis_engine import AnalysisEngine
 from Modules.user_GUI.back_end.spider_config import SPIDER_STATUS_CONFIG, SPIDER_CONFIGS, SPIDER_REGISTRY
 
 

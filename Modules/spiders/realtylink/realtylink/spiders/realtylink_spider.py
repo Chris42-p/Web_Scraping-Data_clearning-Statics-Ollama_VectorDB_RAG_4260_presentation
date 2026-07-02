@@ -9,7 +9,6 @@ import sys
 #===== Interface
 from ..realtylink_interface import CONST
 
-<<<<<<< HEAD
 
 #== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
 from pathlib import Path
@@ -24,11 +23,6 @@ for parent in current.parents:
 
 from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 #==========================
-=======
-#=== custom imports 
-#sys.path.append("/home/chris/Desktop/4260_presentation/Modules/spiders") #this is how to import std.obj
-
->>>>>>> ab6416e419e181b8d96a1250cd7b33ed8c696de5
 
 
 #this is going to scrape websites for data. 

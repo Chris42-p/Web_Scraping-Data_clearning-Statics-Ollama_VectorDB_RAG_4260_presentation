@@ -15,6 +15,10 @@ werkzeug
 # === AI / LLM
 ollama==0.6.2
 chromadb==1.5.9
+pandas==3.0.3
+numpy==2.5.0
+ipykernel==7.3.0
+jupyter==1.1.1
 
 # === API / Server
 fastapi==0.136.3
@@ -35,4 +39,3 @@ scrapy==2.16.0
 virtualenv==21.4.2
 ipython==9.14.1
 beautifulsoup4==4.15.0
-ipykernel

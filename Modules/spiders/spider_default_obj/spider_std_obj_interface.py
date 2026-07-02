@@ -13,6 +13,8 @@ CONST={
 #======= Database queries. 
      "SQL_GET_ROW_BY_URL":"SELECT id,street_number,scraped_at FROM listings WHERE post_url = ?",
      
+     "GET_ALL_LISTINGS":"SELECT * FROM listings;",
+
 
 #======= Database configuration 
      "DB_LOCATION":"spider_central_db",
