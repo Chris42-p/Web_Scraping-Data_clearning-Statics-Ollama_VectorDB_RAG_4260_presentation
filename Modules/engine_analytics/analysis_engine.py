@@ -6,7 +6,13 @@ class AnalysisEngine:
 
     def __init__(self, db_path: str = None):
         if db_path is None:
-            db_path = Path(__file__).resolve().parents[1] / "spiders" / "z_not_spiders" / "spider_central.db"
+            db_path = (
+                Path(__file__).resolve().parents[1]
+                / "spiders"
+                / "spider_default_obj"
+                / "spider_central_db"
+                / "listings_db.db"
+            )
         self.db_path = Path(db_path).resolve()
         if not self.db_path.exists():
             raise FileNotFoundError(f"Database not found: {self.db_path}")
@@ -101,59 +107,67 @@ class AnalysisEngine:
 
     def get_dashboard_summary(self):
         self.cursor.execute("""
-            SELECT ROUND(AVG(price), 0)
-            FROM rew_listings
-            WHERE price IS NOT NULL
+            SELECT ROUND(AVG(l.price), 0) AS avg_rent
+            FROM listings l
+            WHERE l.price IS NOT NULL
+            AND CAST(l.price AS INTEGER) BETWEEN 500 AND 10000
         """)
-        avg_price_row = self.cursor.fetchone()
-        avg_price = avg_price_row[0] if avg_price_row else None
+        avg_row = self.cursor.fetchone()
+        avg_rent = avg_row["avg_rent"] if avg_row and avg_row["avg_rent"] is not None else None
 
         self.cursor.execute("""
-            SELECT COUNT(*)
-            FROM rew_listings
+            SELECT COUNT(*) AS listing_volume
+            FROM listings
         """)
-        sales_volume_row = self.cursor.fetchone()
-        sales_volume = sales_volume_row[0] if sales_volume_row else 0
+        volume_row = self.cursor.fetchone()
+        listing_volume = volume_row["listing_volume"] if volume_row else 0
 
         self.cursor.execute("""
-            SELECT COUNT(*)
-            FROM rew_listings
-            WHERE first_seen IS NOT NULL
+            SELECT COUNT(*) AS new_listings
+            FROM listings
+            WHERE scraped_at IS NOT NULL
+            AND date(scraped_at) >= date('now', '-7 day')
         """)
-        new_listings_row = self.cursor.fetchone()
-        new_listings = new_listings_row[0] if new_listings_row else 0
+        new_row = self.cursor.fetchone()
+        new_listings = new_row["new_listings"] if new_row else 0
 
         self.cursor.execute("""
-            SELECT ROUND(AVG(julianday('now') - julianday(first_seen)), 0)
-            FROM rew_listings
-            WHERE first_seen IS NOT NULL
-              AND status IS NOT NULL
-              AND LOWER(status) = 'active'
+            SELECT ROUND(AVG(CASE
+                WHEN ps.time_on_market < 0 THEN 0
+                ELSE ps.time_on_market
+            END), 0) AS days_on_market
+            FROM listings l
+            LEFT JOIN post_status ps
+                ON ps.listing_id = l.id
+            WHERE ps.time_on_market IS NOT NULL
         """)
-        days_on_market_row = self.cursor.fetchone()
-        days_on_market = int(days_on_market_row[0]) if days_on_market_row and days_on_market_row[0] is not None else None
+        days_row = self.cursor.fetchone()
+        days_on_market = (
+            max(int(days_row["days_on_market"]), 0)
+            if days_row and days_row["days_on_market"] is not None
+            else None
+        )
 
         self.cursor.execute("""
-            SELECT COUNT(*)
-            FROM rew_listings
-            WHERE last_seen IS NOT NULL
-            AND date(last_seen) >= date('now', '-7 day')
+            SELECT COUNT(*) AS updates_count
+            FROM listings
+            WHERE scraped_at IS NOT NULL
+            AND date(scraped_at) >= date('now', '-7 day')
         """)
-        updates_count_row = self.cursor.fetchone()
-        updates_count = updates_count_row[0] if updates_count_row else 0
+        updates_row = self.cursor.fetchone()
+        updates_count = updates_row["updates_count"] if updates_row else 0
 
         self.cursor.execute("""
-            SELECT COUNT(*)
-            FROM rew_listings
-            WHERE status IS NOT NULL
-            AND LOWER(status) = 'active'
+            SELECT COUNT(*) AS active_listings
+            FROM post_status
+            WHERE post_status = 1
         """)
-        active_listings_row = self.cursor.fetchone()
-        active_listings = active_listings_row[0] if active_listings_row else 0
+        active_row = self.cursor.fetchone()
+        active_listings = active_row["active_listings"] if active_row else 0
 
         return {
-            "avgPrice": f"${avg_price:,.0f}" if avg_price is not None else "No data",
-            "salesVolume": str(sales_volume or 0),
+            "avgPrice": f"${avg_rent:,.0f}" if avg_rent is not None else "No data",
+            "salesVolume": str(listing_volume or 0),
             "newListings": str(new_listings or 0),
             "daysOnMarket": str(days_on_market) if days_on_market is not None else "N/A",
             "updatesCount": int(updates_count or 0),
@@ -239,6 +253,8 @@ class AnalysisEngine:
                 f"{bedrooms} bd / {bathrooms} ba | "
                 f"{square_feet} sqft"
             )
+
+
 
     def run(self):
 

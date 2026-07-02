@@ -356,3 +356,30 @@
   color: rgba(244, 247, 251, 0.8);
   line-height: 1.6;
 }
+
+.stop-spider-button {
+  background-color: #dc2626;
+  color: #ffffff;
+  text-transform: uppercase;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.stop-spider-button:hover {
+  background-color: #b91c1c;
+}
+
+.stop-spider-button:disabled {
+  background-color: #fca5a5;
+  cursor: not-allowed;
+}
+
+.form-label select,
+.form-label select option {
+  background-color: #12324a;
+  color: #ffffff;
+}

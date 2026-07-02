@@ -22,9 +22,18 @@ from Modules.engine_injesting.data_base.my_sql_db import SQL_DataBase
 from Modules.user_GUI.back_end.main_interface import CONST
 from Modules.gmail_api.gmail_api import GmailIngestor
 from Modules.engine_injesting.injest_engine import Injest_Engine
-from Modules.user_GUI.back_end.spider_service import RUNNING_JOBS, run_spider_by_key, SpiderJob
-from Modules.engine_analytics.z_analysis_engine import AnalysisEngine
-from Modules.user_GUI.back_end.spider_config import SPIDER_STATUS_CONFIG, SPIDER_CONFIGS, SPIDER_REGISTRY
+from Modules.user_GUI.back_end.spider_service import (
+    RUNNING_JOBS,
+    start_spider_job,
+    abort_spider_job,
+    run_spider_by_key,
+)
+from Modules.engine_analytics.analysis_engine import AnalysisEngine
+from Modules.user_GUI.back_end.spider_config import (
+    SPIDER_STATUS_CONFIG, 
+    SPIDER_CONFIGS, 
+    SPIDER_REGISTRY
+)
 
 
 
@@ -105,6 +114,16 @@ def run_spider_job(spider_key: str):
             SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = next_run.isoformat()
         else:
             SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = None
+
+
+def get_total_listing_count():
+    engine = AnalysisEngine()
+    try:
+        engine.cursor.execute("SELECT COUNT(*) FROM listings")
+        row = engine.cursor.fetchone()
+        return row[0] if row else 0
+    finally:
+        engine.close()
 
 @app.on_event("startup")
 def startup_event():
@@ -302,72 +321,62 @@ def get_spiders(user=Depends(get_logged_in_user)):
         ]
     }
 
-@app.post("/spiders/run", response_model=SpiderRunResponseModel)
+@app.post("/spiders/run")
 def run_selected_spider(request: SpiderRunRequest, user=Depends(get_logged_in_user)):
     spider_key = request.spider_key
 
     if spider_key not in SPIDER_REGISTRY:
         raise HTTPException(status_code=404, detail=f"Unknown spider: {spider_key}")
 
-    if spider_key not in SPIDER_STATUS_CONFIG:
-        raise HTTPException(status_code=500, detail=f"Spider status not configured: {spider_key}")
-
     try:
+        before_count = get_total_listing_count()
+        job = start_spider_job(spider_key)
+        job.before_count = before_count
+
         SPIDER_STATUS_CONFIG[spider_key]["isRunning"] = True
         SPIDER_STATUS_CONFIG[spider_key]["lastRunAt"] = datetime.now().isoformat()
 
-        run_spider_by_key(spider_key)
-
-        if SPIDER_CONFIGS.get(spider_key, {}).get("enabled"):
-            SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = (
-                datetime.now() + timedelta(minutes=SPIDER_CONFIGS[spider_key]["intervalMinutes"])
-            ).isoformat()
-        else:
-            SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = None
-
-        engine = AnalysisEngine()
-        try:
-            summary = engine.get_dashboard_summary()
-        finally:
-            engine.close()
-
         return {
-            "message": f"{spider_key} run finished",
+            "message": f"{spider_key} started",
             "started": True,
             "spider": spider_key,
-            "nextRunAt": SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"],
-            "summary": summary,
+            "job_id": job.job_id,
+            "nextRunAt": SPIDER_STATUS_CONFIG[spider_key].get("nextRunAt"),
+            "summary": None,
         }
-
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Spider run failed: {str(e)}")
-    finally:
-        SPIDER_STATUS_CONFIG[spider_key]["isRunning"] = False
-
-
-
-
-@app.post("/spiders/{spider_name}/run")
-def run_spider(spider_name: str):
-    job = spider_service.run_spider(spider_name)
-    return {
-        "job_id": job.job_id,
-        "spider": job.spider_name,
-        "status": job.status,
-        "started_at": job.started_at,
-    }
 
 @app.post("/spiders/{job_id}/abort")
-def abort_spider(job_id: str):
-    ok = spider_service.abort_spider(job_id)
+def abort_spider(job_id: str, user=Depends(get_logged_in_user)):
+    ok = abort_spider_job(job_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Running job not found")
     return {"job_id": job_id, "status": "aborted"}
 
+
 @app.get("/spiders/jobs")
-def list_jobs():
+def list_jobs(user=Depends(get_logged_in_user)):
+    for job in RUNNING_JOBS.values():
+        if job.status == "running":
+            rc = job.process.poll()
+            if rc is not None:
+                job.finished_at = datetime.utcnow().isoformat()
+
+                if rc == 0:
+                    job.status = "completed"
+                    after_count = get_total_listing_count()
+                    job.after_count = after_count
+                    job.added_count = max(0, after_count - job.before_count)
+                else:
+                    job.status = "failed"
+                    job.error = f"Process exited with code {rc}"
+                    job.after_count = job.before_count
+                    job.added_count = 0
+
+                if job.spider_name in SPIDER_STATUS_CONFIG:
+                    SPIDER_STATUS_CONFIG[job.spider_name]["isRunning"] = False
+
     return [
         {
             "job_id": job.job_id,
@@ -376,10 +385,10 @@ def list_jobs():
             "started_at": job.started_at,
             "finished_at": job.finished_at,
             "error": job.error,
+            "added_count": job.added_count,
         }
         for job in RUNNING_JOBS.values()
     ]
-
 
 
 

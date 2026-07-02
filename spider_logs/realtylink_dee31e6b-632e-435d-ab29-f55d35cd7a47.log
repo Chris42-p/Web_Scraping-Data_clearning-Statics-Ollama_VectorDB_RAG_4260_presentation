@@ -1,0 +1,90 @@
+STARTED_AT: 2026-07-01T23:31:39.114649
+COMMAND: 'C:\Users\Hp\AppData\Local\Programs\Python\Python313\python.exe' -m Modules.user_GUI.back_end.spider_runner --spider-key realtylink --settings-module Modules.spiders.realtylink.realtylink.settings
+
+2026-07-01 16:31:40,501 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=realtylink module=Modules.spiders.realtylink.realtylink.spiders.realtylink_spider class=RealtylinkSpiderSpider settings_module=Modules.spiders.realtylink.realtylink.settings
+2026-07-01 16:31:42 [scrapy.utils.log] INFO: Scrapy 2.16.0 started (bot: realtylink_spider)
+2026-07-01 16:31:42 [scrapy.utils.log] INFO: Versions:
+{'lxml': '6.1.1',
+ 'libxml2': '2.11.9',
+ 'cssselect': '1.4.0',
+ 'parsel': '1.11.0',
+ 'w3lib': '2.4.1',
+ 'Twisted': '26.4.0',
+ 'Python': '3.13.12 (tags/v3.13.12:1cbe481, Feb  3 2026, 18:22:25) [MSC v.1944 '
+           '64 bit (AMD64)]',
+ 'pyOpenSSL': '26.3.0 (OpenSSL 4.0.1 9 Jun 2026)',
+ 'cryptography': '49.0.0',
+ 'Platform': 'Windows-10-10.0.19045-SP0'}
+2026-07-01 16:31:42 [scrapy.crawler] DEBUG: Using CrawlerProcess
+2026-07-01 16:31:42 [scrapy.addons] INFO: Enabled addons:
+[]
+2026-07-01 16:31:42 [asyncio] DEBUG: Using selector: SelectSelector
+2026-07-01 16:31:42 [scrapy.utils.log] DEBUG: Using reactor: twisted.internet.asyncioreactor.AsyncioSelectorReactor
+2026-07-01 16:31:42 [scrapy.utils.log] DEBUG: Using asyncio event loop: asyncio.windows_events._WindowsSelectorEventLoop
+2026-07-01 16:31:42 [scrapy.extensions.telnet] INFO: Telnet Password: d46f19d0d285caf2
+2026-07-01 16:31:42 [scrapy.middleware] INFO: Enabled extensions:
+['scrapy.extensions.corestats.CoreStats',
+ 'scrapy.extensions.logcount.LogCount',
+ 'scrapy.extensions.telnet.TelnetConsole',
+ 'scrapy.extensions.logstats.LogStats',
+ 'scrapy.extensions.throttle.AutoThrottle']
+2026-07-01 16:31:42 [scrapy.crawler] INFO: Overridden settings:
+{'AUTOTHROTTLE_ENABLED': True,
+ 'AUTOTHROTTLE_MAX_DELAY': 15,
+ 'BOT_NAME': 'realtylink_spider',
+ 'CONCURRENT_REQUESTS': 1,
+ 'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
+ 'COOKIES_ENABLED': False,
+ 'DOWNLOAD_DELAY': 10,
+ 'FEED_EXPORT_ENCODING': 'UTF-8',
+ 'HTTPCACHE_ENABLED': True,
+ 'HTTPCACHE_IGNORE_HTTP_CODES': [503, 504, 505, 500, 403, 404],
+ 'NEWSPIDER_MODULE': 'Modules.spiders.realtylink.realtylink.spiders',
+ 'SPIDER_MODULES': ['Modules.spiders.realtylink.realtylink.spiders']}
+2026-07-01 16:31:44 [scrapy.middleware] INFO: Enabled downloader middlewares:
+['scrapy.downloadermiddlewares.offsite.OffsiteMiddleware',
+ 'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',
+ 'Modules.spiders.realtylink.realtylink.middlewares.UserAgentRotationMilleware',
+ 'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware',
+ 'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware',
+ 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware',
+ 'scrapy.downloadermiddlewares.retry.RetryMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware',
+ 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',
+ 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware',
+ 'scrapy.downloadermiddlewares.stats.DownloaderStats',
+ 'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware']
+2026-07-01 16:31:44 [py.warnings] WARNING: C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\downloader\middleware.py:46: ScrapyDeprecationWarning: UserAgentRotationMilleware.process_request() requires a spider argument, this is deprecated and the argument will not be passed in future Scrapy versions. If you need to access the spider instance you can save the crawler instance passed to from_crawler() and use its spider attribute.
+  self._check_mw_method_spider_arg(mw.process_request)
+
+2026-07-01 16:31:44 [scrapy.middleware] INFO: Enabled spider middlewares:
+['scrapy.spidermiddlewares.start.StartSpiderMiddleware',
+ 'scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',
+ 'scrapy.spidermiddlewares.referer.RefererMiddleware',
+ 'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',
+ 'scrapy.spidermiddlewares.depth.DepthMiddleware']
+2026-07-01 16:31:44 [scrapy.middleware] INFO: Enabled item pipelines:
+['Modules.spiders.realtylink.realtylink.pipelines.RealtylinkPipeline']
+2026-07-01 16:31:44 [py.warnings] WARNING: C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\pipelines\__init__.py:49: ScrapyDeprecationWarning: RealtylinkPipeline.process_item() requires a spider argument, this is deprecated and the argument will not be passed in future Scrapy versions. If you need to access the spider instance you can save the crawler instance passed to from_crawler() and use its spider attribute.
+  self._check_mw_method_spider_arg(mw.process_item)
+
+2026-07-01 16:31:44 [scrapy.core.engine] INFO: Spider opened
+2026-07-01 16:31:44 [scrapy.extensions.logstats] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2026-07-01 16:31:44 [realtylink_spider] INFO: Spider opened: realtylink_spider
+2026-07-01 16:31:44 [scrapy.extensions.httpcache] DEBUG: Using filesystem cache storage in .scrapy\httpcache
+2026-07-01 16:31:44 [scrapy.extensions.telnet] INFO: Telnet console listening on 127.0.0.1:6024
+2026-07-01 16:31:44 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12&page=1> (referer: None) ['cached']
+2026-07-01 16:31:44 [scrapy.dupefilters] DEBUG: Filtered duplicate request: <GET https://realtylink.org/en/apartment~for-rent~vancouver/263151002> - no more duplicates will be shown (see DUPEFILTER_DEBUG to show all duplicates)
+2026-07-01 16:31:44 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://realtylink.org/en/house~for-rent~vancouver/263157370> (referer: https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12&page=1)
+2026-07-01 16:31:45 [scrapy.core.scraper] DEBUG: Scraped from <200 https://realtylink.org/en/house~for-rent~vancouver/263157370>
+{'url': 'https://realtylink.org/en/house~for-rent~vancouver/263157370', 'unit_address': None, 'unit_type': 'House for rent', 'unit_price': '4250', 'sqr_feet': '\n                1,600 sqft\n            ', 'description': None, 'msl_numer': 'R3135743', 'bed': '4 bedrooms', 'bath': '2 bathrooms', 'first_pic': 'https://media.realtylink.org/images/consumersite/property/263157370/18ef62234c77499d80a5bfa61c0059c1.jpeg?width=640&height=480&fit=cover', 'property_metadata': {'Floor Area': '\n                1,600 sqft\n            ', 'Interior Features': None, 'Laundry Features': 'In Unit', 'Appliances': 'Dishwasher, Refrigerator, Stove', 'Exterior Features': None, 'Parking Spaces': '2', 'Amenities': None, 'Cooling Features': None, 'Bylaws Restriction': None}, 'broker_agency': '\n                                            Luxmore Realty\n                                        '}
+2026-07-01 16:31:56 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://realtylink.org/en/apartment~for-rent~vancouver/263143889> (referer: https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12&page=1)
+2026-07-01 16:31:56 [scrapy.core.scraper] DEBUG: Scraped from <200 https://realtylink.org/en/apartment~for-rent~vancouver/263143889>
+{'url': 'https://realtylink.org/en/apartment~for-rent~vancouver/263143889', 'unit_address': None, 'unit_type': 'Apartment for rent', 'unit_price': '9800', 'sqr_feet': '\n                1,488 sqft\n            ', 'description': None, 'msl_numer': 'R3122262', 'bed': '2 bedrooms', 'bath': '3 bathrooms', 'first_pic': 'https://media.realtylink.org/images/consumersite/property/263143889/23086437d21a45d0b3e7e00afe4caf67.jpeg?width=640&height=480&fit=cover', 'property_metadata': {'Floor Area': '\n                1,488 sqft\n            ', 'Interior Features': 'Elevator', 'Laundry Features': 'In Unit', 'Appliances': 'Dishwasher, Microwave, Refrigerator, Stove, Wine Cooler', 'Exterior Features': 'Balcony', 'Parking Spaces': '1', 'Amenities': None, 'Cooling Features': 'Air Conditioning', 'Bylaws Restriction': None}, 'broker_agency': '\n                                            Sutton Group-West Coast Realty\n                                        '}
+2026-07-01 16:32:05 [scrapy.core.engine] DEBUG: Crawled (200) <GET https://realtylink.org/en/apartment~for-rent~vancouver/263155836> (referer: https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12&page=1)
+2026-07-01 16:32:05 [scrapy.core.scraper] DEBUG: Scraped from <200 https://realtylink.org/en/apartment~for-rent~vancouver/263155836>
+{'url': 'https://realtylink.org/en/apartment~for-rent~vancouver/263155836', 'unit_address': None, 'unit_type': 'Apartment for rent', 'unit_price': '2050', 'sqr_feet': '\n                614 sqft\n            ', 'description': None, 'msl_numer': 'R3134209', 'bed': '1 bedroom', 'bath': '1 bathroom', 'first_pic': 'https://media.realtylink.org/images/consumersite/property/263155836/3962ffb3e0894ae982aa0edf73287f6e.jpeg?width=640&height=480&fit=cover', 'property_metadata': {'Floor Area': '\n                614 sqft\n            ', 'Interior Features': None, 'Laundry Features': None, 'Appliances': None, 'Exterior Features': 'Balcony', 'Parking Spaces': '1', 'Amenities': None, 'Cooling Features': None, 'Bylaws Restriction': None}, 'broker_agency': '\n                                            TRG The Residential Group Realty Property Management\n                                        '}
+
+
+[JOB-END] status=aborted finished_at=2026-07-01T23:32:13.082907

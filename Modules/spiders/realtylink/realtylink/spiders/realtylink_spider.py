@@ -47,13 +47,22 @@ class RealtylinkSpiderSpider(scrapy.Spider):
         #number of pages that i can itterate over. 
         num_posts=response.css("span.js-resultCount.font-weight-bold:nth-child(2)::text").get()
         total_pages=math.ceil(int(num_posts)/ len(posts))
-        
+
+        if not posts:
+            self.logger.warning(f"No posts found on {response.url}")
+            return
         #===== the url of the cards on the page
         base_url="https://realtylink.org"
         for p_num in posts:
             url_of_a_post=p_num.css(f"div.shell:nth-child(1) a::attr(href)").get()
 
             url=f"{base_url}{url_of_a_post}"
+        
+        for post in posts:
+            rel = post.css("div.shell:nth-child(1) a::attr(href)").get()
+            if rel:
+                yield scrapy.Request(f"{base_url}{rel}", callback=self.parse_page)
+        #read a card's data
 
             yield scrapy.Request(url, callback=self.parse_page)
                 
@@ -68,7 +77,26 @@ class RealtylinkSpiderSpider(scrapy.Spider):
             self.page_num+=1
             
             yield scrapy.Request(url, callback=self.parse)
+
+        #while (self.page_num <  self.total_pages):
+            #url=f"https://realtylink.org/en/properties~for-rent~vancouver?q=H4sIAAAAAAAACpWRzU7DMBCE38XngCJxgltUCYRAqCIoF8RhiSeNVccOaycQVX131i0_Iafik2f284xs71Rng7pSucrUK_steOU1xBDtm8bUuMN0lEPADfyGqW-nsqUeci7PVEjbyuBd5POLaBDX7QN1XymNsRGchjvVUazbp6lPo1VRFjKO-IiiKnK1H0awWEaLUXsXhk4Omoiz715TFwy6OB9_6L00NgZWh4rsgGPNwbjVvyVjmv0jNPuTQREbz9Ms5xHBaLhoyC7gEtYatznccc67uADX7HtwnFL3jCzfBmJcA0v-npw-lU11a5a_m8H5CczlbMnL7j8BoxVmmR0CAAA&v=2&sortSeed=1953928980&sort=None&pageSize=12&page={self.page_num}"
+            #self.page_num+=1
             
+            #yield scrapy.Request(url, callback=self.parse)
+
+            for post in posts:
+                rel = post.css("div.shell:nth-child(1) a::attr(href)").get()
+                if rel:
+                    yield response.follow(rel, callback=self.parse_page)
+
+            if self.first_loop:
+                self.first_loop = False
+                num_posts = response.css("span.js-resultCount.font-weight-bold:nth-child(2)::text").get()
+                total_pages = math.ceil(int(num_posts) / len(posts))
+
+                for page_num in range(2, total_pages + 1):
+                    url = f"https://realtylink.org/...&page={page_num}"
+                    yield scrapy.Request(url, callback=self.parse)
 
 
     def parse_page(self, response):

@@ -1,0 +1,78 @@
+2026-07-01 21:39:03,542 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'craigslist' with job_id=3d542f14-fa05-4d00-a33e-aa12d6110819
+2026-07-01 21:39:03,542 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'craigslist', '--settings-module', 'Modules.spiders.cragslist_spider.cragslist_spider.settings']
+2026-07-01 21:39:03,543 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\craigslist_3d542f14-fa05-4d00-a33e-aa12d6110819.log
+2026-07-01 21:41:38,879 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'craigslist' with job_id=3c5e59b2-7ea5-406c-b066-df587a4eda18
+2026-07-01 21:41:38,880 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'craigslist', '--settings-module', 'Modules.spiders.cragslist_spider.cragslist_spider.settings']
+2026-07-01 21:41:38,884 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\craigslist_3c5e59b2-7ea5-406c-b066-df587a4eda18.log
+2026-07-01 21:41:40,893 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider settings_module=Modules.spiders.cragslist_spider.cragslist_spider.settings
+2026-07-01 21:44:05,207 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=craigslist job_id=3c5e59b2-7ea5-406c-b066-df587a4eda18
+2026-07-01 15:30:18,475 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'craigslist' with job_id=7ae4b488-56ec-4ed9-8582-d24e7b53a952
+2026-07-01 15:30:18,482 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'craigslist', '--settings-module', 'Modules.spiders.cragslist_spider.cragslist_spider.settings']
+2026-07-01 15:30:18,485 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\craigslist_7ae4b488-56ec-4ed9-8582-d24e7b53a952.log
+2026-07-01 15:30:21,323 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider settings_module=Modules.spiders.cragslist_spider.cragslist_spider.settings
+2026-07-01 15:30:21,342 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 251, in run_spider_by_key
+    module = import_module(module_name)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\__init__.py", line 2, in <module>
+    from .spider_default_obj import spider_default_obj
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\spider_default_obj\__init__.py", line 1, in <module>
+    from .spider_default_obj import Post_Data
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\spider_default_obj\spider_default_obj.py", line 359
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax
+2026-07-01 16:10:34,938 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'craigslist' with job_id=1796ca17-ce84-47a0-8f4d-01da959d976a
+2026-07-01 16:10:34,939 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'craigslist', '--settings-module', 'Modules.spiders.cragslist_spider.cragslist_spider.settings']
+2026-07-01 16:10:34,941 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\craigslist_1796ca17-ce84-47a0-8f4d-01da959d976a.log
+2026-07-01 16:10:36,594 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider settings_module=Modules.spiders.cragslist_spider.cragslist_spider.settings
+2026-07-01 16:10:42,419 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=craigslist: {'status': 'error', 'message': 'CregslistSpiderSpider closed with reason=finished', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1}}
+2026-07-01 16:17:17,240 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'craigslist' with job_id=78afcb95-84e8-4bc3-8d92-d10706065fa7
+2026-07-01 16:17:17,240 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'craigslist', '--settings-module', 'Modules.spiders.cragslist_spider.cragslist_spider.settings']
+2026-07-01 16:17:17,241 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\craigslist_78afcb95-84e8-4bc3-8d92-d10706065fa7.log
+2026-07-01 16:17:19,404 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider settings_module=Modules.spiders.cragslist_spider.cragslist_spider.settings
+2026-07-01 16:24:45,764 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'craigslist' with job_id=e7ad55b5-f4f8-4354-803b-eb66ee13dc76
+2026-07-01 16:24:45,764 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'craigslist', '--settings-module', 'Modules.spiders.cragslist_spider.cragslist_spider.settings']
+2026-07-01 16:24:45,765 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\craigslist_e7ad55b5-f4f8-4354-803b-eb66ee13dc76.log
+2026-07-01 16:24:48,338 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider settings_module=Modules.spiders.cragslist_spider.cragslist_spider.settings
+2026-07-01 16:30:48,030 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=craigslist job_id=e7ad55b5-f4f8-4354-803b-eb66ee13dc76
+2026-07-01 16:31:39,114 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'realtylink' with job_id=dee31e6b-632e-435d-ab29-f55d35cd7a47
+2026-07-01 16:31:39,115 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'realtylink', '--settings-module', 'Modules.spiders.realtylink.realtylink.settings']
+2026-07-01 16:31:39,115 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\realtylink_dee31e6b-632e-435d-ab29-f55d35cd7a47.log
+2026-07-01 16:31:40,501 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=realtylink module=Modules.spiders.realtylink.realtylink.spiders.realtylink_spider class=RealtylinkSpiderSpider settings_module=Modules.spiders.realtylink.realtylink.settings
+2026-07-01 16:32:13,082 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=realtylink job_id=dee31e6b-632e-435d-ab29-f55d35cd7a47
+2026-07-01 16:32:21,186 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'kijiji' with job_id=6c72e5af-8da1-4d22-9870-171032ca4915
+2026-07-01 16:32:21,186 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'kijiji', '--settings-module', 'Modules.spiders.kijiji_spider.kijiji_spider.settings']
+2026-07-01 16:32:21,187 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\kijiji_6c72e5af-8da1-4d22-9870-171032ca4915.log
+2026-07-01 16:32:22,961 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=kijiji module=Modules.spiders.kijiji_spider.kijiji_spider.spiders.kijiji_rental_spider class=KijijiRentalsSpider settings_module=Modules.spiders.kijiji_spider.kijiji_spider.settings
+2026-07-01 16:33:15,683 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=kijiji job_id=6c72e5af-8da1-4d22-9870-171032ca4915
+2026-07-01 16:33:19,733 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=2362d6aa-d598-4e61-b1fa-cc1627039a87
+2026-07-01 16:33:19,733 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-01 16:33:19,734 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_2362d6aa-d598-4e61-b1fa-cc1627039a87.log
+2026-07-01 16:33:21,350 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-01 16:33:24,819 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rew: {'status': 'error', 'message': 'RewSpider closed with reason=finished', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1}}

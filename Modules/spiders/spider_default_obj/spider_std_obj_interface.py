@@ -11,10 +11,8 @@ CONST={
      "ERR_MSG_1":"Database post inset failed",
 
 #======= Database queries. 
-     "SQL_GET_ROW_BY_URL":"SELECT id,street_number,scraped_at FROM listings WHERE post_url = ?",
-     
-     "GET_ALL_LISTINGS":"SELECT * FROM listings;",
-
+     "SQL_GET_ROW_BY_URL":"SELECT id, street_number, scraped_at FROM listings WHERE post_url = ?",
+    
 
 #======= Database configuration 
      "DB_LOCATION":"spider_central_db",

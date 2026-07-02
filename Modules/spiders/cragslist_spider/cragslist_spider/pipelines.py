@@ -131,9 +131,11 @@ class CregslistSpiderPipeline:
         #Square feet 
         square_feet_unit=item["square_feet_unit"]
         square_feet_unit=self.__strip_spaces(self.__strip_html(square_feet_unit))
-        square_feet_unit=int(square_feet_unit[:-1].replace("ft","").replace(",",""))
+        digits = "".join(ch for ch in square_feet_unit if ch.isdigit())
+        if not digits:
+            return None
 
-        return square_feet_unit
+        return int(digits)
 
     def get_bed_bath(self,item):
         if item["bed_and_bath"]==None:

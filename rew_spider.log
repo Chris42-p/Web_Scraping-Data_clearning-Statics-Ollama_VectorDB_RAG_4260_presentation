@@ -1,0 +1,365 @@
+2026-07-01 16:33:22 [scrapy.utils.log] INFO: Scrapy 2.16.0 started (bot: rew_spider)
+2026-07-01 16:33:22 [scrapy.utils.log] INFO: Versions:
+{'lxml': '6.1.1',
+ 'libxml2': '2.11.9',
+ 'cssselect': '1.4.0',
+ 'parsel': '1.11.0',
+ 'w3lib': '2.4.1',
+ 'Twisted': '26.4.0',
+ 'Python': '3.13.12 (tags/v3.13.12:1cbe481, Feb  3 2026, 18:22:25) [MSC v.1944 '
+           '64 bit (AMD64)]',
+ 'pyOpenSSL': '26.3.0 (OpenSSL 4.0.1 9 Jun 2026)',
+ 'cryptography': '49.0.0',
+ 'Platform': 'Windows-10-10.0.19045-SP0'}
+2026-07-01 16:33:23 [scrapy.addons] INFO: Enabled addons:
+[]
+2026-07-01 16:33:23 [scrapy.extensions.telnet] INFO: Telnet Password: 67208cd1b07cd5e8
+2026-07-01 16:33:23 [scrapy.middleware] INFO: Enabled extensions:
+['scrapy.extensions.corestats.CoreStats',
+ 'scrapy.extensions.logcount.LogCount',
+ 'scrapy.extensions.telnet.TelnetConsole',
+ 'scrapy.extensions.logstats.LogStats']
+2026-07-01 16:33:23 [scrapy.crawler] INFO: Overridden settings:
+{'BOT_NAME': 'rew_spider',
+ 'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
+ 'DOWNLOAD_DELAY': 3,
+ 'FEED_EXPORT_ENCODING': 'utf-8',
+ 'HTTPCACHE_DIR': 'rew_spider_cache',
+ 'HTTPCACHE_ENABLED': True,
+ 'HTTPCACHE_EXPIRATION_SECS': 18000,
+ 'HTTPCACHE_IGNORE_HTTP_CODES': [403, 404, 429, 500, 503, 504],
+ 'LOG_FILE': 'rew_spider.log',
+ 'LOG_LEVEL': 'INFO',
+ 'LOG_STDOUT': True,
+ 'NEWSPIDER_MODULE': 'Modules.spiders.rew_spider.rew_spider.spiders',
+ 'SPIDER_MODULES': ['Modules.spiders.rew_spider.rew_spider.spiders']}
+2026-07-01 16:33:23 [scrapy.middleware] INFO: Enabled downloader middlewares:
+['scrapy.downloadermiddlewares.offsite.OffsiteMiddleware',
+ 'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',
+ 'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware',
+ 'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware',
+ 'Modules.spiders.rew_spider.rew_spider.middlewares.UserAgentRotationMiddleware',
+ 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware',
+ 'scrapy.downloadermiddlewares.retry.RetryMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware',
+ 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
+ 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',
+ 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware',
+ 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware',
+ 'scrapy.downloadermiddlewares.stats.DownloaderStats',
+ 'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware']
+2026-07-01 16:33:23 [py.warnings] WARNING: C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\downloader\middleware.py:46: ScrapyDeprecationWarning: UserAgentRotationMiddleware.process_request() requires a spider argument, this is deprecated and the argument will not be passed in future Scrapy versions. If you need to access the spider instance you can save the crawler instance passed to from_crawler() and use its spider attribute.
+  self._check_mw_method_spider_arg(mw.process_request)
+
+2026-07-01 16:33:23 [scrapy.middleware] INFO: Enabled spider middlewares:
+['scrapy.spidermiddlewares.start.StartSpiderMiddleware',
+ 'scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',
+ 'scrapy.spidermiddlewares.referer.RefererMiddleware',
+ 'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',
+ 'scrapy.spidermiddlewares.depth.DepthMiddleware']
+2026-07-01 16:33:23 [scrapy.middleware] INFO: Enabled item pipelines:
+['Modules.spiders.rew_spider.rew_spider.pipelines.RewSpiderPipeline']
+2026-07-01 16:33:23 [py.warnings] WARNING: C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\pipelines\__init__.py:49: ScrapyDeprecationWarning: RewSpiderPipeline.process_item() requires a spider argument, this is deprecated and the argument will not be passed in future Scrapy versions. If you need to access the spider instance you can save the crawler instance passed to from_crawler() and use its spider attribute.
+  self._check_mw_method_spider_arg(mw.process_item)
+
+2026-07-01 16:33:23 [scrapy.core.engine] INFO: Spider opened
+2026-07-01 16:33:23 [scrapy.extensions.logstats] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2026-07-01 16:33:23 [rew_spider] INFO: Spider opened: rew_spider
+2026-07-01 16:33:23 [scrapy.extensions.telnet] INFO: Telnet console listening on 127.0.0.1:6024
+2026-07-01 16:33:24 [rew_spider] INFO: REW parse start: page=1 url=https://www.rew.ca/rentals/areas/vancouver-bc
+2026-07-01 16:33:24 [rew_spider] INFO: Page 1: found 20 listing cards
+2026-07-01 16:33:24 [rew_spider] INFO: Card 1: listing_url=https://www.rew.ca/rentals/7372434/872-east-20th-avenue-vancouver-bc title='[] Follow Follow $1,300 872 East 20th Avenue Fraser East Vancouver 2 bd 1 ba 4000 sf House Property Manager' formatted_address='872 East 20th Avenue, Fraser East, Vancouver, BC' address_parts={'street_address': '872 East 20th Avenue', 'neighbourhood': 'Fraser East', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 1: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 2: listing_url=https://www.rew.ca/rentals/7314556/105-1847-barclay-street-vancouver-bc title='[] Follow Follow $1,600 1847 Barclay Street West End Vancouver 0 bd 1 ba 450 sf Apt/Condo Property Manager Reliance Properties' formatted_address='1847 Barclay Street, West End, Vancouver, BC' address_parts={'street_address': '1847 Barclay Street', 'neighbourhood': 'West End', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 2: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 3: listing_url=https://www.rew.ca/rentals/7368010/309-1768-cook-street-vancouver-bc title='[] Follow Follow $4,300 1768 Cook Street False Creek Vancouver 2 bd 2 ba 980 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='1768 Cook Street, False Creek, Vancouver, BC' address_parts={'street_address': '1768 Cook Street', 'neighbourhood': 'False Creek', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 3: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 4: listing_url=https://www.rew.ca/rentals/7367129/1108-989-beatty-street-vancouver-bc title='[] Follow Follow $2,300 989 Beatty Street Yaletown Vancouver 1 bd 1 ba 459 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='989 Beatty Street, Yaletown, Vancouver, BC' address_parts={'street_address': '989 Beatty Street', 'neighbourhood': 'Yaletown', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 4: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 5: listing_url=https://www.rew.ca/rentals/7273823/922-1289-hornby-street-vancouver-bc title='[] Follow Follow $2,500 1289 Hornby Street Downtown West Vancouver 0 bd 1 ba 519 sf Apt/Condo Property Manager Reliance Properties' formatted_address='1289 Hornby Street, Downtown West, Vancouver, BC' address_parts={'street_address': '1289 Hornby Street', 'neighbourhood': 'Downtown West', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 5: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 6: listing_url=https://www.rew.ca/rentals/7361355/1503-688-abbott-street-vancouver-bc title='[] Follow Follow $2,300 688 Abbott Street Downtown West Vancouver 1 bd 1 ba 562 sf Apt/Condo Property Manager Vada Property Management' formatted_address='688 Abbott Street, Downtown West, Vancouver, BC' address_parts={'street_address': '688 Abbott Street', 'neighbourhood': 'Downtown West', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 6: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 7: listing_url=https://www.rew.ca/rentals/7357185/120-1288-marinaside-crescent-vancouver-bc title='[] Follow Follow $4,650 1288 Marinaside Crescent Yaletown Vancouver 2 bd 2 ba 1245 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='1288 Marinaside Crescent, Yaletown, Vancouver, BC' address_parts={'street_address': '1288 Marinaside Crescent', 'neighbourhood': 'Yaletown', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 7: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 8: listing_url=https://www.rew.ca/rentals/7356509/1819-68-smithe-street-vancouver-bc title='[] Follow Follow $2,800 68 Smithe Street Downtown West Vancouver 1 bd 1 ba 581 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='68 Smithe Street, Downtown West, Vancouver, BC' address_parts={'street_address': '68 Smithe Street', 'neighbourhood': 'Downtown West', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 8: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 9: listing_url=https://www.rew.ca/rentals/7354478/1207-433-southwest-marine-drive-vancouver-bc title='[] Follow Follow $2,350 433 Southwest Marine Drive Marpole Vancouver 1 bd 1 ba 483 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='433 Southwest Marine Drive, Marpole, Vancouver, BC' address_parts={'street_address': '433 Southwest Marine Drive', 'neighbourhood': 'Marpole', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 9: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 10: listing_url=https://www.rew.ca/rentals/7348073/205-1880-east-kent-avenue-vancouver-bc title='[] Follow Follow $2,300 1880 East Kent Avenue South South Marine Vancouver 1 bd 1 ba 680 sf Apt/Condo Property Manager Vada Property Management' formatted_address='1880 East Kent Avenue South South Marine, Vancouver, BC' address_parts={'street_address': '1880 East Kent Avenue South South Marine', 'neighbourhood': 'Vancouver', 'city': 'BC', 'province': 'N/A', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 10: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 11: listing_url=https://www.rew.ca/rentals/7347204/1-6005-walter-gage-road-vancouver-bc title='[] Follow Follow $2,800 6005 Walter Gage Road University (Ubc) Vancouver 1 bd 1 ba 405 sf Apt/Condo Property Manager Bastion' formatted_address='6005 Walter Gage Road, University (Ubc), Vancouver, BC' address_parts={'street_address': '6005 Walter Gage Road', 'neighbourhood': 'University (Ubc)', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 11: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 12: listing_url=https://www.rew.ca/rentals/7344222/706-638-beach-crescent-vancouver-bc title='[] Follow Follow $2,650 638 Beach Crescent Yaletown Vancouver 1 bd 1 ba 644 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='638 Beach Crescent, Yaletown, Vancouver, BC' address_parts={'street_address': '638 Beach Crescent', 'neighbourhood': 'Yaletown', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 12: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 13: listing_url=https://www.rew.ca/rentals/7342565/321-4818-eldorado-mews-vancouver-bc title='[] Follow Follow $1,850 4818 Eldorado Mews Collingwood Vancouver 1 bd 1 ba 448 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='4818 Eldorado Mews, Collingwood, Vancouver, BC' address_parts={'street_address': '4818 Eldorado Mews', 'neighbourhood': 'Collingwood', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 13: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 14: listing_url=https://www.rew.ca/rentals/7340970/609-233-robson-street-vancouver-bc title='[] Follow Follow $2,400 233 Robson Street Downtown West Vancouver 1 bd 1 ba 589 sf Apt/Condo Property Manager Vada Property Management' formatted_address='233 Robson Street, Downtown West, Vancouver, BC' address_parts={'street_address': '233 Robson Street', 'neighbourhood': 'Downtown West', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 14: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 15: listing_url=https://www.rew.ca/rentals/7336758/212-2250-wesbrook-mall-vancouver-bc title='[] Follow Follow $2,900 2250 Wesbrook Mall University (Ubc) Vancouver 1 bd 1 ba 657 sf Apt/Condo Property Manager' formatted_address='2250 Wesbrook Mall, University (Ubc), Vancouver, BC' address_parts={'street_address': '2250 Wesbrook Mall', 'neighbourhood': 'University (Ubc)', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 15: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 16: listing_url=https://www.rew.ca/rentals/7334102/1005-283-davie-street-vancouver-bc title='[] Follow Follow $4,500 283 Davie Street Yaletown Vancouver 3 bd 2 ba 1400 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='283 Davie Street, Yaletown, Vancouver, BC' address_parts={'street_address': '283 Davie Street', 'neighbourhood': 'Yaletown', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 16: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 17: listing_url=https://www.rew.ca/rentals/7333972/318-830-east-7th-avenue-vancouver-bc title='[] Follow Follow $2,100 830 East 7th Avenue Mount Pleasant East Vancouver 1 bd 1 ba 583 sf Apt/Condo Property Manager Prompton Real Estate' formatted_address='830 East 7th Avenue, Mount Pleasant East, Vancouver, BC' address_parts={'street_address': '830 East 7th Avenue', 'neighbourhood': 'Mount Pleasant East', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 17: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 18: listing_url=https://www.rew.ca/rentals/7330708/3102-1008-cambie-street-vancouver-bc title='[] Follow Follow $2,600 1008 Cambie Street Yaletown Vancouver 1 bd 1 ba 600 sf Apt/Condo Property Manager Vada Property Management' formatted_address='1008 Cambie Street, Yaletown, Vancouver, BC' address_parts={'street_address': '1008 Cambie Street', 'neighbourhood': 'Yaletown', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 18: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 19: listing_url=https://www.rew.ca/rentals/7329759/4182-prince-edward-street-vancouver-bc title='[] Follow Follow $2,100 4182 Prince Edward Street Fraser East Vancouver 1 bd 1 ba 450 sf House Property Manager' formatted_address='4182 Prince Edward Street, Fraser East, Vancouver, BC' address_parts={'street_address': '4182 Prince Edward Street', 'neighbourhood': 'Fraser East', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 19: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Card 20: listing_url=https://www.rew.ca/rentals/7329544/2103-1239-west-georgia-street-vancouver-bc title='[] Follow Follow $2,400 1239 West Georgia Street West End Vancouver 1 bd 1 ba 692 sf Apt/Condo Property Manager Vada Property Management' formatted_address='1239 West Georgia Street, West End, Vancouver, BC' address_parts={'street_address': '1239 West Georgia Street', 'neighbourhood': 'West End', 'city': 'Vancouver', 'province': 'BC', 'postal_code': 'N/A'}
+2026-07-01 16:33:24 [rew_spider] ERROR: Card 20: parse failure on page https://www.rew.ca/rentals/areas/vancouver-bc
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 85, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [rew_spider] INFO: Following next page: /rentals/areas/vancouver-bc/page/2
+2026-07-01 16:33:24 [scrapy.core.scraper] ERROR: Spider error processing <GET https://www.rew.ca/rentals/areas/vancouver-bc> (referer: https://www.rew.ca/)
+Traceback (most recent call last):
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\defer.py", line 376, in aiter_errback
+    yield await anext(it)
+          ^^^^^^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\python.py", line 341, in __anext__
+    return await self.data.__anext__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\python.py", line 322, in _async_chain
+    async for o in as_async_generator(it):
+        yield o
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\asyncgen.py", line 18, in as_async_generator
+    async for r in it:
+        yield r
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\python.py", line 341, in __anext__
+    return await self.data.__anext__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\python.py", line 322, in _async_chain
+    async for o in as_async_generator(it):
+        yield o
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\asyncgen.py", line 18, in as_async_generator
+    async for r in it:
+        yield r
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 111, in _evaluate_iterable
+    exception_result: MutableAsyncChain[_T] = self._process_spider_exception(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        response, ex, exception_processor_index
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 150, in _process_spider_exception
+    raise exception
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 108, in _evaluate_iterable
+    async for r in iterable:
+        yield r
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\decorators.py", line 129, in asyncgen_inner
+    async for item in func(*args, **kwargs):
+        yield item
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spidermiddlewares\base.py", line 64, in process_spider_output_async
+    async for o in result:
+        if (o := self._get_processed(o, response)) is not None:
+            yield o
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 111, in _evaluate_iterable
+    exception_result: MutableAsyncChain[_T] = self._process_spider_exception(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        response, ex, exception_processor_index
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 150, in _process_spider_exception
+    raise exception
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 108, in _evaluate_iterable
+    async for r in iterable:
+        yield r
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\decorators.py", line 129, in asyncgen_inner
+    async for item in func(*args, **kwargs):
+        yield item
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spidermiddlewares\base.py", line 64, in process_spider_output_async
+    async for o in result:
+        if (o := self._get_processed(o, response)) is not None:
+            yield o
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 111, in _evaluate_iterable
+    exception_result: MutableAsyncChain[_T] = self._process_spider_exception(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        response, ex, exception_processor_index
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 150, in _process_spider_exception
+    raise exception
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 108, in _evaluate_iterable
+    async for r in iterable:
+        yield r
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\decorators.py", line 129, in asyncgen_inner
+    async for item in func(*args, **kwargs):
+        yield item
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spidermiddlewares\base.py", line 64, in process_spider_output_async
+    async for o in result:
+        if (o := self._get_processed(o, response)) is not None:
+            yield o
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 111, in _evaluate_iterable
+    exception_result: MutableAsyncChain[_T] = self._process_spider_exception(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        response, ex, exception_processor_index
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 150, in _process_spider_exception
+    raise exception
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 108, in _evaluate_iterable
+    async for r in iterable:
+        yield r
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\decorators.py", line 129, in asyncgen_inner
+    async for item in func(*args, **kwargs):
+        yield item
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spidermiddlewares\depth.py", line 71, in process_spider_output_async
+    async for o in super().process_spider_output_async(response, result):
+        yield o
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\decorators.py", line 129, in asyncgen_inner
+    async for item in func(*args, **kwargs):
+        yield item
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spidermiddlewares\base.py", line 64, in process_spider_output_async
+    async for o in result:
+        if (o := self._get_processed(o, response)) is not None:
+            yield o
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 111, in _evaluate_iterable
+    exception_result: MutableAsyncChain[_T] = self._process_spider_exception(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        response, ex, exception_processor_index
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 150, in _process_spider_exception
+    raise exception
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\core\spidermw.py", line 108, in _evaluate_iterable
+    async for r in iterable:
+        yield r
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\asyncgen.py", line 21, in as_async_generator
+    for r in it:
+             ^^
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\rew_spider\rew_spider\spiders\rew_spider.py", line 113, in parse
+    errback=self.errback_log,
+            ^^^^^^^^^^^^^^^^
+AttributeError: 'RewSpider' object has no attribute 'errback_log'
+2026-07-01 16:33:24 [scrapy.core.engine] INFO: Closing spider (finished)
+2026-07-01 16:33:24 [scrapy.statscollectors] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 400,
+ 'downloader/request_count': 1,
+ 'downloader/request_method_count/GET': 1,
+ 'downloader/response_bytes': 22999,
+ 'downloader/response_count': 1,
+ 'downloader/response_status_count/200': 1,
+ 'elapsed_time_seconds': 0.9222368999999162,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2026, 7, 1, 23, 33, 24, 801087, tzinfo=datetime.timezone.utc),
+ 'httpcache/firsthand': 1,
+ 'httpcache/miss': 1,
+ 'httpcache/store': 1,
+ 'httpcompression/response_bytes': 123274,
+ 'httpcompression/response_count': 1,
+ 'items_per_minute': None,
+ 'log_count/ERROR': 21,
+ 'log_count/INFO': 27,
+ 'response_received_count': 1,
+ 'responses_per_minute': None,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'spider_exceptions/AttributeError': 1,
+ 'spider_exceptions/count': 1,
+ 'start_time': datetime.datetime(2026, 7, 1, 23, 33, 23, 878847, tzinfo=datetime.timezone.utc)}
+2026-07-01 16:33:24 [scrapy.core.engine] INFO: Spider closed (finished)
+2026-07-01 16:33:24 [Modules.user_GUI.back_end.spider_service] INFO: Spider result for key=rew: {'status': 'error', 'message': 'RewSpider closed with reason=finished', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1}}

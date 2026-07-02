@@ -22,7 +22,16 @@ const DEFAULT_STATUS: SpiderStatus = {
     isRunning: false,
 };
 
+const SPIDER_OPTIONS = [
+    { key: "rew", label: "REW Spider" },
+    { key: "kijiji", label: "Kijiji Spider" },
+    { key: "realtylink", label: "RealtyLink Spider" },
+    { key: "craigslist", label: "Craigslist Spider" },
+    { key: "safety_convenience", label: "Safety & Convenience Spider" },
+] as const;
+
 export function SettingsPage() {
+    const [selectedSpiderKey, setSelectedSpiderKey] = useState<string>(SPIDER_OPTIONS[0].key);
     const [spiderConfig, setSpiderConfig] = useState<SpiderConfig>(DEFAULT_CONFIG);
     const [spiderStatus, setSpiderStatus] = useState<SpiderStatus>(DEFAULT_STATUS);
     const [isSavingConfig, setIsSavingConfig] = useState(false);
@@ -32,30 +41,41 @@ export function SettingsPage() {
 
     useEffect(() => {
         async function initializeSpiderSettings() {
-            try {
-                setError("");
-                const [configData, statusData] = await Promise.all([
-                    loadSpiderConfig(),
-                    loadSpiderStatus(),
-                ]);
-                setSpiderConfig({
-                    ...configData,
-                    enabled: false,
-                });
-                setSpiderStatus(statusData);
-                setSecondsLeft(configData.intervalMinutes * 60);
-            } catch (err) {
-                console.error(err);
-                setError("Failed to load spider settings.");
+            setError("");
+            setMessage("");
+
+            const [configResult, statusResult] = await Promise.allSettled([
+                loadSpiderConfig(selectedSpiderKey),
+                loadSpiderStatus(),
+            ]);
+
+            if (configResult.status === "fulfilled") {
+                setSpiderConfig(configResult.value);
+                setSecondsLeft(configResult.value.intervalMinutes * 60);
+            } else {
+                console.error(`loadSpiderConfig failed for ${selectedSpiderKey}:`, configResult.reason);
+                setSpiderConfig(DEFAULT_CONFIG);
+                setSecondsLeft(DEFAULT_CONFIG.intervalMinutes * 60);
+            }
+
+            if (statusResult.status === "fulfilled") {
+                setSpiderStatus(statusResult.value);
+            } else {
+                console.error("loadSpiderStatus failed:", statusResult.reason);
+                setSpiderStatus(DEFAULT_STATUS);
+            }
+
+            if (configResult.status === "rejected" || statusResult.status === "rejected") {
+                setError("Failed to load some spider settings.");
             }
         }
 
         initializeSpiderSettings();
-    }, []);
+    }, [selectedSpiderKey]);
 
     useEffect(() => {
         setSecondsLeft(spiderConfig.intervalMinutes * 60);
-    }, [spiderConfig.intervalMinutes]);
+    }, [spiderConfig.intervalMinutes, selectedSpiderKey]);
 
     useEffect(() => {
         if (!spiderConfig.enabled || secondsLeft <= 0) return;
@@ -83,12 +103,18 @@ export function SettingsPage() {
 
         if (key === "intervalMinutes") {
             const numericValue = Number(value);
-            nextValue = Math.min(Math.max(Number.isFinite(numericValue) ? numericValue : 1, 1), 1440) as SpiderConfig[K];
+            nextValue = Math.min(
+                Math.max(Number.isFinite(numericValue) ? numericValue : 1, 1),
+                1440
+            ) as SpiderConfig[K];
         }
 
         if (key === "maxPages") {
             const numericValue = Number(value);
-            nextValue = Math.min(Math.max(Number.isFinite(numericValue) ? numericValue : 1, 1), MAX_SPIDER_PAGES) as SpiderConfig[K];
+            nextValue = Math.min(
+                Math.max(Number.isFinite(numericValue) ? numericValue : 1, 1),
+                MAX_SPIDER_PAGES
+            ) as SpiderConfig[K];
         }
 
         setSpiderConfig((prev) => ({
@@ -97,9 +123,7 @@ export function SettingsPage() {
         }));
     }
 
-
     async function handleSaveSpiderConfig() {
-
         if (spiderConfig.maxPages < 1 || spiderConfig.maxPages > MAX_SPIDER_PAGES) {
             setError(`Max pages must be between 1 and ${MAX_SPIDER_PAGES}.`);
             setMessage("");
@@ -117,13 +141,13 @@ export function SettingsPage() {
             setError("");
             setMessage("");
 
-            const savedConfig = await saveSpiderConfig(spiderConfig);
+            const savedConfig = await saveSpiderConfig(selectedSpiderKey, spiderConfig);
             setSpiderConfig(savedConfig);
 
             const updatedStatus = await loadSpiderStatus();
             setSpiderStatus(updatedStatus);
 
-            setMessage("Spider configuration saved.");
+            setMessage(`Configuration saved for ${selectedSpiderKey}.`);
         } catch (err) {
             console.error(err);
             setError("Failed to save spider configuration.");
@@ -131,8 +155,6 @@ export function SettingsPage() {
             setIsSavingConfig(false);
         }
     }
-
-
 
     const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -148,12 +170,15 @@ export function SettingsPage() {
         return dateTimeFormatter.format(new Date(value));
     }
 
+    const selectedSpiderLabel =
+        SPIDER_OPTIONS.find((spider) => spider.key === selectedSpiderKey)?.label ?? selectedSpiderKey;
+
     return (
         <div className="dashboard-page">
             <div className="dashboard-header">
                 <div>
                     <p className="dashboard-eyebrow">Spider Configuration</p>
-                    <h2 className="dashboard-title"></h2>
+                    <h2 className="dashboard-title">{selectedSpiderLabel}</h2>
                     <p className="dashboard-subtitle">
                         Configure rerun timing, target region, and crawl limits for your spider jobs.
                     </p>
@@ -165,6 +190,20 @@ export function SettingsPage() {
                     <h3>Spider Settings</h3>
 
                     <label className="form-label">
+                        <span>Spider:</span>
+                        <select
+                            value={selectedSpiderKey}
+                            onChange={(event) => setSelectedSpiderKey(event.target.value)}
+                        >
+                            {SPIDER_OPTIONS.map((spider) => (
+                                <option key={spider.key} value={spider.key}>
+                                    {spider.label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+
+                    <label className="form-label">
                         <span>Enable scheduled spider runs</span>
                         <input
                             type="checkbox"
@@ -173,7 +212,6 @@ export function SettingsPage() {
                         />
                     </label>
 
-
                     <label className="form-label">
                         <span>Interval (minutes): </span>
                         <input
@@ -181,7 +219,9 @@ export function SettingsPage() {
                             min={1}
                             max={1440}
                             value={spiderConfig.intervalMinutes}
-                            onChange={(event) => handleSpiderChange("intervalMinutes", Number(event.target.value))}
+                            onChange={(event) =>
+                                handleSpiderChange("intervalMinutes", Number(event.target.value))
+                            }
                         />
                         <small className="form-help-text">
                             Allowed range: 1 to 1440 minutes.
@@ -213,7 +253,9 @@ export function SettingsPage() {
                             min={1}
                             max={MAX_SPIDER_PAGES}
                             value={spiderConfig.maxPages}
-                            onChange={(event) => handleSpiderChange("maxPages", Number(event.target.value))}
+                            onChange={(event) =>
+                                handleSpiderChange("maxPages", Number(event.target.value))
+                            }
                         />
                         <small className="form-help-text">
                             Allowed range: 1 to {MAX_SPIDER_PAGES}.
@@ -229,7 +271,6 @@ export function SettingsPage() {
                         >
                             {isSavingConfig ? "Saving..." : "Save Config"}
                         </button>
-
                     </div>
 
                     {message ? <p className="settings-success">{message}</p> : null}
@@ -240,11 +281,16 @@ export function SettingsPage() {
                     <h3>Spider Status</h3>
 
                     <p>
+                        <strong>Spider:</strong> <span>{selectedSpiderLabel}</span>
+                    </p>
+                    <br />
+
+                    <p>
                         <strong>Running:</strong>{" "}
                         <span
-                            className={spiderStatus.isRunning
-                                ? "status-running"
-                                : "status-stopped"}
+                            className={
+                                spiderStatus.isRunning ? "status-running" : "status-stopped"
+                            }
                         >
                             {spiderStatus.isRunning ? "Yes" : "No"}
                         </span>

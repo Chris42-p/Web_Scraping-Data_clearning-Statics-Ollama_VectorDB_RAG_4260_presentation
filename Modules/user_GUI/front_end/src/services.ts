@@ -90,6 +90,12 @@ export async function loadDocuments(): Promise<DocumentItem[]> {
   return [];
 }
 
+export async function loadSpiderJobs() {
+  return apiRequest<any[]>("/spiders/jobs", {
+    method: "GET",
+  });
+}
+
 export async function uploadDocuments(files: File[]) {
   const formData = new FormData();
 
@@ -247,21 +253,21 @@ export async function rerunModel(docHash: string) {
 }
 
 
-export async function loadSpiderConfig(): Promise<SpiderConfig> {
-  return apiRequest<SpiderConfig>("/spider/config", {
+export async function loadSpiderConfig(spiderKey: string): Promise<SpiderConfig> {
+  return apiRequest<SpiderConfig>(`/spider/config/${spiderKey}`, {
     method: "GET",
   });
 }
 
-export async function saveSpiderConfig(config: SpiderConfig): Promise<SpiderConfig> {
-  return apiRequest<SpiderConfig>("/spider/config", {
+export async function saveSpiderConfig(spiderKey: string,config: SpiderConfig): Promise<SpiderConfig> {
+  return apiRequest<SpiderConfig>(`/spider/config/${spiderKey}`, {
     method: "POST",
     body: JSON.stringify(config),
   });
 }
 
 export async function runSpiderNow(spiderKey: string): Promise<SpiderRunResponse> {
-  return apiRequest<SpiderRunResponse>("/spider/run", {
+  return apiRequest<SpiderRunResponse>("/spiders/run", {
     method: "POST",
     body: JSON.stringify({ spider_key: spiderKey }),
   });

@@ -232,8 +232,12 @@ class SafetyConvenienceSpider:
             #filepath = os.path.join(vpd_dir, filename)
             filepath = self._ensure_vpd_csv(year, vpd_dir)
 
-            if not os.path.exists(filepath):
+            if filepath is None:
                 logger.warning(f"[VPD] Could not prepare CSV for year {year}")
+                continue
+
+            if not os.path.exists(filepath):
+                logger.warning(f"[VPD] CSV path does not exist for year {year}: {filepath}")
                 continue
 
             logger.info(f"[VPD] Reading {filename}...")
@@ -299,13 +303,16 @@ class SafetyConvenienceSpider:
             r = requests.get(url, timeout=60)
             r.raise_for_status()
             with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
-                for member in zf.namelist():
-                    if member.lower().endswith(".csv"):
-                        zf.extract(member, target_dir)
-                        extracted = os.path.join(target_dir, member)
-                        if extracted != csv_path and os.path.exists(extracted):
-                            os.replace(extracted, csv_path)
-                        return csv_path
+                csv_members = [m for m in zf.namelist() if m.lower().endswith(".csv")]
+                if not csv_members:
+                    logger.error(f"[VPD] No CSV found in zip for {year}")
+                    return None
+
+                member = csv_members[0]
+                extracted = zf.extract(member, target_dir)
+                if extracted != csv_path and os.path.exists(extracted):
+                    os.replace(extracted, csv_path)
+                return csv_path
         except requests.RequestException as e:
             logger.error(f"[VPD] Download failed for {year}: {e}")
         except zipfile.BadZipFile as e:

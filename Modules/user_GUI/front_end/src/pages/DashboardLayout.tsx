@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
-import { loadReportsCount, logoutUser } from "../services";
+import { loadSpiderJobs, logoutUser } from "../services";
 
 const NAV_ITEMS = [
     { to: "/app/dashboard", label: "Dashboard", end: true },
@@ -12,7 +12,6 @@ const NAV_ITEMS = [
     { to: "/app/feedback", label: "Feedback" },
     { to: "/app/settings", label: "Settings" },
 ];
-
 
 export function DashboardLayout() {
     const location = useLocation();
@@ -71,24 +70,34 @@ export function DashboardLayout() {
     useEffect(() => {
         let isMounted = true;
 
-        async function loadReportCount() {
+        async function loadLatestSpiderUpdates() {
             try {
-                const data = await loadReportsCount();
+                const jobs = await loadSpiderJobs();
+                const latestCompleted = [...jobs]
+                    .filter((job) => job.status === "completed")
+                    .sort(
+                        (a, b) =>
+                            new Date(b.finished_at ?? 0).getTime() -
+                            new Date(a.finished_at ?? 0).getTime()
+                    )[0];
+
                 if (isMounted) {
-                    setUpdatesCount(Number(data?.count ?? 0));
+                    setUpdatesCount(Number(latestCompleted?.added_count ?? 0));
                 }
             } catch (error) {
-                console.error("Failed to load reports count:", error);
+                console.error("Failed to load spider updates:", error);
                 if (isMounted) {
                     setUpdatesCount(0);
                 }
             }
         }
 
-        loadReportCount();
+        loadLatestSpiderUpdates();
+        const intervalId = window.setInterval(loadLatestSpiderUpdates, 3000);
 
         return () => {
             isMounted = false;
+            window.clearInterval(intervalId);
         };
     }, []);
 
@@ -120,7 +129,8 @@ export function DashboardLayout() {
             ) : null}
 
             <aside
-                className={`app-sidebar ${isSidebarOpen ? "" : "app-sidebar-collapsed"} ${isSidebarCollapsed && isSidebarHoverOpen ? "app-sidebar-hover-open" : ""}`}
+                className={`app-sidebar ${isSidebarOpen ? "" : "app-sidebar-collapsed"} ${isSidebarCollapsed && isSidebarHoverOpen ? "app-sidebar-hover-open" : ""
+                    }`}
                 onMouseLeave={() => {
                     if (isSidebarCollapsed) {
                         setIsSidebarHoverOpen(false);
@@ -192,7 +202,7 @@ export function DashboardLayout() {
                         <button
                             className="app-updates-button"
                             type="button"
-                            onClick={() => navigate("/app/reports")}
+                            onClick={() => navigate("/app/spider")}
                         >
                             Updates
                             <span className="app-updates-badge">{updatesCount}</span>
