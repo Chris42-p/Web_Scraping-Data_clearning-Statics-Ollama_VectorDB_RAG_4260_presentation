@@ -1,0 +1,5 @@
+STARTED_AT: 2026-07-02T00:34:53.938565
+COMMAND: 'C:\Users\Hp\AppData\Local\Programs\Python\Python313\python.exe' -m Modules.user_GUI.back_end.spider_runner --spider-key rew --settings-module Modules.spiders.rew_spider.rew_spider.settings
+
+2026-07-01 17:34:55,608 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-01 17:34:58,617 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rew: {'status': 'error', 'message': 'RewSpider closed with reason=finished', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1}}

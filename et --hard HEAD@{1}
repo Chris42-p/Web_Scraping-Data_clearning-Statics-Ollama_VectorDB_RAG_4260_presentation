@@ -1,0 +1,61 @@
+[33mb7b57df[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: commit: UI update
+[33m7120802[m HEAD@{1}: commit: update
+[33m3faed1f[m HEAD@{2}: commit (merge): Merge branch 'main' of https://github.com/Chris42-p/4260_presentation
+[33m1bccb37[m HEAD@{3}: commit: Update
+[33meba3ad7[m HEAD@{4}: reset: moving to HEAD
+[33meba3ad7[m HEAD@{5}: reset: moving to HEAD
+[33meba3ad7[m HEAD@{6}: pull origin main: Fast-forward
+[33m22c6715[m HEAD@{7}: reset: moving to HEAD
+[33m22c6715[m HEAD@{8}: pull origin main: Fast-forward
+[33m1cc6d57[m HEAD@{9}: commit: Dashboard project real analysis data
+[33m59dfc9c[m HEAD@{10}: commit: Dashboard project real analysis data
+[33m6c70a83[m HEAD@{11}: pull origin main: Fast-forward
+[33me06dee3[m HEAD@{12}: commit: Improve frontend and sync changes
+[33mfdf93e2[m[33m ([m[1;31morigin/recovery[m[33m, [m[1;32mrecovery[m[33m)[m HEAD@{13}: merge recovery: Fast-forward
+[33m681927e[m HEAD@{14}: checkout: moving from recovery to main
+[33mfdf93e2[m[33m ([m[1;31morigin/recovery[m[33m, [m[1;32mrecovery[m[33m)[m HEAD@{15}: checkout: moving from main to recovery
+[33m681927e[m HEAD@{16}: checkout: moving from recovery to main
+[33mfdf93e2[m[33m ([m[1;31morigin/recovery[m[33m, [m[1;32mrecovery[m[33m)[m HEAD@{17}: commit (amend): Improve frontend and sync changes
+[33m290c636[m HEAD@{18}: rebase (finish): returning to refs/heads/recovery
+[33m290c636[m HEAD@{19}: commit: Improve frontend and sync changes
+[33m681927e[m HEAD@{20}: pull --rebase origin main (start): checkout 681927e70895ab3124cbdfdbd6d7c7c856ed5996
+[33m00f8f02[m HEAD@{21}: commit: Recover local work
+[33mc1492c0[m HEAD@{22}: checkout: moving from main to recovery
+[33m681927e[m HEAD@{23}: pull origin main: Fast-forward
+[33mc1492c0[m HEAD@{24}: reset: moving to HEAD
+[33mc1492c0[m HEAD@{25}: commit: Update project status text
+[33m8baefda[m HEAD@{26}: commit: Update project status text
+[33m0eb9295[m HEAD@{27}: commit: Frontend improvement and connect to backend
+[33m0eeeff9[m HEAD@{28}: pull origin main: Fast-forward
+[33mffd0bfe[m HEAD@{29}: commit (merge): Connect login to backend, add ProtectedRoute.tsx handles access control after login.
+[33mbf40f9d[m HEAD@{30}: commit: Connect login to backend, add ProtectedRoute.tsx handles access control after login.
+[33m5144bf2[m HEAD@{31}: commit: Update setup and run Readme file for front/back-end
+[33m304a20b[m HEAD@{32}: commit: Update setup and run Readme file for front/back-end
+[33m7e51d94[m HEAD@{33}: pull origin main: Fast-forward
+[33m09fb488[m HEAD@{34}: commit: feat: add new frontend structure and app feature pages
+[33mfda2e55[m HEAD@{35}: pull origin main: Fast-forward
+[33mbd4369e[m HEAD@{36}: rebase (finish): returning to refs/heads/main
+[33mbd4369e[m HEAD@{37}: rebase (continue): Fix auth flow, register route, and frontend session handling
+[33m1370e6c[m HEAD@{38}: pull --rebase origin main (start): checkout 1370e6c1e11b876c6a9433655ad3dc09dcd7f576
+[33m7d14768[m HEAD@{39}: reset: moving to HEAD
+[33m7d14768[m HEAD@{40}: commit: Fix auth flow, register route, and frontend session handling
+[33mcecd07e[m HEAD@{41}: commit: Update ingest, interfaces, seed user, database, and backend auth
+[33m4aa13a8[m HEAD@{42}: rebase (finish): returning to refs/heads/main
+[33m4aa13a8[m HEAD@{43}: pull --rebase origin main (start): checkout 4aa13a892440f0121f51ec313f71aee840a8db02
+[33mbf81109[m HEAD@{44}: reset: moving to HEAD
+[33mbf81109[m HEAD@{45}: commit (merge): Update ingest, interfaces, seed user, database, and backend auth
+[33me9daa0e[m HEAD@{46}: commit: g
+[33m1381e9d[m HEAD@{47}: commit: Wire Gmail ingest into main engine and remove the gmail_ingest backend, run gmail ingest test: Successfully
+[33m187c25d[m HEAD@{48}: pull origin main: Fast-forward
+[33mfff9787[m HEAD@{49}: commit: add backend Gmail ingestor class
+[33md86c9da[m HEAD@{50}: pull origin main: Fast-forward
+[33m46494b8[m HEAD@{51}: rebase (finish): returning to refs/heads/main
+[33m46494b8[m HEAD@{52}: rebase (pick): Ignore Python cache files
+[33me6a8070[m HEAD@{53}: rebase (continue): frontend updates and backend session prep
+[33m373a839[m HEAD@{54}: pull --rebase origin main (start): checkout 373a839bca2392646acbe89ca05c06bd7bead3db
+[33m4cba2a9[m HEAD@{55}: commit: Ignore Python cache files
+[33mb68c663[m HEAD@{56}: commit: frontend updates and backend session prep
+[33m87a85cd[m HEAD@{57}: commit: backend document loading into service layer
+[33m9186861[m HEAD@{58}: commit: basic backend documents endpoint
+[33m37c19fe[m HEAD@{59}: commit: basic backend documents endpoint
+[33m642a74a[m HEAD@{60}: clone: from https://github.com/Chris42-p/4260_presentation.git

@@ -50,28 +50,6 @@ class CregslistSpiderSpider(scrapy.Spider):
                 yield scrapy.Request(url, callback=self.parse_page)
 
 
-<<<<<<< HEAD:Modules/spiders/cregslist_spider/cregslist_spider/spiders/cregslist_spider.py
-=======
-                #address- mightbe over thinking its Sunday 10:45 pm ... 
-                row_id,address,scraped_at =post_.get_record_by_url(url) #
-
-                if row_id !=None:
-                    #update when the post was seen again. 
-                    #post_.DEV_drop_table_manual() #just first run. reset tables: wrong values in a field.  
-
-                    #send a request to the website 
-                    yield scrapy.Request(url,
-                                        callback=self.check_status,
-                                        cb_kwargs={#args into method
-                                            "row_id":row_id,
-                                            # "address":address,
-                                            "scraped_at":scraped_at
-                                        }
-                                        )                    
-                else:
-                    #scrape for the first time 
-                    yield scrapy.Request(url, callback=self.parse_page)
->>>>>>> ab6416e419e181b8d96a1250cd7b33ed8c696de5:Modules/spiders/cragslist_spider/cragslist_spider/spiders/cragslist_spider.py
 
     def parse_page(self, response ):  #calls when the response comes back -- what do you want from the page
         #parse pages after first. 
