@@ -51,13 +51,11 @@ export function DashboardLayout() {
         if (location.pathname.includes("/feedback")) {
             return {
                 title: "Feedback",
-                subtitle: "Track notes, review issues, and capture project feedback.",
             };
         }
         if (location.pathname.includes("/settings")) {
             return {
                 title: "Settings",
-                subtitle: "Manage account settings, backend connections, and app preferences.",
             };
         }
 
@@ -70,30 +68,27 @@ export function DashboardLayout() {
     useEffect(() => {
         let isMounted = true;
 
-        async function loadLatestSpiderUpdates() {
+        async function refreshDashboard() {
             try {
                 const jobs = await loadSpiderJobs();
-                const latestCompleted = [...jobs]
-                    .filter((job) => job.status === "completed")
+                const latestFinished = [...jobs]
+                    .filter((job) => job.status === "completed" && Number(job.added_count ?? 0) > 0)
                     .sort(
                         (a, b) =>
                             new Date(b.finished_at ?? 0).getTime() -
                             new Date(a.finished_at ?? 0).getTime()
                     )[0];
 
-                if (isMounted) {
-                    setUpdatesCount(Number(latestCompleted?.added_count ?? 0));
+                if (latestFinished && isMounted) {
+                    setUpdatesCount(Number(latestFinished.added_count ?? 0));
                 }
             } catch (error) {
-                console.error("Failed to load spider updates:", error);
-                if (isMounted) {
-                    setUpdatesCount(0);
-                }
+                console.error("Failed to refresh dashboard:", error);
             }
         }
 
-        loadLatestSpiderUpdates();
-        const intervalId = window.setInterval(loadLatestSpiderUpdates, 3000);
+        refreshDashboard();
+        const intervalId = window.setInterval(refreshDashboard, 3000);
 
         return () => {
             isMounted = false;

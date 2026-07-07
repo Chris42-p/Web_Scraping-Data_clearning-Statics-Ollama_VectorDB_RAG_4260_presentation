@@ -55,20 +55,32 @@ class SQL_DataBase():
           
           #self.get_conn = conn
 
-     def create_user(self, username: str, password: str) -> None:
+     #== User Management create, authenticate, and retrieve user info
+     def create_user(
+          self,
+          username: str,
+          password: str,
+          full_name: str,
+          email: str | None,
+          phone: str | None,
+          ) -> None:
           """Create a new user with a hashed password."""
           password_hash = generate_password_hash(password)
 
           try:
                with self.__get_conn() as conn:
-                    cursor = conn.execute(
-                         "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                         (username, password_hash)
+                    conn.execute(
+                         """
+                         INSERT INTO users (username, password_hash, full_name, email, phone)
+                         VALUES (?, ?, ?, ?, ?)
+                         """,
+                         (username, password_hash, full_name, email, phone),
                     )
                     conn.commit()
           except sqlite3.IntegrityError as e:
                raise ValueError(f"Username '{username}' already exists") from e
      
+     #== User authentication and retrieval
      def authenticate_user(self, username: str, password: str) -> dict | None:
           """Authenticate a user and return their info if valid."""
           with self.__get_conn() as conn:
@@ -92,11 +104,12 @@ class SQL_DataBase():
                "username": row["username"]
           }
 
+     #== User retrieval by username
      def get_user_by_username(self, username: str) -> dict | None:
           with self.__get_conn() as conn:
                row = conn.execute(
                     """
-                    SELECT id, username, created_at
+                    SELECT id, username, full_name, email, phone, created_at
                     FROM users
                     WHERE username = ?
                     """,
@@ -104,7 +117,51 @@ class SQL_DataBase():
                ).fetchone()
 
                return dict(row) if row else None
-          
+     
+
+     def create_feedback_table(self) -> None:
+          with self.__get_conn() as conn:
+               conn.execute("""
+                    CREATE TABLE IF NOT EXISTS app_feedback (
+                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                         user_id INTEGER NOT NULL UNIQUE,
+                         rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+                         comment TEXT,
+                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+               """)
+               conn.commit()
+
+     def save_or_update_feedback(self, user_id: int, rating: int, comment: str | None) -> None:
+          with self.__get_conn() as conn:
+               existing = conn.execute(
+                    "SELECT id FROM app_feedback WHERE user_id = ?",
+                    (user_id,)
+               ).fetchone()
+
+               if existing:
+                    conn.execute("""
+                         UPDATE app_feedback
+                         SET rating = ?, comment = ?, updated_at = CURRENT_TIMESTAMP
+                         WHERE user_id = ?
+                    """, (rating, comment or "", user_id))
+               else:
+                    conn.execute("""
+                         INSERT INTO app_feedback (user_id, rating, comment)
+                         VALUES (?, ?, ?)
+                    """, (user_id, rating, comment or ""))
+               conn.commit()
+
+     def get_feedback_for_user(self, user_id: int) -> dict | None:
+          with self.__get_conn() as conn:
+               row = conn.execute("""
+                    SELECT id, user_id, rating, comment, created_at, updated_at
+                    FROM app_feedback
+                    WHERE user_id = ?
+               """, (user_id,)).fetchone()
+               return dict(row) if row else None
      
 #== write
      def insert_document(self, og_doc: dict, ai_doc: dict) -> None:

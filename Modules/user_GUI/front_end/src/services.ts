@@ -166,6 +166,18 @@ export async function fetchSpiderUrl(payload: SpiderPayload) {
   });
 }
 
+// Dashboard stats
+export async function loadDashboardStats() {
+  const response = await fetch("/api/dashboard/stats", {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to load dashboard stats");
+  }
+
+  return response.json();
+}
 
 // Submit user feedback
 export async function submitFeedback(payload: FeedbackPayload) {
@@ -278,6 +290,8 @@ export async function loadSpiderStatus(): Promise<SpiderStatus> {
     method: "GET",
   });
 }
+
+
 
 /*export async function getHousingSummary() {
     const response = await fetch("http://localhost:8000/reports/housing/summary", {

@@ -4,8 +4,11 @@ export interface User {
 }
 
 export interface AuthPayload {
+  fullName: string;
   username: string;
   password: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface NavItem {
@@ -118,4 +121,6 @@ export interface SpiderRunResponse {
     updatesCount: number;
   };
 }
+
+
 

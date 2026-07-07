@@ -1,4 +1,10 @@
 from .spider_interface import CONST
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+LOG_DIR = PROJECT_ROOT / "spider_logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
 
 BOT_NAME = CONST["BOT_NAME"]
 
@@ -11,9 +17,10 @@ CONCURRENT_REQUESTS_PER_DOMAIN = CONST["CONCURRENT_REQUESTS_PER_DOMAIN"]
 DOWNLOAD_DELAY = CONST["DOWNLOAD_DELAY"]
 COOKIES_ENABLED = CONST["COOKIES_ENABLED"]
 
+
 LOG_ENABLED = True
 LOG_LEVEL = "INFO"
-LOG_FILE = "rew_spider.log"
+LOG_FILE = str(LOG_DIR / "rew_spider.log")
 LOG_ENCODING = "utf-8"
 LOG_STDOUT = True
 

@@ -65,7 +65,8 @@ class CregslistSpiderPipeline:
             user_meta_tags=self.get_user_meta_tags(item),
             post_description=self.get_post_description(item),
             first_img_url=self.get_first_pic(item),
-            sqr_feet_lot=None, #not provided by Cregs list
+            sqr_feet_lot=None,
+            source_spider=spider.name, #not provided by Cregs list
         ).save_new_post_to_db()
         return item
   

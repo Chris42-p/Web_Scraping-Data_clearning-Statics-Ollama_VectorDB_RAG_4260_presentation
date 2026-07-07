@@ -53,6 +53,7 @@ class RealtylinkPipeline:
             rent_period=self.rent_period(item) ,
             leasing_agent=self.leasing_agent(item),
             first_img_url=self.first_img_url(item),
+            source_spider=spider.name,
         )
 
         return item

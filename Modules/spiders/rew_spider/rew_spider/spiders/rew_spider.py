@@ -32,9 +32,10 @@ class RewSpider(scrapy.Spider):
     def start_requests(self):
         for url in self.start_urls:
             yield scrapy.Request(
-                url,
+                url=url,
                 callback=self.parse,
-                meta={"page": 1}
+                errback=self.errback_log,
+                meta={"page": 1},
             )
 
     def parse(self, response):
@@ -115,6 +116,10 @@ class RewSpider(scrapy.Spider):
             )
         else:
             self.logger.info("No next page found.")
+
+    def errback_log(self, failure):
+        self.logger.error("Request failed: %s", failure.request.url if failure.request else "unknown")
+        self.logger.error(repr(failure))
 
     def parse_page(self, response):
         try:

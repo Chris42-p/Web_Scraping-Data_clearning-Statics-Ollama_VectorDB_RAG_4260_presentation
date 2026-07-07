@@ -76,3 +76,194 @@ SyntaxError: invalid syntax
 2026-07-01 16:33:19,734 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_2362d6aa-d598-4e61-b1fa-cc1627039a87.log
 2026-07-01 16:33:21,350 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
 2026-07-01 16:33:24,819 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rew: {'status': 'error', 'message': 'RewSpider closed with reason=finished', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1}}
+2026-07-02 10:50:49,758 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=d5155448-d1db-4da4-8d03-90343e2a7030
+2026-07-02 10:50:49,759 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-02 10:50:49,760 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_d5155448-d1db-4da4-8d03-90343e2a7030.log
+2026-07-02 10:50:50,972 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=d5155448-d1db-4da4-8d03-90343e2a7030
+2026-07-02 10:50:54,052 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'kijiji' with job_id=f962b4aa-3ade-42a3-bf8e-a075dfdbde1b
+2026-07-02 10:50:54,052 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'kijiji', '--settings-module', 'Modules.spiders.kijiji_spider.kijiji_spider.settings']
+2026-07-02 10:50:54,053 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\kijiji_f962b4aa-3ade-42a3-bf8e-a075dfdbde1b.log
+2026-07-02 10:50:55,412 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=kijiji job_id=f962b4aa-3ade-42a3-bf8e-a075dfdbde1b
+2026-07-03 19:12:07,600 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'safety_convenience' with job_id=1f128529-d94f-4c39-a6ff-7977013e26ff
+2026-07-03 19:12:07,606 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'safety_convenience']
+2026-07-03 19:12:07,676 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\safety_convenience_1f128529-d94f-4c39-a6ff-7977013e26ff.log
+2026-07-03 19:12:11,205 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=safety_convenience module=Modules.spiders.safety_convenience_spider.safety_convenience_spider class=SafetyConvenienceSpider settings_module=None
+2026-07-03 19:12:14,483 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=safety_convenience module=Modules.spiders.safety_convenience_spider.safety_convenience_spider class=SafetyConvenienceSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 251, in run_spider_by_key
+    module = import_module(module_name)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\__init__.py", line 2, in <module>
+    from .spider_default_obj import spider_default_obj
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\spider_default_obj\__init__.py", line 1, in <module>
+    from .spider_default_obj import Post_Data
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\spider_default_obj\spider_default_obj.py", line 22, in <module>
+    import pandas as pd
+ModuleNotFoundError: No module named 'pandas'
+2026-07-03 19:14:20,861 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'safety_convenience' with job_id=f27c311b-d5b9-457f-813a-4ba07616b89f
+2026-07-03 19:14:20,862 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'safety_convenience']
+2026-07-03 19:14:20,863 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\safety_convenience_f27c311b-d5b9-457f-813a-4ba07616b89f.log
+2026-07-03 19:14:22,426 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=safety_convenience module=Modules.spiders.safety_convenience_spider.safety_convenience_spider class=SafetyConvenienceSpider settings_module=None
+2026-07-03 19:14:36,604 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=safety_convenience: {'status': 'success', 'message': 'SafetyConvenienceSpider completed.'}
+2026-07-03 19:16:55,779 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'craigslist' with job_id=bd35c9b6-fd25-4b72-a25c-3450aba5d4be
+2026-07-03 19:16:55,780 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'craigslist', '--settings-module', 'Modules.spiders.cragslist_spider.cragslist_spider.settings']
+2026-07-03 19:16:55,780 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\craigslist_bd35c9b6-fd25-4b72-a25c-3450aba5d4be.log
+2026-07-03 19:16:57,838 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider settings_module=Modules.spiders.cragslist_spider.cragslist_spider.settings
+2026-07-03 19:17:01,136 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=craigslist module=Modules.spiders.cragslist_spider.cragslist_spider.spiders.cragslist_spider class=CregslistSpiderSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 251, in run_spider_by_key
+    module = import_module(module_name)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\cragslist_spider\cragslist_spider\__init__.py", line 1, in <module>
+    from .spider_interface import CONST
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\cragslist_spider\cragslist_spider\spider_interface.py", line 6
+    <<<<<<< HEAD:Modules/spiders/cregslist_spider/cregslist_spider/spider_interface.py
+    ^^
+SyntaxError: invalid syntax
+2026-07-06 20:13:20,638 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=6b168e34-3cbb-4b86-a5d4-abdec9fb09e2
+2026-07-06 20:13:20,639 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 20:13:20,642 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_6b168e34-3cbb-4b86-a5d4-abdec9fb09e2.log
+2026-07-06 20:13:22,203 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 20:13:23,967 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 251, in run_spider_by_key
+    module = import_module(module_name)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\__init__.py", line 2, in <module>
+    from .spider_default_obj import spider_default_obj
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\spider_default_obj\__init__.py", line 1, in <module>
+    from .spider_default_obj import Post_Data
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\spider_default_obj\spider_default_obj.py", line 22, in <module>
+    import pandas as pd
+ModuleNotFoundError: No module named 'pandas'
+2026-07-06 20:18:06,181 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=90dcbee8-a817-4dca-8be7-c4ca10b32b37
+2026-07-06 20:18:06,193 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 20:18:06,198 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_90dcbee8-a817-4dca-8be7-c4ca10b32b37.log
+2026-07-06 20:18:09,145 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 20:18:17,611 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rew: {'status': 'error', 'message': 'RewSpider closed with reason=finished', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1}}
+2026-07-06 20:18:26,433 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=8c58b5e7-53b0-4d66-bc05-53b6a34eb500
+2026-07-06 20:18:26,458 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 20:18:26,461 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_8c58b5e7-53b0-4d66-bc05-53b6a34eb500.log
+2026-07-06 20:18:28,205 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 20:18:32,349 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rew: {'status': 'error', 'message': 'RewSpider closed with reason=finished', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1}}
+2026-07-06 20:20:01,129 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'kijiji' with job_id=519c7f6e-0224-48aa-b5e0-502495389aa3
+2026-07-06 20:20:01,130 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'kijiji', '--settings-module', 'Modules.spiders.kijiji_spider.kijiji_spider.settings']
+2026-07-06 20:20:01,130 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\kijiji_519c7f6e-0224-48aa-b5e0-502495389aa3.log
+2026-07-06 20:20:02,914 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=kijiji module=Modules.spiders.kijiji_spider.kijiji_spider.spiders.kijiji_rental_spider class=KijijiRentalsSpider settings_module=Modules.spiders.kijiji_spider.kijiji_spider.settings
+2026-07-06 20:20:05,813 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=kijiji module=Modules.spiders.kijiji_spider.kijiji_spider.spiders.kijiji_rental_spider class=KijijiRentalsSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 251, in run_spider_by_key
+    module = import_module(module_name)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\kijiji_spider\kijiji_spider\spiders\kijiji_rental_spider.py", line 32, in <module>
+    from kijiji_spider.items import KijijiSpiderItem
+ModuleNotFoundError: No module named 'kijiji_spider'
+2026-07-06 20:20:22,852 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'realtylink' with job_id=70770048-3148-4f9e-be00-484796d0fc5f
+2026-07-06 20:20:22,853 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'realtylink', '--settings-module', 'Modules.spiders.realtylink.realtylink.settings']
+2026-07-06 20:20:22,853 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\realtylink_70770048-3148-4f9e-be00-484796d0fc5f.log
+2026-07-06 20:20:24,549 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=realtylink module=Modules.spiders.realtylink.realtylink.spiders.realtylink_spider class=RealtylinkSpiderSpider settings_module=Modules.spiders.realtylink.realtylink.settings
+2026-07-06 20:20:30,534 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=realtylink: {'status': 'error', 'message': 'RealtylinkSpiderSpider closed with reason=None', 'stats': {'finish_reason': None, 'spider_exceptions': 0}}
+2026-07-06 20:31:58,931 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=84bf8c78-d667-407a-a7b1-fc47fd490611
+2026-07-06 20:31:58,931 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 20:31:58,932 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_84bf8c78-d667-407a-a7b1-fc47fd490611.log
+2026-07-06 20:32:01,201 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 20:32:07,577 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rew: {'status': 'warning', 'message': 'RewSpider finished with errors.', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1, 'item_scraped_count': 0}}
+2026-07-06 20:43:11,605 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=6a9d87e0-2a6d-4ad3-8457-4d1f126ecd8f
+2026-07-06 20:43:11,620 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 20:43:11,632 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_6a9d87e0-2a6d-4ad3-8457-4d1f126ecd8f.log
+2026-07-06 20:43:13,359 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 20:43:19,642 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rew: {'status': 'warning', 'message': 'RewSpider finished with errors.', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 1, 'item_scraped_count': 0}}
+2026-07-06 20:48:09,061 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=340d23fb-aa83-4d43-973f-408a517aeadf
+2026-07-06 20:48:09,062 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 20:48:09,063 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_340d23fb-aa83-4d43-973f-408a517aeadf.log
+2026-07-06 20:48:10,802 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 20:49:46,073 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=340d23fb-aa83-4d43-973f-408a517aeadf
+2026-07-06 20:53:31,854 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=a338dd19-15d8-4140-9b90-1bcf1cda7e91
+2026-07-06 20:53:31,855 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 20:53:31,857 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_a338dd19-15d8-4140-9b90-1bcf1cda7e91.log
+2026-07-06 20:53:33,215 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 20:54:10,605 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=a338dd19-15d8-4140-9b90-1bcf1cda7e91
+2026-07-06 21:41:03,417 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=642b7731-5564-44eb-89b2-de04f0d14d39
+2026-07-06 21:41:03,417 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 21:41:03,418 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_642b7731-5564-44eb-89b2-de04f0d14d39.log
+2026-07-06 21:41:05,209 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 21:41:26,385 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=642b7731-5564-44eb-89b2-de04f0d14d39
+2026-07-06 22:10:26,381 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=9cfcd424-dfc8-4d88-b83c-1ed6ad1cb756
+2026-07-06 22:10:26,381 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 22:10:26,382 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_9cfcd424-dfc8-4d88-b83c-1ed6ad1cb756.log
+2026-07-06 22:10:28,296 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 22:10:57,867 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=9cfcd424-dfc8-4d88-b83c-1ed6ad1cb756
+2026-07-06 22:47:45,814 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=9af5d280-6903-4b47-b5c3-305445f1f815
+2026-07-06 22:47:45,815 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 22:47:45,816 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_9af5d280-6903-4b47-b5c3-305445f1f815.log
+2026-07-06 22:47:47,496 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 22:48:08,381 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=9af5d280-6903-4b47-b5c3-305445f1f815
+2026-07-06 23:03:36,781 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=75a67e8a-0820-46af-948c-7989ee990458
+2026-07-06 23:03:36,781 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-06 23:03:36,782 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_75a67e8a-0820-46af-948c-7989ee990458.log
+2026-07-06 23:03:38,407 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-06 23:03:45,636 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=75a67e8a-0820-46af-948c-7989ee990458

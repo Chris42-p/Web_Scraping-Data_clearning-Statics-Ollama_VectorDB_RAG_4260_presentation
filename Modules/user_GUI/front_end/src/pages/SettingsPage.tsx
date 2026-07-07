@@ -177,7 +177,6 @@ export function SettingsPage() {
         <div className="dashboard-page">
             <div className="dashboard-header">
                 <div>
-                    <p className="dashboard-eyebrow">Spider Configuration</p>
                     <h2 className="dashboard-title">{selectedSpiderLabel}</h2>
                     <p className="dashboard-subtitle">
                         Configure rerun timing, target region, and crawl limits for your spider jobs.

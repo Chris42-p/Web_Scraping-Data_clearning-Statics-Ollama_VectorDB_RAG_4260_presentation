@@ -64,6 +64,7 @@ class RewSpiderPipeline:
             post_description,
             rent_period,
             leasing_agent,
+            source_spider=spider.name,
         ).save_new_post_to_db()
 
         return item
@@ -83,18 +84,6 @@ class RewSpiderPipeline:
 
         return bed, bath
 
-    #def __get_bed_bath(self, item):
-        if item["bed_and_bath"]==None:
-            return None
-        
-        x = item.get("bed_and_bath", "N/A").split("/")
-        bed=int(re.search(r'\d+',x[0]).group())
-        bath=int(re.search(r'\d+',x[1]).group())
-
-
-        # print(f"\n\n\n  {x} \n\n")
-
-        # return bed, bath
 
     def __process_address(self, address):
         if not address or address == "N/A":

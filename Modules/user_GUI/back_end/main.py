@@ -28,7 +28,7 @@ from Modules.user_GUI.back_end.spider_service import (
     abort_spider_job,
     run_spider_by_key,
 )
-from Modules.engine_analytics.z_analysis_engine import AnalysisEngine
+from Modules.engine_analytics.analysis_engine import AnalysisEngine
 from Modules.user_GUI.back_end.spider_config import (
     SPIDER_STATUS_CONFIG, 
     SPIDER_CONFIGS, 
@@ -68,8 +68,11 @@ class LoginRequest(BaseModel):
     password: str
 
 class RegisterRequest(BaseModel):
+    fullName: str
     username: str
     password: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
 
 class SpiderRunRequest(BaseModel):
     spider_key: str
@@ -97,6 +100,11 @@ class SpiderRuntimeStatus(BaseModel):
     nextRunAt: str | None = None
     isRunning: bool = False
 
+class FeedbackRequest(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    comment: Optional[str] = ""
+
+
 def get_db():
     return SQL_DataBase()
 
@@ -116,6 +124,7 @@ def run_spider_job(spider_key: str):
             SPIDER_STATUS_CONFIG[spider_key]["nextRunAt"] = None
 
 
+# Helper function to get total listing count
 def get_total_listing_count():
     engine = AnalysisEngine()
     try:
@@ -125,6 +134,7 @@ def get_total_listing_count():
     finally:
         engine.close()
 
+# Startup event to initialize the scheduler and add jobs for enabled spiders
 @app.on_event("startup")
 def startup_event():
     for spider_key, config in SPIDER_CONFIGS.items():
@@ -145,12 +155,14 @@ def startup_event():
             ).isoformat()
     scheduler.start()
 
+# Shutdown event to gracefully shut down the scheduler
 @app.get("/spider/config/{spider_key}", response_model=SpiderConfigModel)
 def get_spider_config(spider_key: str):
     if spider_key not in SPIDER_CONFIGS:
         raise HTTPException(status_code=404, detail=f"Unknown spider: {spider_key}")
     return SPIDER_CONFIGS[spider_key]
 
+# Update spider configuration and manage scheduled jobs
 @app.post("/spider/config/{spider_key}", response_model=SpiderConfigModel)
 def update_spider_config(spider_key: str, config: SpiderConfigModel):
     if spider_key not in SPIDER_CONFIGS:
@@ -182,20 +194,21 @@ def update_spider_config(spider_key: str, config: SpiderConfigModel):
 
     return SPIDER_CONFIGS[spider_key]
 
+# Get the status of a specific spider
 @app.get("/spider/status/{spider_key}", response_model=SpiderStatusModel)
 def get_single_spider_status(spider_key: str):
     if spider_key not in SPIDER_STATUS_CONFIG:
         raise HTTPException(status_code=404, detail=f"Unknown spider: {spider_key}")
     return SPIDER_STATUS_CONFIG[spider_key]
 
-
+# Get the status of all spiders
 @app.get("/spider/status", response_model=dict[str, SpiderRuntimeStatus])
 def get_all_spider_status():
     return SPIDER_STATUS_CONFIG
 
 
 
-
+# User Authentication and Session Management
 def get_logged_in_user(request: Request):
     session_id = request.cookies.get(CONST["COOKIE_NAME"])
 
@@ -209,7 +222,7 @@ def get_logged_in_user(request: Request):
     return session_data
 
 
-
+# User Authentication
 def authenticate_user(username: str, password: str):
     print("authenticate start")
 
@@ -240,11 +253,13 @@ def get_gmail_ingestor():
         redirect_uri="http://localhost:8000/auth/google/callback",
     )
 
+# GMAIL API ROUTES
 @app.get("/gmail/status")
 def gmail_status(user=Depends(get_logged_in_user)):
     connected = user["user_id"] in GMAIL_CONNECTED_ACCOUNTS
     return {"connected": connected}
 
+# GMAIL API ROUTES
 @app.get("/auth/google/login")
 def google_login(user=Depends(get_logged_in_user)):
     gmail = get_gmail_ingestor()
@@ -258,12 +273,14 @@ def google_login(user=Depends(get_logged_in_user)):
     auth_url, _ = gmail.build_auth_url(state)
     return RedirectResponse(url=auth_url, status_code=302)
 
+# Debugging and Development Routes
 @app.get("/debug/routes")
 def debug_routes():
     return {
         "routes": [route.path for route in app.routes]
     }
 
+# Debugging and Development Routes
 @app.get("/debug/spider-keys")
 def debug_spider_keys():
     return {
@@ -272,6 +289,7 @@ def debug_spider_keys():
         "status": list(SPIDER_STATUS_CONFIG.keys()),
     }
 
+# GMAIL API Callback Route
 @app.get("/auth/google/callback")
 def google_callback(code: str, state: str, user=Depends(get_logged_in_user)):
     state_data = GMAIL_OAUTH_STATE.get(state)
@@ -292,7 +310,7 @@ def google_callback(code: str, state: str, user=Depends(get_logged_in_user)):
         url="http://localhost:5173/app/gmail?connected=true",
         status_code=303,
     )
-
+# GMAIL IMPORT ROUTE
 @app.post("/gmail/import")
 def gmail_import(max_emails: int = 10, user=Depends(get_logged_in_user)):
     token_info = GMAIL_CONNECTED_ACCOUNTS.get(user["user_id"])
@@ -311,7 +329,6 @@ def gmail_import(max_emails: int = 10, user=Depends(get_logged_in_user)):
 
 
 # Spiders
-
 @app.get("/spiders")
 def get_spiders(user=Depends(get_logged_in_user)):
     return {
@@ -321,6 +338,7 @@ def get_spiders(user=Depends(get_logged_in_user)):
         ]
     }
 
+# Run a specific spider by its key
 @app.post("/spiders/run")
 def run_selected_spider(request: SpiderRunRequest, user=Depends(get_logged_in_user)):
     spider_key = request.spider_key
@@ -347,6 +365,7 @@ def run_selected_spider(request: SpiderRunRequest, user=Depends(get_logged_in_us
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Spider run failed: {str(e)}")
 
+# Abort a running spider job by its job ID
 @app.post("/spiders/{job_id}/abort")
 def abort_spider(job_id: str, user=Depends(get_logged_in_user)):
     ok = abort_spider_job(job_id)
@@ -354,7 +373,7 @@ def abort_spider(job_id: str, user=Depends(get_logged_in_user)):
         raise HTTPException(status_code=404, detail="Running job not found")
     return {"job_id": job_id, "status": "aborted"}
 
-
+# List all running spider jobs and their statuses
 @app.get("/spiders/jobs")
 def list_jobs(user=Depends(get_logged_in_user)):
     for job in RUNNING_JOBS.values():
@@ -390,7 +409,20 @@ def list_jobs(user=Depends(get_logged_in_user)):
         for job in RUNNING_JOBS.values()
     ]
 
+# Feedback Routes
+@app.post("/feedback/rate")
+def submit_feedback(request: FeedbackRequest, user=Depends(get_logged_in_user)):
+    db = SQL_DataBase()
+    db.create_feedback_table()
+    db.save_or_update_feedback(user["user_id"], request.rating, request.comment)
+    return {"message": "Feedback submitted successfully"}
 
+# Get feedback for the logged-in user
+@app.get("/feedback/my")
+def get_my_feedback(user=Depends(get_logged_in_user)):
+    db = SQL_DataBase()
+    db.create_feedback_table()
+    return {"feedback": db.get_feedback_for_user(user["user_id"])}
 
 # Register New User
 @app.post("/register")
@@ -401,9 +433,16 @@ def register(request: RegisterRequest):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
-    db.create_user(request.username, request.password)
+    db.create_user(
+        username=request.username,
+        password=request.password,
+        full_name=request.fullName,
+        email=request.email,
+        phone=request.phone,
+    )
     return {"message": "User registered successfully"}
 
+# User Login Route
 @app.post("/login")
 def login(request: LoginRequest):
     print("login route hit")
@@ -431,6 +470,7 @@ def login(request: LoginRequest):
     print("returning response")
     return response
 
+# User Logout Route
 @app.post("/logout")
 def logout(request: Request):
     session_id = request.cookies.get(CONST["COOKIE_NAME"])
@@ -442,11 +482,12 @@ def logout(request: Request):
     response.delete_cookie(CONST["COOKIE_NAME"])
     return response
 
+# Get Current Logged-in User
 @app.get("/me")
 def get_current_user(user=Depends(get_logged_in_user)):
     return {"username": user.get("username")}
 
-
+# Reports Routes
 @app.get("/reports")
 def get_reports(user=Depends(get_logged_in_user)):
     try:
@@ -455,6 +496,7 @@ def get_reports(user=Depends(get_logged_in_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load reports: {str(e)}")
 
+# Get Reports Count
 @app.get("/reports/count")
 def get_reports_count(user=Depends(get_logged_in_user)):
     try:
@@ -462,7 +504,8 @@ def get_reports_count(user=Depends(get_logged_in_user)):
         return {"count": db.get_reports_count()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load report count: {str(e)}")
-    
+
+# Get Housing Summary Report
 @app.get("/reports/housing/summary")
 def get_housing_summary(user=Depends(get_logged_in_user)):
     engine = AnalysisEngine()
@@ -472,6 +515,7 @@ def get_housing_summary(user=Depends(get_logged_in_user)):
         raise HTTPException(status_code=500, detail=f"Failed to load housing summary data: {str(e)}")
     finally:
         engine.close()
+
 
 @app.get("/documents")
 def get_documents(user=Depends(get_logged_in_user)):

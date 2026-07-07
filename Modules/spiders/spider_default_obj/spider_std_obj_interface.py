@@ -31,6 +31,7 @@ CONST={
 INSERT OR REPLACE INTO listings (
      post_id,
      post_url,
+     source_spider,
      time_of_post,
      leasing_agent,
      general_area,
@@ -48,8 +49,8 @@ INSERT OR REPLACE INTO listings (
      user_meta_tags,
      post_description,
      img_url
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-""", #18 fields that're going to be added -- scraped at is auto generated
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", #20 fields that're going to be added -- scraped at is auto generated
      "INSERT_PARSED_POST_DESCRIPTION":"""
 INSERT OR REPLACE INTO parsed_descriptions (
      listing_id,
@@ -95,10 +96,12 @@ INSERT OR REPLACE INTO post_status(
 CREATE TABLE IF NOT EXISTS listings (
      id              INTEGER PRIMARY KEY AUTOINCREMENT,
      post_id         TEXT UNIQUE,        -- use to rescrape and check status
+     source_spider    TEXT,    -- use to create column for source spider, so we can track which spider scraped the listing
      post_url        TEXT UNIQUE,
      time_of_post    DATETIME,
      leasing_agent   TEXT,
      scraped_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+     
 
      -- location
      general_area    TEXT,
@@ -179,6 +182,7 @@ CREATE TABLE IF NOT EXISTS post_status(
 INSERT OR REPLACE INTO listings (
      post_id,
      post_url,
+     source_spider,
      time_of_post,
      leasing_agent,
      general_area,
@@ -196,8 +200,8 @@ INSERT OR REPLACE INTO listings (
      user_meta_tags,
      post_description,
      img_url
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-""", #18 fields that're going to be added -- scraped at is auto generated
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", #20 fields that're going to be added -- scraped at is auto generated
      "INSERT_PARSED_POST_DESCRIPTION":"""
 INSERT OR REPLACE INTO parsed_descriptions (
      listing_id,

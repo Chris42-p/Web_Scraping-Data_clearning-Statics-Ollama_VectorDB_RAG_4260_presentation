@@ -10,10 +10,16 @@ class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     password: str = Field(..., min_length=1, max_length=128)
 
+# added fields for full name, email, and phone
+    fullName: str = Field(..., min_length=1, max_length=100)
+    email: Optional[str] = Field(None, min_length=1, max_length=100)
+    phone: Optional[str] = Field(None, min_length=1, max_length=20)
+
 class AuthResponse(BaseModel):
     message: str
     session_id: Optional[str] = None
 
+# Document and Search Response Schemas
 class DocumentResponseItem(BaseModel):
     doc_hash: str
     title: str

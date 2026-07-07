@@ -179,20 +179,33 @@ def run_scrapy_spider(spider_cls, settings_module: str | None = None):
     process.start(stop_after_crawl=True, install_signal_handlers=False)
 
     stats = crawler.stats.get_stats()
-    spider_exceptions = stats.get("spider_exceptions/count", 0)
-
-    success = (
-        state["closed_reason"] == "finished"
-        and state["spider_error_count"] == 0
-        and spider_exceptions == 0
+    finish_reason = state["closed_reason"] or stats.get("finish_reason", "unknown")
+    spider_exceptions = (
+        stats.get("spider_exceptions/count", 0)
+        or state["spider_error_count"]
     )
+    item_scraped_count = stats.get("item_scraped_count", 0)
+
+    if spider_exceptions > 0:
+        status = "warning"
+        message = f"{spider_cls.__name__} finished with errors."
+    elif finish_reason == "finished" and item_scraped_count > 0:
+        status = "success"
+        message = f"{spider_cls.__name__} has completed."
+    elif finish_reason == "finished":
+        status = "success"
+        message = f"{spider_cls.__name__} finished. No listings were added."
+    else:
+        status = "error"
+        message = f"{spider_cls.__name__} stopped with reason={finish_reason}"
 
     return {
-        "status": "success" if success else "error",
-        "message": f"{spider_cls.__name__} closed with reason={state['closed_reason']}",
+        "status": status,
+        "message": message,
         "stats": {
-            "finish_reason": state["closed_reason"],
+            "finish_reason": finish_reason,
             "spider_exceptions": spider_exceptions,
+            "item_scraped_count": item_scraped_count,
         },
     }
 
@@ -278,6 +291,6 @@ def run_spider_by_key(spider_key: str):
     return {
         "status": result["status"],
         "spider": spider_key,
-        "message": f"{spider_info['label']}: {result['message']}",
+        "message": result["message"].replace(spider_cls.__name__, spider_info["label"]),
         "result": result,
     }

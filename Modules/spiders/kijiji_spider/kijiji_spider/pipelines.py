@@ -121,6 +121,7 @@ class KijijiSpiderPipeline:
             rent_period=rent_period,
             leasing_agent=leasing_agent,
             first_img_url=first_img_url,
+            source_spider=spider.name,
         )
 
         return item
