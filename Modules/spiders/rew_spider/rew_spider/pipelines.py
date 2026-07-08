@@ -1,12 +1,8 @@
-import sys
-from pathlib import Path
-
-#== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
 from pathlib import Path
 import sys
 import re
 
-# walk up until we find the folder that contains 'Modules'
+# == Import default object dynamically ==
 current = Path(__file__).resolve()
 for parent in current.parents:
     if (parent / "Modules").exists():
@@ -19,56 +15,48 @@ from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 class RewSpiderPipeline:
 
     def process_item(self, item, spider):
-
         post_id = item.get("post_id", "N/A")
-        time_of_post = item.get("time_of_post", "N/A")
-        user_post_title = item.get("user_post_title", "N/A")
-        first_pic = item.get("first_pic", "N/A")
-        user_meta_tags = item.get("user_meta_tags", "N/A")
-        post_url = item.get("post_url", "N/A")
-
-        price_of_the_unit = item.get("price_of_the_unit", "N/A")
-        sqr_feet = item.get("num_bedrooms_n_square_feet_sq", "N/A")
-        general_area = item.get("city_general_area", "N/A")
-
         address = item.get("address", "N/A")
         street_number, city, province, postal_code = self.__process_address(address)
+        bed, bath = self.__get_bed_bath(item)
 
-        bed,bath = self.__get_bed_bath(item)
-        square_feet_unit = item.get("square_feet_unit", "N/A")
-        post_description = item.get("post_description", "N/A")
-        rent_period = item.get("rent_period", "monthly")
-        leasing_agent = item.get("leasing_agent", "N/A")
+        post = Post_Data()
 
-        spider.logger.info(
-            f"Saving REW item: {post_id} | {user_post_title}"
-        )
+        post.post_id = post_id
+        post.time_of_post = item.get("time_of_post", "N/A")
+        post.user_post_title = item.get("user_post_title", "N/A")
+        post.first_pic = item.get("first_pic", "N/A")
+        post.user_meta_tags = item.get("user_meta_tags", "N/A")
+        post.post_url = item.get("post_url", "N/A")
 
-        Post_Data(
-            post_id,
-            time_of_post,
-            user_post_title,
-            first_pic,
-            user_meta_tags,
-            post_url,
-            price_of_the_unit,
-            sqr_feet,
-            general_area,
-            street_number,
-            city,
-            province,
-            postal_code,
-            bed,
-            bath,
-            square_feet_unit,
-            post_description,
-            rent_period,
-            leasing_agent,
-            source_spider=spider.name,
-        ).save_new_post_to_db()
+        post.price_of_the_unit = item.get("price_of_the_unit", "N/A")
+        post.sqr_feet = item.get("num_bedrooms_n_square_feet_sq", "N/A")
+        post.square_feet_unit = item.get("square_feet_unit", "N/A")
+
+        post.general_area = item.get("city_general_area", "N/A")
+        post.street_number = street_number
+        post.city = city
+        post.province = province
+        post.postal_code = postal_code
+
+        post.bed = bed
+        post.bath = bath
+
+        post.post_description = item.get("post_description", "N/A")
+        post.rent_period = item.get("rent_period", "monthly")
+        post.leasing_agent = item.get("leasing_agent", "N/A")
+        post.source_spider = spider.name
+
+        # Fields used by save_new_post_to_db but not always present in REW items
+        post.img_url = item.get("first_pic", "N/A")
+        post.post_description_obj = None
+
+        spider.logger.info(f"Saving REW item through Post_Data: {post_id}")
+
+        post.save_new_post_to_db()
 
         return item
-    
+
     def __get_bed_bath(self, item):
         bed_bath = item.get("bed_and_bath")
         if not bed_bath or bed_bath == "N/A":
@@ -83,7 +71,6 @@ class RewSpiderPipeline:
         bath = int(bath_match.group()) if bath_match else "N/A"
 
         return bed, bath
-
 
     def __process_address(self, address):
         if not address or address == "N/A":
