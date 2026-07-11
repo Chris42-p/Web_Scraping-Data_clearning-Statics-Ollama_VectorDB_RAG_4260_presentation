@@ -1,0 +1,29 @@
+general_area,avg_price,median_price,listings,std_dev
+Vancouver Downtown,8340.0,10500.0,5,5922.67
+Coal Harbour,5128.0,4500.0,5,2906.06
+South Granville,4972.5,5200.0,8,2264.3
+Yaletown,4746.27,3899.0,15,2588.82
+Kitsilano,4280.62,3500.0,8,2255.39
+Point Grey,4017.83,2800.0,12,3617.81
+UBC,4001.88,3947.5,8,358.8
+North Vancouver,3984.33,3454.0,3,1055.65
+West End,3960.91,3490.0,33,2423.37
+Oakridge,3850.0,4750.0,4,1833.94
+University,3715.91,3725.0,22,827.13
+Downtown Vancouver,3612.38,3200.0,52,1455.75
+Mount Pleasant,3603.08,3500.0,13,1628.23
+Cambie,3314.29,3000.0,7,1201.64
+Kerrisdale,3314.0,3150.0,5,1328.08
+MacKenzie Heights,3150.0,2450.0,3,1617.87
+Vancouver,3010.11,2700.0,109,1499.29
+South Cambie,2900.0,2700.0,4,697.61
+South Marine,2681.11,2500.0,9,594.18
+Dunbar,2470.0,2350.0,5,642.85
+Collingwood,2465.62,2275.0,8,494.78
+East Vancouver,2400.0,2800.0,5,547.72
+Fairview,2374.0,2200.0,5,466.4
+Victoria,2316.67,2300.0,3,1125.09
+Marpole,2297.14,2100.0,7,406.48
+Killarney,2191.67,1875.0,6,1401.58
+West Vancouver,2120.0,1150.0,10,1815.24
+Commercial Drive,1950.0,2300.0,4,911.04
