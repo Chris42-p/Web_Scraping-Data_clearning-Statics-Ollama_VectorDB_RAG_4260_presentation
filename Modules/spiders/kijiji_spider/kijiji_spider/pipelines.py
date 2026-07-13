@@ -6,27 +6,25 @@ Follows cregslist_spider pipeline pattern:
 - Maps into Post_Data from spider_default_obj
 - Post_Data handles LLM parsing of post_description automatically
 
-save_new_post_to_db() parameter order (as of latest spider_default_obj.py):
-    post_id, time_of_post, user_post_title, user_meta_tags, post_url,
-    price_of_the_unit, sqr_feet_lot, general_area, street_number, city,
-    province, postal_code, bed, bath, square_feet_unit, post_description,
-    rent_period, leasing_agent, first_img_url
+Post_Data __init__ parameter order (as of latest spider_default_obj.py):
+    post_id, time_of_post, user_post_title, first_pic, user_meta_tags,
+    post_url, price_of_the_unit, sqr_feet, general_area, street_number,
+    city, province, postal_code, bed, bath, square_feet_unit,
+    post_description, rent_period, leasing_agent, source_spider, img_url
 """
 
 import re
+import time
 from pathlib import Path
 import sys
 
 from kijiji_spider.spider_interface import CONST
 
-# Known Vancouver cities and neighbourhoods for general_area normalization.
 VANCOUVER_AREAS = [
-    # Cities / municipalities
     "Vancouver", "North Vancouver", "West Vancouver", "Burnaby", "Richmond",
     "Surrey", "Coquitlam", "Port Coquitlam", "Port Moody", "New Westminster",
     "White Rock", "Langley", "Abbotsford", "Delta", "Maple Ridge", "Squamish",
     "Pitt Meadows", "Mission", "Chilliwack",
-    # Vancouver neighbourhoods
     "Downtown Vancouver", "Downtown", "West End", "Yaletown", "Gastown",
     "Chinatown", "Mount Pleasant", "Fairview", "Kitsilano", "Point Grey",
     "Dunbar", "Kerrisdale", "Marpole", "South Granville", "Cambie",
@@ -41,6 +39,15 @@ VANCOUVER_AREAS = [
 
 
 class KijijiSpiderPipeline:
+
+    def __init__(self):
+        try:
+            from geopy.geocoders import Nominatim
+            self._geolocator = Nominatim(user_agent="kijiji_spider_pipeline")
+            self._geo_available = True
+        except ImportError:
+            self._geolocator = None
+            self._geo_available = False
 
     def process_item(self, item, spider):
 
@@ -62,8 +69,12 @@ class KijijiSpiderPipeline:
         # == user_post_title
         user_post_title = item.get("user_post_title", "N/A")
 
-        # == first_pic
+        # == first_pic / img_url
         first_img_url = item.get("first_pic", "N/A")
+        if isinstance(first_img_url, (list, tuple)):
+            first_img_url = str(first_img_url[0]) if first_img_url else "N/A"
+        else:
+            first_img_url = str(first_img_url) if first_img_url not in (None, "") else "N/A"
 
         # == user_meta_tags
         user_meta_tags = item.get("user_meta_tags", "N/A")
@@ -71,16 +82,32 @@ class KijijiSpiderPipeline:
         # == post_url
         post_url = item.get("post_url", "N/A")
 
-        # == price — strip to number only
+        # == price — Kijiji returns cents, divide by 100
         price_raw = str(item.get("price_of_the_unit", "N/A"))
-        price_of_the_unit = re.sub(r"[^\d.]", "", price_raw) or "N/A"
+        price_cleaned = re.sub(r"[^\d.]", "", price_raw)
+        if price_cleaned:
+            try:
+                price_of_the_unit = str(int(float(price_cleaned) / 100))
+            except ValueError:
+                price_of_the_unit = "N/A"
+        else:
+            price_of_the_unit = "N/A"
+
+        # == sqr_feet (bedrooms count from spider)
+        sqr_feet = str(item.get("num_bedrooms_n_square_feet_sq", "N/A"))
+        if sqr_feet == "0":
+            sqr_feet = "Studio/Bachelor"
 
         # == general_area — fuzzy matched to known Vancouver areas
         general_area = self.__extract_city(item.get("city_general_area", "N/A"))
 
-        # == address parsing — split into components
+        # == address parsing
         address_raw = item.get("address", "N/A")
         street_number, city, province, postal_code = self.__process_address(address_raw)
+
+        # == if postal code missing, try geopy lookup
+        if postal_code in ("N/A", "", None):
+            postal_code = self.__get_postal_code(address_raw, spider)
 
         # == bed / bath
         bed, bath = self.__get_bed_bath(item)
@@ -91,40 +118,67 @@ class KijijiSpiderPipeline:
 
         # == post_description
         post_description = item.get("post_description", "N/A")
-
+        if str(post_description).strip() in ("None", "(None,)", "N/A", "", "none"):
+            post_description = None
+            
         # == rent_period
         rent_period = item.get("rent_period", "monthly")
 
         # == leasing_agent
         leasing_agent = item.get("leasing_agent", "N/A")
 
-        # == sqr_feet_lot — not available on Kijiji rentals
-        sqr_feet_lot = item.get("sqr_feet_lot", "N/A")
-
-        Post_Data().save_new_post_to_db(
-            post_id=post_id,
-            time_of_post=time_of_post,
-            user_post_title=user_post_title,
-            user_meta_tags=user_meta_tags,
-            post_url=post_url,
-            price_of_the_unit=price_of_the_unit,
-            sqr_feet_lot=sqr_feet_lot,
-            general_area=general_area,
-            street_number=street_number,
-            city=city,
-            province=province,
-            postal_code=postal_code,
-            bed=bed,
-            bath=bath,
-            square_feet_unit=square_feet_unit,
-            post_description=post_description,
-            rent_period=rent_period,
-            leasing_agent=leasing_agent,
-            first_img_url=first_img_url,
-            source_spider=spider.name,
-        )
+        Post_Data(
+            post_id=str(post_id),
+            time_of_post=str(time_of_post),
+            user_post_title=str(user_post_title),
+            first_pic=str(first_img_url),
+            user_meta_tags=str(user_meta_tags),
+            post_url=str(post_url),
+            price_of_the_unit=str(price_of_the_unit),
+            sqr_feet=str(sqr_feet),
+            general_area=str(general_area),
+            street_number=str(street_number),
+            city=str(city),
+            province=str(province),
+            postal_code=str(postal_code),
+            bed=str(bed),
+            bath=str(bath),
+            square_feet_unit=str(square_feet_unit),
+            post_description=str(post_description) if post_description not in (None, "N/A") else None,
+            rent_period=str(rent_period),
+            leasing_agent=str(leasing_agent),
+            source_spider=str(spider.name),
+            img_url=str(first_img_url),
+        ).save_new_post_to_db()
 
         return item
+
+    def __get_postal_code(self, address: str, spider) -> str:
+        """
+        Use geopy Nominatim to reverse-geocode a full address string
+        and extract the postal code.
+        Rate limit: 1 request/second (Nominatim free tier).
+        Returns "N/A" if geocoding fails or postal code not found.
+        """
+        if not self._geo_available or not address or address == "N/A":
+            return "N/A"
+
+        try:
+            time.sleep(1)
+            location = self._geolocator.geocode(
+                f"{address}, Canada",
+                addressdetails=True,
+                timeout=5,
+            )
+            if location and location.raw.get("address"):
+                addr = location.raw["address"]
+                postal = addr.get("postcode", "N/A")
+                spider.logger.debug(f"[geopy] {address} -> {postal}")
+                return postal or "N/A"
+        except Exception as e:
+            spider.logger.debug(f"[geopy] Failed for '{address}': {e}")
+
+        return "N/A"
 
     def __get_bed_bath(self, item):
         bed_bath_str = item.get("bed_and_bath")
@@ -132,10 +186,10 @@ class KijijiSpiderPipeline:
             return "N/A", "N/A"
 
         x = bed_bath_str.split("/")
-        bed_match = re.search(r'\d+', x[0]) if len(x) > 0 else None
+        bed_match  = re.search(r'\d+', x[0]) if len(x) > 0 else None
         bath_match = re.search(r'\d+', x[1]) if len(x) > 1 else None
 
-        bed = bed_match.group() if bed_match else "N/A"
+        bed  = bed_match.group()  if bed_match  else "N/A"
         bath = bath_match.group() if bath_match else "N/A"
 
         return bed, bath
@@ -145,24 +199,17 @@ class KijijiSpiderPipeline:
             return "N/A", "N/A", "N/A", "N/A"
         try:
             parts = address.split(",")
-            street_number = parts[0].strip() if len(parts) > 0 else "N/A"
-            city = parts[1].strip() if len(parts) > 1 else "N/A"
+            street_number   = parts[0].strip() if len(parts) > 0 else "N/A"
+            city            = parts[1].strip() if len(parts) > 1 else "N/A"
             province_postal = parts[2].strip() if len(parts) > 2 else ""
-            province_parts = province_postal.split(" ")
-            province = province_parts[0] if province_parts else "N/A"
-            postal_code = " ".join(province_parts[1:]) if len(province_parts) > 1 else "N/A"
+            province_parts  = province_postal.split(" ")
+            province        = province_parts[0] if province_parts else "N/A"
+            postal_code     = " ".join(province_parts[1:]) if len(province_parts) > 1 else "N/A"
             return street_number, city, province, postal_code
         except Exception:
             return address, "N/A", "N/A", "N/A"
 
     def __extract_city(self, raw: str) -> str:
-        """
-        Normalize general_area to a known Vancouver city or neighbourhood.
-        Uses rapidfuzz for fuzzy matching to handle variations like:
-        - "VANCOUVER WEST SIDE" -> "West Vancouver"
-        - "SOUTH GRANVILLE" -> "South Granville"
-        - "24XX E 29TH AVE" -> "Vancouver" (fallback)
-        """
         if not raw or raw == "N/A":
             return "Vancouver"
 
