@@ -91,7 +91,7 @@ def load_data() -> pd.DataFrame:
 
 # 2. EDA (Raw)
 def run_eda_raw(df: pd.DataFrame):
-    print("\n========== EDA (Raw Data) ==========")
+    print("\n========== EDA IQR(Raw Data) ==========")
 
     print("\n[EDA] Missing values:")
     missing = df.isnull().sum()
