@@ -124,7 +124,7 @@ if __name__ == "__main__":
     service = get_gmail_service()
 
     # Fetch emails
-    emails = fetch_emails(service, max_results=5)
+    emails = fetch_emails(service, max_results=1)
 
     print(f"\n[done] Successfully fetched {len(emails)} emails!")
     print("Gmail API is working correctly for demo.")
