@@ -451,7 +451,7 @@ button {
 }
 
 .status-running {
-  color: #22c55e; 
+  color: #22c55e;
 }
 
 .status-last-run {
@@ -459,12 +459,12 @@ button {
 }
 
 .status-next-run {
-  color:  #f59e0b; 
-  
+  color: #f59e0b;
+
 }
 
 .status-countdown {
-  color: #ef4444; 
+  color: #ef4444;
 }
 
 .status-running {
@@ -1699,3 +1699,16 @@ html {
   }
 }
 
+.app-assistant-input {
+  width: 100%;
+  min-height: 88px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+  background: #ffffff;
+  color: #111827;
+}

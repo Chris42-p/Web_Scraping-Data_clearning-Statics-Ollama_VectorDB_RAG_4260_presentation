@@ -267,3 +267,165 @@ ModuleNotFoundError: No module named 'kijiji_spider'
 2026-07-06 23:03:36,782 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_75a67e8a-0820-46af-948c-7989ee990458.log
 2026-07-06 23:03:38,407 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
 2026-07-06 23:03:45,636 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=75a67e8a-0820-46af-948c-7989ee990458
+2026-07-13 18:01:40,693 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rew' with job_id=f000958c-b7f9-4933-8fc5-5b07c5927a26
+2026-07-13 18:01:40,693 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rew', '--settings-module', 'Modules.spiders.rew_spider.rew_spider.settings']
+2026-07-13 18:01:40,694 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rew_f000958c-b7f9-4933-8fc5-5b07c5927a26.log
+2026-07-13 18:01:42,593 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rew module=Modules.spiders.rew_spider.rew_spider.spiders.rew_spider class=RewSpider settings_module=Modules.spiders.rew_spider.rew_spider.settings
+2026-07-13 18:02:10,264 [WARNING] Modules.user_GUI.back_end.spider_service: Spider job aborted: spider=rew job_id=f000958c-b7f9-4933-8fc5-5b07c5927a26
+2026-07-13 18:10:04,659 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'kijiji' with job_id=ee6acca6-cb6c-4bd5-bf1e-1a8b1dced8d4
+2026-07-13 18:10:04,707 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'kijiji', '--settings-module', 'Modules.spiders.kijiji_spider.kijiji_spider.settings']
+2026-07-13 18:10:04,739 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\kijiji_ee6acca6-cb6c-4bd5-bf1e-1a8b1dced8d4.log
+2026-07-13 18:10:07,829 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=kijiji module=Modules.spiders.kijiji_spider.kijiji_spider.spiders.kijiji_rental_spider class=KijijiRentalsSpider settings_module=Modules.spiders.kijiji_spider.kijiji_spider.settings
+2026-07-13 18:10:11,562 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=kijiji module=Modules.spiders.kijiji_spider.kijiji_spider.spiders.kijiji_rental_spider class=KijijiRentalsSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 264, in run_spider_by_key
+    module = import_module(module_name)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\spiders\kijiji_spider\kijiji_spider\spiders\kijiji_rental_spider.py", line 32, in <module>
+    from kijiji_spider.items import KijijiSpiderItem
+ModuleNotFoundError: No module named 'kijiji_spider'
+2026-07-13 18:16:29,669 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'kijiji' with job_id=7532b797-4870-44ee-ab1b-4cf0330ec014
+2026-07-13 18:16:29,670 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'kijiji', '--settings-module', 'Modules.spiders.kijiji_spider.kijiji_spider.settings']
+2026-07-13 18:16:29,671 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\kijiji_7532b797-4870-44ee-ab1b-4cf0330ec014.log
+2026-07-13 18:16:31,196 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=kijiji module=Modules.spiders.kijiji_spider.kijiji_spider.spiders.kijiji_rental_spider class=KijijiRentalsSpider settings_module=Modules.spiders.kijiji_spider.kijiji_spider.settings
+2026-07-13 18:16:34,327 [ERROR] Modules.user_GUI.back_end.spider_service: Spider execution failed for key=kijiji
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 275, in run_spider_by_key
+    result = run_scrapy_spider(spider_cls, settings_module=settings_module)
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 161, in run_scrapy_spider
+    process = CrawlerProcess(settings)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 752, in __init__
+    super().__init__(settings, install_root_handler)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 624, in __init__
+    super().__init__(settings)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 414, in __init__
+    super().__init__(settings)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 350, in __init__
+    self.spider_loader: SpiderLoaderProtocol = get_spider_loader(settings)
+                                               ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 30, in get_spider_loader
+    return cast("SpiderLoaderProtocol", loader_cls.from_settings(settings.frozencopy()))
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 109, in from_settings
+    return cls(settings)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 62, in __init__
+    self._load_all_spiders()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 92, in _load_all_spiders
+    for module in walk_modules_iter(name):
+                  ~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\misc.py", line 108, in walk_modules_iter
+    mod = import_module(path)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'kijiji_spider'
+2026-07-13 20:35:56,203 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rentals' with job_id=eedb0411-6f6c-4773-990d-f8a75b24ae88
+2026-07-13 20:35:56,205 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rentals', '--settings-module', 'Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings']
+2026-07-13 20:35:56,206 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rentals_eedb0411-6f6c-4773-990d-f8a75b24ae88.log
+2026-07-13 20:35:57,659 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rentals module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.spiders.rentals_ca_spider class=RentalsSpiderSpider settings_module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings
+2026-07-13 20:36:00,630 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=rentals module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.spiders.rentals_ca_spider class=RentalsSpiderSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 300, in run_spider_by_key
+    module = import_module(module_name)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'Modules.spiders.rentals_ca_spider'
+2026-07-13 20:44:46,283 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rentals' with job_id=e03b7edc-4a5d-49c4-96ad-223bd2ac26fe
+2026-07-13 20:44:46,283 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rentals', '--settings-module', 'Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings']
+2026-07-13 20:44:46,284 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rentals_e03b7edc-4a5d-49c4-96ad-223bd2ac26fe.log
+2026-07-13 20:44:47,954 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rentals module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.spiders.rentals_ca_spider class=RentalsSpiderSpider settings_module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings
+2026-07-13 20:44:51,416 [ERROR] Modules.user_GUI.back_end.spider_service: Failed loading spider key=rentals module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.spiders.rentals_ca_spider class=RentalsSpiderSpider
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 301, in run_spider_by_key
+    spider_cls = getattr(module, class_name)
+AttributeError: module 'Modules.spiders.rentals_ca_spider.rentals_ca_spider.spiders.rentals_ca_spider' has no attribute 'RentalsSpiderSpider'
+2026-07-13 20:49:25,079 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rentals' with job_id=dff5012d-06fe-4d9c-8224-47811a759f49
+2026-07-13 20:49:25,080 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rentals', '--settings-module', 'Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings']
+2026-07-13 20:49:25,082 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rentals_dff5012d-06fe-4d9c-8224-47811a759f49.log
+2026-07-13 20:49:26,575 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rentals module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.spiders.rentals_ca_spider class=RentalsCaRentalSpider settings_module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings
+2026-07-13 20:49:29,958 [ERROR] Modules.user_GUI.back_end.spider_service: Spider execution failed for key=rentals
+Traceback (most recent call last):
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 312, in run_spider_by_key
+    result = run_scrapy_spider(spider_cls, settings_module=settings_module)
+  File "C:\Users\Hp\Desktop\4260_presentation-clean\Modules\user_GUI\back_end\spider_service.py", line 185, in run_scrapy_spider
+    process = CrawlerProcess(settings)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 752, in __init__
+    super().__init__(settings, install_root_handler)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 624, in __init__
+    super().__init__(settings)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 414, in __init__
+    super().__init__(settings)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\crawler.py", line 350, in __init__
+    self.spider_loader: SpiderLoaderProtocol = get_spider_loader(settings)
+                                               ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 30, in get_spider_loader
+    return cast("SpiderLoaderProtocol", loader_cls.from_settings(settings.frozencopy()))
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 109, in from_settings
+    return cls(settings)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 62, in __init__
+    self._load_all_spiders()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\spiderloader.py", line 92, in _load_all_spiders
+    for module in walk_modules_iter(name):
+                  ~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\site-packages\scrapy\utils\misc.py", line 108, in walk_modules_iter
+    mod = import_module(path)
+  File "C:\Users\Hp\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'Modules.spiders.rental_ca_spider'
+2026-07-13 20:52:14,571 [INFO] Modules.user_GUI.back_end.spider_service: Starting spider 'rentals' with job_id=db098d40-6c79-4a90-9fb3-fa13eb5f33e8
+2026-07-13 20:52:14,571 [INFO] Modules.user_GUI.back_end.spider_service: Command: ['C:\\Users\\Hp\\AppData\\Local\\Programs\\Python\\Python313\\python.exe', '-m', 'Modules.user_GUI.back_end.spider_runner', '--spider-key', 'rentals', '--settings-module', 'Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings']
+2026-07-13 20:52:14,572 [INFO] Modules.user_GUI.back_end.spider_service: Subprocess log path: C:\Users\Hp\Desktop\4260_presentation-clean\spider_logs\rentals_db098d40-6c79-4a90-9fb3-fa13eb5f33e8.log
+2026-07-13 20:52:16,006 [INFO] Modules.user_GUI.back_end.spider_service: Running spider by key=rentals module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.spiders.rentals_ca_spider class=RentalsCaRentalSpider settings_module=Modules.spiders.rentals_ca_spider.rentals_ca_spider.settings
+2026-07-13 20:52:21,242 [INFO] Modules.user_GUI.back_end.spider_service: Spider result for key=rentals: {'status': 'success', 'message': 'RentalsCaRentalSpider finished. No listings were added.', 'stats': {'finish_reason': 'finished', 'spider_exceptions': 0, 'item_scraped_count': 0}}

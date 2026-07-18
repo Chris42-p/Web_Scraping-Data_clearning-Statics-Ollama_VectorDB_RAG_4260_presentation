@@ -166,14 +166,25 @@ class GmailIngestor(Interface_GmailIngestor):
         for msg in self.fetch_message_ids(max_results=max_emails):
             message_id = msg["id"]
             email_message = self.fetch_message(message_id, fmt="full")
+
+            headers = email_message.get("payload", {}).get("headers", [])
+            subject = self.get_header_value(headers, "Subject")
+            sender = self.get_header_value(headers, "From")
+            date = self.get_header_value(headers, "Date")
+            body = self.extract_email_body(email_message.get("payload", {}))
+
             processed_doc = self.parse_email_to_processed_object(email_message)
             save_path = self.save_raw_email(message_id)
 
             processed_documents.append(
                 {
                     "message_id": message_id,
-                    "parsed_email": processed_doc.to_json(),
+                    "subject": subject,
+                    "sender": sender,
+                    "date": date,
+                    "body": body,
                     "saved_to": str(save_path),
+                    "processed_doc": processed_doc,
                 }
             )
 

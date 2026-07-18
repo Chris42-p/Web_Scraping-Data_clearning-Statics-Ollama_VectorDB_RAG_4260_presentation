@@ -13,4 +13,7 @@ CONST = {
     "COOKIE_HTTPONLY": True,
     "COOKIE_SAMESITE": "lax",
     "COOKIE_SECURE": False,
+
+    "OLLAMA_URL": "http://127.0.0.1:11434/api/generate",
+    "OLLAMA_MODEL": "llama3.2"
 }

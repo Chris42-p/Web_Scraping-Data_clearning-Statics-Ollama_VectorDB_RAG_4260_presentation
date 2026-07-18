@@ -20,7 +20,7 @@ export function DashboardLayout() {
     const [updatesCount, setUpdatesCount] = useState(0);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isSidebarHoverOpen, setIsSidebarHoverOpen] = useState(false);
-
+    const [reportQuestion, setReportQuestion] = useState("");
     const isSidebarOpen = !isSidebarCollapsed || isSidebarHoverOpen;
 
     const pageMeta = useMemo(() => {
@@ -174,10 +174,23 @@ export function DashboardLayout() {
                             <p className="app-assistant-text">
                                 Use Ollama to summarize uploaded housing documents and review generated report output in the Reports page.
                             </p>
+
+                            <textarea
+                                className="app-assistant-input"
+                                placeholder="Ask about uploaded files, Gmail imports, or housing reports..."
+                                value={reportQuestion}
+                                onChange={(event) => setReportQuestion(event.target.value)}
+                                rows={3}
+                            />
+
                             <button
                                 className="app-primary-button"
                                 type="button"
-                                onClick={() => navigate("/app/reports")}
+                                onClick={() =>
+                                    navigate("/app/reports", {
+                                        state: { initialQuestion: reportQuestion.trim() },
+                                    })
+                                }
                             >
                                 Open AI Generated Report
                             </button>

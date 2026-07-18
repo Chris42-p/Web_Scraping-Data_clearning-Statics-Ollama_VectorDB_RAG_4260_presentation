@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { loadReports } from "../services";
+import { useLocation } from "react-router-dom";
+import { loadReports, queryReports } from "../services";
 
 type ReportItem = {
     doc_hash: string;
@@ -13,12 +14,29 @@ type ReportItem = {
     language?: string;
     time_creation?: string;
     modified_date?: string;
+    source?: string;
+    sender?: string;
+    email_subject?: string;
+    email_date?: string;
+};
+
+type ReportsLocationState = {
+    initialQuestion?: string;
 };
 
 export function ReportsPage() {
+    const location = useLocation();
+    const routeState = (location.state as ReportsLocationState | null) ?? null;
+    const initialQuestion = routeState?.initialQuestion?.trim() ?? "";
+
     const [reports, setReports] = useState<ReportItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
+
+    const [queryLoading, setQueryLoading] = useState(false);
+    const [queryError, setQueryError] = useState("");
+    const [answer, setAnswer] = useState("");
+    const [matches, setMatches] = useState<ReportItem[]>([]);
 
     useEffect(() => {
         let isMounted = true;
@@ -52,11 +70,119 @@ export function ReportsPage() {
         };
     }, []);
 
+    useEffect(() => {
+        let ignore = false;
+
+        async function runInitialQuery() {
+            if (!initialQuestion) {
+                setAnswer("");
+                setMatches([]);
+                setQueryError("");
+                return;
+            }
+
+            try {
+                setQueryLoading(true);
+                setQueryError("");
+                setAnswer("");
+                setMatches([]);
+
+                const result = await queryReports(initialQuestion, 5);
+
+                if (!ignore) {
+                    setAnswer(result?.answer || "No answer returned.");
+                    setMatches(Array.isArray(result?.matches) ? result.matches : []);
+                }
+            } catch (error) {
+                console.error("Failed to query reports:", error);
+                if (!ignore) {
+                    setQueryError("Unable to generate an AI report answer.");
+                    setAnswer("");
+                    setMatches([]);
+                }
+            } finally {
+                if (!ignore) {
+                    setQueryLoading(false);
+                }
+            }
+        }
+
+        runInitialQuery();
+
+        return () => {
+            ignore = true;
+        };
+    }, [initialQuestion]);
+
     return (
         <div className="dashboard-panel">
-            <p>
-                View Ollama-generated summaries, document insights.
-            </p>
+            {initialQuestion ? (
+                <div className="documents-card">
+                    <h3>Question</h3>
+                    <p>{initialQuestion}</p>
+                </div>
+            ) : (
+                <div className="documents-card">
+                    <h3>AI Report</h3>
+                    <p>Select “Open AI Generated Report” from the sidebar after entering a question.</p>
+                </div>
+            )}
+
+            {queryLoading ? (
+                <div className="documents-card">
+                    <h3>Generating report</h3>
+                    <p>Ollama is analyzing saved reports, Gmail imports, and uploaded documents.</p>
+                </div>
+            ) : null}
+
+            {queryError ? (
+                <div className="documents-card">
+                    <h3>Query error</h3>
+                    <p>{queryError}</p>
+                </div>
+            ) : null}
+
+            {answer ? (
+                <div className="documents-card">
+                    <h3>AI Answer</h3>
+                    <p>{answer}</p>
+                </div>
+            ) : null}
+
+            {matches.length > 0 ? (
+                <>
+                    <h3 style={{ marginTop: "1rem" }}>Matched documents</h3>
+                    <div className="documents-list">
+                        {matches.map((match) => (
+                            <div key={match.doc_hash} className="documents-card">
+                                <h3>
+                                    {match.original_filename ||
+                                        match.email_subject ||
+                                        match.title ||
+                                        "Matched document"}
+                                </h3>
+
+                                <p>{match.summary || match.description || "No summary available."}</p>
+
+                                <p>
+                                    Source: {match.source || "Unknown"} | Type:{" "}
+                                    {match.document_type || match.mime_type || "Unknown"}
+                                </p>
+
+                                <p>
+                                    Sender: {match.sender || "Unknown"} | Date:{" "}
+                                    {match.email_date ||
+                                        match.modified_date ||
+                                        match.time_creation ||
+                                        "Unknown"}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            ) : null}
+
+            <h3 style={{ marginTop: "1.5rem" }}>Saved generated reports</h3>
 
             {loading ? <p>Loading reports...</p> : null}
             {errorMessage ? <p>{errorMessage}</p> : null}
@@ -64,20 +190,33 @@ export function ReportsPage() {
             {!loading && !errorMessage && reports.length === 0 ? (
                 <div className="dashboard-panel">
                     <h3>No reports yet</h3>
-                    <p>Upload documents and run Ollama analysis to generate reports for this page.</p>
+                    <p>Upload documents or import Gmail content, then run analysis to generate reports.</p>
                 </div>
             ) : null}
 
             <div className="documents-list">
                 {reports.map((report) => (
                     <div key={report.doc_hash} className="documents-card">
-                        <h3>{report.original_filename || report.title || "Untitled report"}</h3>
+                        <h3>
+                            {report.original_filename ||
+                                report.email_subject ||
+                                report.title ||
+                                "Untitled report"}
+                        </h3>
+
                         <p>{report.summary || "No summary available."}</p>
+
                         <p>
-                            Type: {report.document_type || report.mime_type || "Unknown"} | Language: {report.language || "Unknown"} | Sentiment: {report.sentiment || "Unknown"}
+                            Type: {report.document_type || report.mime_type || "Unknown"} | Language:{" "}
+                            {report.language || "Unknown"} | Sentiment: {report.sentiment || "Unknown"}
                         </p>
+
                         <p>
-                            Date: {report.modified_date || report.time_creation || "Unknown"}
+                            Date:{" "}
+                            {report.email_date ||
+                                report.modified_date ||
+                                report.time_creation ||
+                                "Unknown"}
                         </p>
                     </div>
                 ))}

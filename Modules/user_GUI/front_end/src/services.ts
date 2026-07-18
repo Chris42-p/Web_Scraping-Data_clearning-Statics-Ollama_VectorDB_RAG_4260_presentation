@@ -264,6 +264,13 @@ export async function rerunModel(docHash: string) {
   });
 }
 
+export async function queryReports(question: string, top_k = 5) {
+  return apiRequest<{ answer: string; matches: any[] }>("/reports/query", {
+    method: "POST",
+    body: JSON.stringify({ question, top_k }),
+  });
+}
+
 
 export async function loadSpiderConfig(spiderKey: string): Promise<SpiderConfig> {
   return apiRequest<SpiderConfig>(`/spider/config/${spiderKey}`, {

@@ -1,6 +1,8 @@
 import os
 import mimetypes
 import shutil
+import json
+import requests
 from uuid import uuid4
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -11,8 +13,6 @@ from pydantic import BaseModel, Field
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
-
-from ...engine_injesting.data_base.my_sql_db import SQL_DataBase
 
 
 from Modules.user_GUI.back_end.service import load_documents
@@ -35,7 +35,8 @@ from Modules.user_GUI.back_end.spider_config import (
     SPIDER_REGISTRY
 )
 
-
+OLLAMA_URL = CONST["OLLAMA_URL"]
+OLLAMA_MODEL = CONST["OLLAMA_MODEL"]
 
 router = APIRouter()
 app = FastAPI()
@@ -62,7 +63,7 @@ app.add_middleware(
 scheduler = BackgroundScheduler()
 
 
-
+# Pydantic Models for Request and Response Validation
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -104,9 +105,80 @@ class FeedbackRequest(BaseModel):
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = ""
 
+class ReportQueryRequest(BaseModel):
+    question: str
+    top_k: int = Field(default=5, ge=1, le=10)
+
+
+class ReportQueryMatch(BaseModel):
+    doc_hash: str
+    title: Optional[str] = None
+    original_filename: Optional[str] = None
+    source: Optional[str] = None
+    sender: Optional[str] = None
+    email_subject: Optional[str] = None
+    email_date: Optional[str] = None
+    summary: Optional[str] = None
+    description: Optional[str] = None
+
+
+class ReportQueryResponse(BaseModel):
+    answer: str
+    matches: list[dict]
+
 
 def get_db():
     return SQL_DataBase()
+
+def ask_ollama_about_documents(question: str, matches: list[dict]) -> str:
+    if not matches:
+        return "I could not find matching Gmail messages or uploaded documents in the database."
+
+    context_blocks = []
+    for i, row in enumerate(matches, start=1):
+        context_blocks.append(
+            f"""Document {i}
+    Title: {row.get('title') or 'Untitled'}
+    Original filename: {row.get('original_filename') or 'N/A'}
+    Source: {row.get('source') or 'unknown'}
+    Sender: {row.get('sender') or 'N/A'}
+    Email subject: {row.get('email_subject') or 'N/A'}
+    Email date: {row.get('email_date') or 'N/A'}
+    Summary: {row.get('summary') or 'N/A'}
+    Description: {row.get('description') or 'N/A'}
+    Extracted text:
+    {(row.get('extracted_text') or '')[:4000]}
+    """
+            )
+
+        prompt = f"""
+    You are helping with a presentation demo for a Vancouver Rental Market Intelligence Platform.
+
+    Answer ONLY from the database records provided below.
+    If the answer is not in the records, say so clearly.
+    If the request sounds like the user wants a source document, identify the most relevant matching document.
+
+    User question:
+    {question}
+
+    Database records:
+    {chr(10).join(context_blocks)}
+
+    Return a concise, presentation-ready answer.
+    """
+
+        response = requests.post(
+            OLLAMA_URL,
+            json={
+                "model": OLLAMA_MODEL,
+                "prompt": prompt,
+                "stream": False,
+            },
+            timeout=120,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data.get("response", "").strip() or "No answer returned from Ollama."
 
 # Timer for spider run
 def run_spider_job(spider_key: str):
@@ -321,10 +393,29 @@ def gmail_import(max_emails: int = 10, user=Depends(get_logged_in_user)):
     gmail.set_credentials_from_token_info(token_info)
     imported = gmail.ingest_gmail(max_emails=max_emails)
 
+    engine = Injest_Engine(input_files_path=str(INGEST_ROOT), output_files_path=str(INGEST_ROOT))
+    saved = []
+
+    for item in imported:
+        processed_doc = item["processed_doc"]
+        saved.append(
+            engine.ingest_processed_document(
+                processed_doc_obj=processed_doc,
+                source="gmail",
+                original_filename=f"{item['message_id']}.eml",
+                relative_path=f"gmail/{item['message_id']}.eml",
+                mime_type="message/rfc822",
+                sender=item.get("sender"),
+                email_subject=item.get("subject"),
+                email_date=item.get("date"),
+            )
+        )
+
     return {
         "message": "Gmail import completed",
         "imported_count": len(imported),
-        "documents": imported,
+        "saved_count": len(saved),
+        "documents": saved,
     }
 
 
@@ -496,6 +587,37 @@ def get_reports(user=Depends(get_logged_in_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load reports: {str(e)}")
 
+
+# Query Reports Route
+@app.post("/reports/query", response_model=ReportQueryResponse)
+def query_reports(request: ReportQueryRequest, user=Depends(get_logged_in_user)):
+    try:
+        db = SQL_DataBase()
+        matches = db.search_reports(request.question, request.top_k)
+        answer = ask_ollama_about_documents(request.question, matches)
+
+        cleaned_matches = []
+        for item in matches:
+            cleaned_matches.append({
+                "doc_hash": item.get("doc_hash"),
+                "title": item.get("title"),
+                "original_filename": item.get("original_filename"),
+                "source": item.get("source"),
+                "sender": item.get("sender"),
+                "email_subject": item.get("email_subject"),
+                "email_date": item.get("email_date"),
+                "summary": item.get("summary"),
+                "description": item.get("description"),
+            })
+
+        return {
+            "answer": answer,
+            "matches": cleaned_matches,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to query reports: {str(e)}")
+    
+
 # Get Reports Count
 @app.get("/reports/count")
 def get_reports_count(user=Depends(get_logged_in_user)):
@@ -524,12 +646,26 @@ def get_documents(user=Depends(get_logged_in_user)):
 
         with db._SQL_DataBase__get_conn() as conn:
             rows = conn.execute("""
-                SELECT d.doc_hash, d.title, d.author, d.time_creation,
-                    d.modified_date, d.stored_filename, d.relative_path,
-                    d.original_filename, d.mime_type,
-                    a.document_type, a.summary
+                SELECT
+                    d.doc_hash,
+                    d.title,
+                    d.author,
+                    d.time_creation,
+                    d.modified_date,
+                    d.stored_filename,
+                    d.relative_path,
+                    d.original_filename,
+                    d.mime_type,
+                    d.source,
+                    d.sender,
+                    d.email_subject,
+                    d.email_date,
+                    a.document_type,
+                    a.summary,
+                    a.description
                 FROM documents d
                 LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
+                ORDER BY COALESCE(d.processed_at, d.modified_date, d.time_creation) DESC
             """).fetchall()
 
         documents = []
@@ -539,15 +675,20 @@ def get_documents(user=Depends(get_logged_in_user)):
                 "id": item.get("doc_hash", ""),
                 "doc_hash": item.get("doc_hash", ""),
                 "title": item.get("title", ""),
-                "from": item.get("author", ""),
-                "date": item.get("modified_date") or item.get("time_creation"),
-                "type": item.get("document_type", ""),
+                "from": item.get("sender") or item.get("author", ""),
+                "date": item.get("email_date") or item.get("modified_date") or item.get("time_creation"),
+                "type": item.get("document_type") or item.get("mime_type", ""),
                 "summary": item.get("summary", ""),
-                "snippet": item.get("summary", ""),
+                "description": item.get("description", ""),
+                "snippet": item.get("summary") or item.get("description", ""),
                 "stored_filename": item.get("stored_filename", ""),
                 "relative_path": item.get("relative_path", ""),
                 "original_filename": item.get("original_filename", ""),
                 "mime_type": item.get("mime_type", ""),
+                "source": item.get("source", ""),
+                "sender": item.get("sender", ""),
+                "email_subject": item.get("email_subject", ""),
+                "email_date": item.get("email_date", ""),
             })
 
         return {"documents": documents}
@@ -561,13 +702,34 @@ def get_all_documents(user=Depends(get_logged_in_user)):
         
         with db._SQL_DataBase__get_conn() as conn:
             rows = conn.execute("""
-                SELECT d.doc_hash, d.title, d.author, d.time_creation,
-                    d.modified_date, d.stored_filename, d.relative_path,
-                    d.original_filename, d.mime_type,
-                    a.document_type, a.summary
-                FROM documents d
-                LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
-            """).fetchall()
+            SELECT
+                d.doc_hash,
+                d.title,
+                d.author,
+                d.time_creation,
+                d.modified_date,
+                d.stored_filename,
+                d.relative_path,
+                d.original_filename,
+                d.mime_type,
+                d.source,
+                d.sender,
+                d.email_subject,
+                d.email_date,
+                d.extracted_text,
+                a.document_type,
+                a.summary,
+                a.description,
+                a.keywords,
+                a.topics,
+                a.entities,
+                a.sentiment,
+                a.language,
+                a.date_references
+            FROM documents d
+            LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
+            ORDER BY COALESCE(d.processed_at, d.modified_date, d.time_creation) DESC
+        """).fetchall()
         return {"documents": [dict(row) for row in rows]}
     except Exception as e:
         return {"error": str(e), "documents": []}
@@ -641,6 +803,15 @@ def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
     except Exception as e:
         return {"error": str(e), "results": []}
     
+@app.get("/documents/search")
+def search_documents(query: str, limit: int = 5, user=Depends(get_logged_in_user)):
+    try:
+        db = SQL_DataBase()
+        results = db.search_reports(query, limit)
+        return {"documents": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to search documents: {str(e)}")
+    
 @app.post("/upload")
 async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
     INGEST_ROOT.mkdir(parents=True, exist_ok=True)
@@ -668,6 +839,11 @@ async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)
             relative_path=relative_path,
             original_filename=original_filename,
             mime_type=mime_type,
+            source="upload",
+            sender=None,
+            email_subject=None,
+            email_date=None,
+            extracted_text=None,
         )
 
         saved.append({

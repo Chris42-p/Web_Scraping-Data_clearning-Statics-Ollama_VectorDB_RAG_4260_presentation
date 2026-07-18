@@ -299,6 +299,11 @@ class SQL_DataBase():
                     d.modified_date,
                     d.original_filename,
                     d.mime_type,
+                    d.source,
+                    d.sender,
+                    d.email_subject,
+                    d.email_date,
+                    d.extracted_text,
                     a.summary,
                     a.description,
                     a.send_reason,
@@ -314,7 +319,7 @@ class SQL_DataBase():
                     ON d.doc_hash = a.doc_hash
                WHERE a.summary IS NOT NULL
                AND TRIM(a.summary) <> ''
-               ORDER BY d.modified_date DESC, d.time_creation DESC
+               ORDER BY COALESCE(d.email_date, d.modified_date, d.time_creation) DESC
           """
           with self.__get_conn() as conn:
                rows = conn.execute(sql).fetchall()
@@ -333,6 +338,59 @@ class SQL_DataBase():
                row = conn.execute(sql).fetchone()
                return int(row[0]) if row else 0
 
+
+     
+     def search_reports(self, query: str, limit: int = 5) -> list[dict]:
+        sql = """
+            SELECT
+                d.doc_hash,
+                d.title,
+                d.author,
+                d.original_filename,
+                d.mime_type,
+                d.source,
+                d.sender,
+                d.email_subject,
+                d.email_date,
+                d.time_creation,
+                d.modified_date,
+                d.extracted_text,
+                a.summary,
+                a.description,
+                a.document_type,
+                a.sentiment,
+                a.language
+            FROM documents d
+            LEFT JOIN ai_analysis a
+                ON d.doc_hash = a.doc_hash
+            WHERE
+                COALESCE(d.title, '') LIKE ?
+                OR COALESCE(d.original_filename, '') LIKE ?
+                OR COALESCE(d.sender, '') LIKE ?
+                OR COALESCE(d.email_subject, '') LIKE ?
+                OR COALESCE(d.extracted_text, '') LIKE ?
+                OR COALESCE(a.summary, '') LIKE ?
+                OR COALESCE(a.description, '') LIKE ?
+            ORDER BY COALESCE(d.email_date, d.modified_date, d.time_creation) DESC
+            LIMIT ?
+        """
+        like_query = f"%{query}%"
+        with self.__get_conn() as conn:
+            rows = conn.execute(
+                sql,
+                (
+                    like_query,
+                    like_query,
+                    like_query,
+                    like_query,
+                    like_query,
+                    like_query,
+                    like_query,
+                    limit,
+                ),
+            ).fetchall()
+            return [self.__deserialize_row(row) for row in rows]
+        
      #== Meta
           #===!! danger !!===
      #def DEV_drop_db_table(self):
@@ -349,7 +407,13 @@ class SQL_DataBase():
                "relative_path": "TEXT",
                "original_filename": "TEXT",
                "mime_type": "TEXT",
-        }
+               "source": "TEXT",
+               "sender": "TEXT",
+               "email_subject": "TEXT",
+               "email_date": "TEXT",
+               "extracted_text": "TEXT",
+               "processed_at": "TEXT",
+          }
 
         for column_name, column_type in required_columns.items():
             if column_name not in existing_columns:
@@ -366,22 +430,16 @@ class SQL_DataBase():
           relative_path: str,
           original_filename: str,
           mime_type: str,
+          source: str | None = None,
+          sender: str | None = None,
+          email_subject: str | None = None,
+          email_date: str | None = None,
+          extracted_text: str | None = None,
      ) -> None:
           with self.__get_conn() as conn:
                conn.execute(
                 """
-                    INSERT INTO documents (
-                    doc_hash,
-                    title,
-                    author,
-                    stored_filename,
-                    relative_path,
-                    original_filename,
-                    mime_type
-               )
-               VALUES (?, ?, ?, ?, ?, ?, ?)
-               """,
-               (
+                INSERT INTO documents (
                     doc_hash,
                     title,
                     author,
@@ -389,8 +447,29 @@ class SQL_DataBase():
                     relative_path,
                     original_filename,
                     mime_type,
-               ),
-          )
+                    source,
+                    sender,
+                    email_subject,
+                    email_date,
+                    extracted_text
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    doc_hash,
+                    title,
+                    author,
+                    stored_filename,
+                    relative_path,
+                    original_filename,
+                    mime_type,
+                    source,
+                    sender,
+                    email_subject,
+                    email_date,
+                    extracted_text,
+                ),
+            )
           conn.commit()
 
      def DEV_drop_db_table(self):

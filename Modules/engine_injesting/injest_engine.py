@@ -147,6 +147,28 @@ class Injest_Engine(Interface_InjestionEngine):
           with open(document, "rb") as f:
                _bytes=f.read()
           return _bytes
+
+     # Ingest a processed document and save it to the database
+     def ingest_processed_document(self, processed_doc_obj, source="upload", original_filename=None, relative_path=None, mime_type=None, sender=None, email_subject=None, email_date=None):
+          ai_processed_doc = self.__call_ollama_on_a_file(processed_doc_obj.to_json())
+          ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
+
+          original_doc = processed_doc_obj.to_json_no_paragraphs()
+          original_doc["source"] = source
+          original_doc["original_filename"] = original_filename
+          original_doc["relative_path"] = relative_path
+          original_doc["mime_type"] = mime_type
+          original_doc["sender"] = sender
+          original_doc["email_subject"] = email_subject
+          original_doc["email_date"] = email_date
+          original_doc["extracted_text"] = processed_doc_obj.paragaphs
+
+          self.__save_processed_doc_to_sql(original_doc, ai_doc_obj, processed_doc_obj.get_hash())
+          return {
+               "doc_hash": processed_doc_obj.get_hash(),
+               "title": processed_doc_obj.title,
+               "source": source,
+          }
      
      #open the file and read their content. 
      def __read_a_document(self,doc_type, docuemnt): #recurrsion on .zip & .eml
