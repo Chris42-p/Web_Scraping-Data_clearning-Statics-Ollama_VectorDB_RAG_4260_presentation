@@ -133,7 +133,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     #file_name=temp[-1].split(".")[0]
                     #output_file_name="{0}/{1}_ocr.pdf".format(output_dir, file_name) 
 
-                    cmd="ocrmypdf --optimize 1 --force-ocr {0} {1}".format(str(file), str(output_file_name)) 
+                    cmd="ocrmypdf --optimize 1 --skip-text {0} {1}".format(str(file), str(output_file_name)) 
                     
                     #OCR the doc 
                     try:
@@ -141,7 +141,9 @@ class Injest_Engine(Interface_InjestionEngine):
                          subprocess.run(cmd.split(" "),check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                          print(f"Processed {file}")
                     except subprocess.CalledProcessError as e:
-                         print(f"{self.err_text}:injestion engine: {e.stdout} ")
+                         print(f"{self.err_text}:injestion engine OCR failed: {e.stderr} ")
+                    except FileNotFoundError:
+                         print(f"{self.err_text}: ocrmypdf not found — is it installed and on PATH?")
 
      def  __read_document_bytes(self, document):
           with open(document, "rb") as f:
