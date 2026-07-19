@@ -26,8 +26,18 @@ CONST={
 class Embedding_Interface(ABC):
 
      @abstractmethod
-     def embed_unprocessed_document(self): pass
+     def embed_unprocessed_document(self): 
+          pass
 
      @abstractmethod
-     def send_query(self, query):pass
+     def embed_processed_document(self, obj: dict):
+        pass
+
+     @abstractmethod
+     def send_query(self, query: str, num_results_return: int):
+        pass
+
+     @abstractmethod
+     def delete_document(self, doc_hash: str):
+        pass
      

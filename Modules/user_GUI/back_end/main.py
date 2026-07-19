@@ -131,13 +131,13 @@ def get_db():
     return SQL_DataBase()
 
 def ask_ollama_about_documents(question: str, matches: list[dict]) -> str:
-    if not matches:
-        return "I could not find matching Gmail messages or uploaded documents in the database."
+        if not matches:
+            return "I could not find matching Gmail messages or uploaded documents in the database."
 
-    context_blocks = []
-    for i, row in enumerate(matches, start=1):
-        context_blocks.append(
-            f"""Document {i}
+        context_blocks = []
+        for i, row in enumerate(matches, start=1):
+            context_blocks.append(
+                f"""Document {i}
     Title: {row.get('title') or 'Untitled'}
     Original filename: {row.get('original_filename') or 'N/A'}
     Source: {row.get('source') or 'unknown'}
@@ -179,6 +179,7 @@ def ask_ollama_about_documents(question: str, matches: list[dict]) -> str:
         response.raise_for_status()
         data = response.json()
         return data.get("response", "").strip() or "No answer returned from Ollama."
+
 
 # Timer for spider run
 def run_spider_job(spider_key: str):
@@ -815,41 +816,49 @@ def search_documents(query: str, limit: int = 5, user=Depends(get_logged_in_user
 @app.post("/upload")
 async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
     INGEST_ROOT.mkdir(parents=True, exist_ok=True)
-    saved = []
+    uploaded = []
 
-    db = SQL_DataBase()
+    engine = Injest_Engine(
+        input_files_path=str(INGEST_ROOT),
+        output_files_path=str(INGEST_ROOT),
+    )
 
     for upload in files:
-        doc_hash = uuid4().hex
         original_filename = upload.filename or "unknown"
-        safe_name = f"{doc_hash}_{original_filename}"
+        safe_id = uuid4().hex
+        safe_name = f"{safe_id}_{original_filename}"
         target_path = INGEST_ROOT / safe_name
-        mime_type = upload.content_type or mimetypes.guess_type(original_filename)[0] or "application/octet-stream"
+        content_type = upload.content_type or mimetypes.guess_type(original_filename)[0] or "application/octet-stream"
 
         with open(target_path, "wb") as f:
             shutil.copyfileobj(upload.file, f)
 
-        relative_path = safe_name
+        if not target_path.exists() or target_path.stat().st_size == 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Uploaded file is empty: {original_filename}"
+            )
 
-        db.insert_document_with_file_metadata(
-            doc_hash=doc_hash,
-            title=Path(original_filename).stem,
-            author=user.get("username", ""),
-            stored_filename=safe_name,
-            relative_path=relative_path,
-            original_filename=original_filename,
-            mime_type=mime_type,
+        processed = engine.process_saved_file(
+            file_path=target_path,
             source="upload",
-            sender=None,
-            email_subject=None,
-            email_date=None,
-            extracted_text=None,
+            sender="",
+            email_subject="",
+            email_date="",
         )
 
-        saved.append({
-            "doc_hash": doc_hash,
-            "filename": original_filename,
-            "stored_filename": safe_name,
-        })
 
-    return {"uploaded": saved}
+        uploaded.append(
+            {
+                "doc_hash": processed.get("doc_hash"),
+                "filename": original_filename,
+                "stored_filename": safe_name,
+                "relative_path": safe_name,
+                "mime_type": content_type,
+                "title": processed.get("title", Path(original_filename).stem),
+                "summary": processed.get("summary", ""),
+                "source": processed.get("source", "upload"),
+            }
+        )
+
+    return {"uploaded": uploaded}

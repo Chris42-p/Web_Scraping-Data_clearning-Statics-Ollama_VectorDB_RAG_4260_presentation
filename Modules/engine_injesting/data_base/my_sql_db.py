@@ -45,6 +45,7 @@ class SQL_DataBase():
           with self.__get_conn() as conn:
                conn.executescript(f"{self.CREATE_TABLE}\n{self.CREATE_TRIGGER}")
                self.__ensure_document_columns(conn)
+               self.__ensure_user_columns(conn)
                conn.commit()
 
           #with conn:
@@ -162,7 +163,23 @@ class SQL_DataBase():
                     WHERE user_id = ?
                """, (user_id,)).fetchone()
                return dict(row) if row else None
-     
+
+
+     # == Ensure user table has required columns
+     def __ensure_user_columns(self, conn: sqlite3.Connection) -> None:
+          rows = conn.execute("PRAGMA table_info(users)").fetchall()
+          existing_columns = {row["name"] for row in rows}
+
+          required_columns = {
+               "full_name": "TEXT",
+               "email": "TEXT",
+               "phone": "TEXT",
+          }
+
+          for column_name, column_type in required_columns.items():
+               if column_name not in existing_columns:
+                    conn.execute(f"ALTER TABLE users ADD COLUMN {column_name} {column_type}")
+
 #== write
      def insert_document(self, og_doc: dict, ai_doc: dict) -> None:
           # serialize any list fields to JSON strings before storing
@@ -198,15 +215,18 @@ class SQL_DataBase():
                     conn.execute(sql, {**doc_updates, "doc_hash": doc_hash})
 
                if ai_updates:
-                    # serialize any list fields
                     for field in self.JSON_FIELDS:
                          if field in ai_updates and isinstance(ai_updates[field], list):
                               ai_updates[field] = json.dumps(ai_updates[field])
 
+                    conn.execute(
+                         "INSERT OR IGNORE INTO ai_analysis (doc_hash) VALUES (?)",
+                         (doc_hash,)
+                    )
+
                     fields = ", ".join(f"{k} = :{k}" for k in ai_updates.keys())
                     sql = f"UPDATE ai_analysis SET {fields} WHERE doc_hash = :doc_hash"
                     conn.execute(sql, {**ai_updates, "doc_hash": doc_hash})
-
                conn.commit()
 
 #==delte
@@ -250,9 +270,11 @@ class SQL_DataBase():
 
 #== Util 
      def mark_processed(self, doc_hash: str) -> None:
-
           with self.__get_conn() as conn:
-               conn.execute("UPDATE documents SET processed = 1 WHERE doc_hash = ?",(doc_hash,))
+               conn.execute(
+                    "UPDATE documents SET processed = 1, processed_at = CURRENT_TIMESTAMP WHERE doc_hash = ?",
+                    (doc_hash,),
+               )
                conn.commit()
 
 
@@ -438,8 +460,8 @@ class SQL_DataBase():
      ) -> None:
           with self.__get_conn() as conn:
                conn.execute(
-                """
-                INSERT INTO documents (
+                    """
+                    INSERT INTO documents (
                     doc_hash,
                     title,
                     author,
@@ -452,10 +474,22 @@ class SQL_DataBase():
                     email_subject,
                     email_date,
                     extracted_text
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(doc_hash) DO UPDATE SET
+                    title = excluded.title,
+                    author = excluded.author,
+                    stored_filename = excluded.stored_filename,
+                    relative_path = excluded.relative_path,
+                    original_filename = excluded.original_filename,
+                    mime_type = excluded.mime_type,
+                    source = excluded.source,
+                    sender = excluded.sender,
+                    email_subject = excluded.email_subject,
+                    email_date = excluded.email_date,
+                    extracted_text = excluded.extracted_text
+                    """,
+                    (
                     doc_hash,
                     title,
                     author,
@@ -468,9 +502,9 @@ class SQL_DataBase():
                     email_subject,
                     email_date,
                     extracted_text,
-                ),
-            )
-          conn.commit()
+                    ),
+               )
+               conn.commit()
 
      def DEV_drop_db_table(self):
           with self.__get_conn() as conn:

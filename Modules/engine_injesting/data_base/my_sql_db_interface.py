@@ -46,20 +46,34 @@ CREATE TABLE IF NOT EXISTS users (
      id INTEGER PRIMARY KEY AUTOINCREMENT,
      username TEXT UNIQUE NOT NULL,
      password_hash TEXT NOT NULL,
+     full_name TEXT,
+     email TEXT,
+     phone TEXT,
      created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 """,
 
-  "INSERT_AI_SQL": 
+"INSERT_AI_SQL": 
 """
-     INSERT OR REPLACE INTO ai_analysis
+     INSERT INTO ai_analysis
      (doc_hash, summary, description, send_reason, keywords, topics, entities, document_type, sentiment, language, date_references)
      VALUES (:doc_hash, :summary, :description, :send_reason, :keywords, :topics, :entities, :document_type, :sentiment, :language, :date_references)
+     ON CONFLICT(doc_hash) DO UPDATE SET
+          summary = excluded.summary,
+          description = excluded.description,
+          send_reason = excluded.send_reason,
+          keywords = excluded.keywords,
+          topics = excluded.topics,
+          entities = excluded.entities,
+          document_type = excluded.document_type,
+          sentiment = excluded.sentiment,
+          language = excluded.language,
+          date_references = excluded.date_references
 """,
 
 "INSERT_DOCUMENT_SQL": 
 """
-     INSERT OR REPLACE INTO documents 
+     INSERT OR IGNORE INTO documents 
      (doc_hash, title, document_bytes, header_footer, table_content, author, time_creation, modified_date, file_computer_id)
      VALUES (:doc_hash, :title, :document_bytes, :header_footer, :table_content, :author, :time_creation, :modified_date, :file_computer_id)
 """,

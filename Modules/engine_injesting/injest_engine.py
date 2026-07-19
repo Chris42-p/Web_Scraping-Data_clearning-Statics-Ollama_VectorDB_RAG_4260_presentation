@@ -15,6 +15,7 @@
 #=== libraries===
 import os
 import base64
+import mimetypes
 from pathlib import Path
 import subprocess
 import ollama                              # pip3 install ollama --break-system-packages 
@@ -50,13 +51,14 @@ class Injest_Engine(Interface_InjestionEngine):
           ):
           self.input_files_path = Path(input_files_path)
           self.output_files_path = Path(output_files_path)
+          self.ingest_folder = self.input_files_path
           self.files_in_dir = []
           self.dir_in_dir = []
+          self.my_sql_db = SQL_DataBase()
           self.files_grouped_typ_type = {
                k: [] for k in CONST["DOCUMENT_TYPES"].keys()
      }
 
-          self.controller()
 
      #======= Process files 
      def __reset_injest_state(self):
@@ -64,7 +66,68 @@ class Injest_Engine(Interface_InjestionEngine):
           self.dir_in_dir = [] #directories in injest directory
           self.files_grouped_typ_type = {k: [] for k in 
                                        CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
-          
+     
+
+     def process_saved_file(
+          self,
+          file_path: str | Path,
+          source: str = "upload",
+          sender: str = "",
+          email_subject: str = "",
+          email_date: str = "",
+     ) -> dict:
+          file_path = Path(file_path)
+          doc_type = file_path.suffix.upper()
+
+          if doc_type == ".PDF" and "_ocr" not in file_path.stem.lower():
+               ocr_candidate = file_path.with_name(f"{file_path.stem}_ocr.pdf")
+               if ocr_candidate.exists():
+                    file_path = ocr_candidate
+
+          processed_doc_obj = self.__read_a_document(doc_type, file_path)
+          if processed_doc_obj is None or processed_doc_obj == CONST["ERR_CODE"]:
+               raise ValueError(f"Unable to read document: {file_path}")
+
+          raw_payload = processed_doc_obj.to_json()
+          ai_processed_doc = self.__call_ollama_on_a_file(raw_payload)
+          ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
+
+          original_doc = processed_doc_obj.to_json_no_paragraphs()
+          original_doc["stored_filename"] = file_path.name
+          original_doc["relative_path"] = str(file_path.relative_to(self.ingest_folder)) if file_path.is_relative_to(self.ingest_folder) else file_path.name
+          original_doc["original_filename"] = file_path.name
+          original_doc["mime_type"] = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+          original_doc["source"] = source
+          original_doc["sender"] = sender
+          original_doc["email_subject"] = email_subject
+          original_doc["email_date"] = email_date
+          original_doc["extracted_text"] = processed_doc_obj.paragaphs
+
+          self.my_sql_db.insert_document_with_file_metadata(
+               doc_hash=original_doc["doc_hash"],
+               title=original_doc["title"],
+               author=original_doc["author"],
+               stored_filename=original_doc["stored_filename"],
+               relative_path=original_doc["relative_path"],
+               original_filename=original_doc["original_filename"],
+               mime_type=original_doc["mime_type"],
+               source=original_doc["source"],
+               sender=original_doc["sender"],
+               email_subject=original_doc["email_subject"],
+               email_date=original_doc["email_date"],
+               extracted_text=original_doc["extracted_text"],
+          )
+
+          self.my_sql_db.update_document(
+               doc_hash=original_doc["doc_hash"],
+               ai_updates=ai_doc_obj,
+          )
+
+          merged_obj = {**original_doc, **ai_doc_obj}
+          from ..engine_embedding.embedding import Embedding_Engine
+          Embedding_Engine().embed_processed_document(merged_obj)
+          self.my_sql_db.mark_processed(original_doc["doc_hash"])
+          return merged_obj
      
      #get the path of the files that're in the dir. 
      def __get_files_in_injest_file(self,path= None):
@@ -109,6 +172,33 @@ class Injest_Engine(Interface_InjestionEngine):
 
           # print(self.files_grouped_typ_type)
 
+
+     # ingest a local file and save it to the database
+     def injest_local_file(self, file_path: str | Path, source: str = "upload") -> dict:
+               return self.process_saved_file(file_path=file_path, source=source)
+
+     # ingest a gmail email and save it to the database
+     def injest_gmail(
+          self,
+          processed_doc_obj,
+          original_filename: str = "",
+          relative_path: str = "",
+          mime_type: str = "message/rfc822",
+          sender: str = "",
+          email_subject: str = "",
+          email_date: str = "",
+     ) -> dict:
+          return self.ingest_processed_document(
+               processed_doc_obj=processed_doc_obj,
+               source="gmail",
+               original_filename=original_filename,
+               relative_path=relative_path,
+               mime_type=mime_type,
+               sender=sender,
+               email_subject=email_subject,
+               email_date=email_date,
+          )
+
      #OCR my PDF -- make the text readable to machines.  
      def __ocr_my_pdf(self): #optical character recognition. #---- there is a bug  
 
@@ -151,7 +241,17 @@ class Injest_Engine(Interface_InjestionEngine):
           return _bytes
 
      # Ingest a processed document and save it to the database
-     def ingest_processed_document(self, processed_doc_obj, source="upload", original_filename=None, relative_path=None, mime_type=None, sender=None, email_subject=None, email_date=None):
+     def ingest_processed_document(
+          self,
+          processed_doc_obj,
+          source="upload",
+          original_filename=None,
+          relative_path=None,
+          mime_type=None,
+          sender=None,
+          email_subject=None,
+          email_date=None,
+     ):
           ai_processed_doc = self.__call_ollama_on_a_file(processed_doc_obj.to_json())
           ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
 
@@ -160,15 +260,39 @@ class Injest_Engine(Interface_InjestionEngine):
           original_doc["original_filename"] = original_filename
           original_doc["relative_path"] = relative_path
           original_doc["mime_type"] = mime_type
-          original_doc["sender"] = sender
-          original_doc["email_subject"] = email_subject
-          original_doc["email_date"] = email_date
-          original_doc["extracted_text"] = processed_doc_obj.paragaphs
+          original_doc["sender"] = sender or ""
+          original_doc["email_subject"] = email_subject or ""
+          original_doc["email_date"] = email_date or ""
+          original_doc["stored_filename"] = Path(original_filename).name if original_filename else ""
+          original_doc["extracted_text"] = processed_doc_obj.paragaphs or ""
 
-          self.__save_processed_doc_to_sql(original_doc, ai_doc_obj, processed_doc_obj.get_hash())
+          self.my_sql_db.insert_document_with_file_metadata(
+               doc_hash=original_doc["doc_hash"],
+               title=original_doc["title"],
+               author=original_doc["author"],
+               stored_filename=original_doc["stored_filename"],
+               relative_path=original_doc["relative_path"],
+               original_filename=original_doc["original_filename"],
+               mime_type=original_doc["mime_type"],
+               source=original_doc["source"],
+               sender=original_doc["sender"],
+               email_subject=original_doc["email_subject"],
+               email_date=original_doc["email_date"],
+               extracted_text=original_doc["extracted_text"],
+          )
+
+          self.my_sql_db.update_document(
+               doc_hash=original_doc["doc_hash"],
+               ai_updates=ai_doc_obj,
+          )
+
+          merged_obj = {**original_doc, **ai_doc_obj}
+          from ..engine_embedding.embedding import Embedding_Engine
+          Embedding_Engine().embed_processed_document(merged_obj)
+          self.my_sql_db.mark_processed(original_doc["doc_hash"])
           return {
-               "doc_hash": processed_doc_obj.get_hash(),
-               "title": processed_doc_obj.title,
+               "doc_hash": original_doc["doc_hash"],
+               "title": original_doc["title"],
                "source": source,
           }
      
@@ -355,25 +479,69 @@ class Injest_Engine(Interface_InjestionEngine):
 
                read_doc_obj=self.Processed_Document_Obj(title=Path(docuemnt).stem,paragaphs=doc_content)
                pass
-          elif doc_type ==".EML":
-               print("TODO: File Reader: .EML")
-               
-               # ref: claude
-
-
+          elif doc_type == ".EML":
                mail = mailparser.parse_from_file(docuemnt)
 
-               print(mail.subject)
-               print(mail.from_)
-               print(mail.body)          # full body
-               print(mail.attachments)   # all attachments
+               subject = mail.subject or Path(docuemnt).stem
 
+               sender = ""
+               if getattr(mail, "from_", None):
+                    try:
+                         if isinstance(mail.from_, list) and len(mail.from_) > 0:
+                              first_sender = mail.from_[0]
+                              if isinstance(first_sender, tuple) and len(first_sender) > 1:
+                                   sender = first_sender[1] or first_sender[0] or ""
+                              else:
+                                   sender = str(first_sender)
+                         else:
+                              sender = str(mail.from_)
+                    except Exception:
+                         sender = str(mail.from_)
 
-               doc_content=""
-               #TEAM: metadata please
+               plain_parts = []
+               if getattr(mail, "text_plain", None):
+                    if isinstance(mail.text_plain, list):
+                         plain_parts.extend([str(part) for part in mail.text_plain if part])
+                    else:
+                         plain_parts.append(str(mail.text_plain))
 
-               read_doc_obj=self.Processed_Document_Obj(title=Path(docuemnt).stem,paragaphs=doc_content)
-               pass
+               if getattr(mail, "text_plain_list", None):
+                    plain_parts.extend([str(part) for part in mail.text_plain_list if part])
+
+               body_text = "\n".join(part.strip() for part in plain_parts if part and str(part).strip())
+
+               if not body_text:
+                    body_text = str(getattr(mail, "body", "") or "")
+
+               attachment_names = []
+               attachments = getattr(mail, "attachments", None) or getattr(mail, "attachments_list", None) or []
+               for attachment in attachments:
+                    if isinstance(attachment, dict):
+                         name = attachment.get("filename") or attachment.get("mail_content_type") or ""
+                         if name:
+                              attachment_names.append(str(name))
+
+               attachment_text = ", ".join(attachment_names)
+
+               combined_text_parts = [
+                    f"Email subject: {subject}",
+                    f"Email sender: {sender}",
+                    f"Email date: {str(getattr(mail, 'date', '') or getattr(mail, 'date_mail', '') or '')}",
+                    f"Attachments: {attachment_text}",
+                    body_text,
+               ]
+               doc_content = "\n".join(part for part in combined_text_parts if part and str(part).strip())
+
+               read_doc_obj = self.Processed_Document_Obj(
+                    title=subject,
+                    paragaphs=doc_content,
+                    header_footer="",
+                    table_content=attachment_text,
+                    author=sender,
+                    time_creation=str(getattr(mail, "date", "") or getattr(mail, "date_mail", "") or ""),
+                    modified_date=str(getattr(mail, "date", "") or getattr(mail, "date_mail", "") or ""),
+                    file_computer_id="",
+               )
           else:
                print( CONST["ERR_TXT"])
                return CONST["ERR_CODE"]
@@ -428,27 +596,61 @@ class Injest_Engine(Interface_InjestionEngine):
                     return full_response
 
                except Exception as e:
-                    crashes+=1
-                    print(f"{CONST['ERR_TXT']}: Ollama call:  {e}"  )
-                    print("Model Crashed")               
+                    crashes += 1
+                    print(f"{CONST['ERR_TXT']}: Ollama call: {e}")
+                    print("Model Crashed")
 
-          return "" #return empty string if the model keeps crashing.
+          return json.dumps({
+               "summary": "AI summary unavailable.",
+               "description": "Ollama model call failed.",
+               "send_reason": "",
+               "keywords": [],
+               "topics": [],
+               "entities": [],
+               "document_type": "unknown",
+               "sentiment": "unknown",
+               "language": "unknown",
+               "date_references": [],
+          })
 
+     # parse the response from the model into a structured object
      def __ollama_parse_response_into_object(self, ollama_response ):
-          ollama_response= json.loads(ollama_response)
-          return self.AI_Processed_Document_Obj(
-               ai_summary =ollama_response["summary"] ,
-               ai_description =ollama_response["description"] ,
-               ai_send_reason =ollama_response["send_reason"] ,
-               ai_keywords =ollama_response["keywords"] ,
-               ai_topics =ollama_response["topics"] ,
-               ai_entities =ollama_response["entities"] ,
-               ai_document_type =ollama_response["document_type"] ,
-               ai_sentiment =ollama_response["sentiment"] ,
-               ai_language =ollama_response["language"] ,
-               ai_date_references =ollama_response["date_references"] ,
+          fallback = self.AI_Processed_Document_Obj(
+               ai_summary="AI summary unavailable.",
+               ai_description="Ollama response could not be parsed.",
+               ai_send_reason="",
+               ai_keywords=[],
+               ai_topics=[],
+               ai_entities=[],
+               ai_document_type="unknown",
+               ai_sentiment="unknown",
+               ai_language="unknown",
+               ai_date_references=[],
           ).to_json()
 
+          if not ollama_response or not str(ollama_response).strip():
+               return fallback
+
+          try:
+               parsed = json.loads(ollama_response)
+          except (json.JSONDecodeError, TypeError):
+               print(f"{CONST['ERR_TXT']}: Ollama returned non-JSON output.")
+               return fallback
+          return self.AI_Processed_Document_Obj(
+               ai_summary=parsed.get("summary", "AI summary unavailable."),
+               ai_description=parsed.get("description", ""),
+               ai_send_reason=parsed.get("send_reason", ""),
+               ai_keywords=parsed.get("keywords", []),
+               ai_topics=parsed.get("topics", []),
+               ai_entities=parsed.get("entities", []),
+               ai_document_type=parsed.get("document_type", "unknown"),
+               ai_sentiment=parsed.get("sentiment", "unknown"),
+               ai_language=parsed.get("language", "unknown"),
+               ai_date_references=parsed.get("date_references", []),
+          ).to_json()
+
+
+     # ===== Start the ollama model =====
      def __start_ollama(self, wait_to_boot=20):
           
           if wait_to_boot <= 0:
@@ -522,12 +724,44 @@ class Injest_Engine(Interface_InjestionEngine):
                try:
                     ai_processed_doc = self.__call_ollama_on_a_file(processed_doc_obj.to_json())
                     ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
-                    self.__save_processed_doc_to_sql(
-                         processed_doc_obj.to_json_no_paragraphs(),
-                         ai_doc_obj,
-                         processed_doc_obj.get_hash()
+
+                    original_doc = processed_doc_obj.to_json_no_paragraphs()
+                    original_doc["stored_filename"] = ""
+                    original_doc["relative_path"] = ""
+                    original_doc["original_filename"] = ""
+                    original_doc["mime_type"] = ""
+                    original_doc["source"] = "local"
+                    original_doc["sender"] = ""
+                    original_doc["email_subject"] = ""
+                    original_doc["email_date"] = ""
+                    original_doc["extracted_text"] = processed_doc_obj.paragaphs or ""
+
+                    self.my_sql_db.insert_document_with_file_metadata(
+                    doc_hash=original_doc["doc_hash"],
+                    title=original_doc["title"],
+                    author=original_doc["author"],
+                    stored_filename=original_doc["stored_filename"],
+                    relative_path=original_doc["relative_path"],
+                    original_filename=original_doc["original_filename"],
+                    mime_type=original_doc["mime_type"],
+                    source=original_doc["source"],
+                    sender=original_doc["sender"],
+                    email_subject=original_doc["email_subject"],
+                    email_date=original_doc["email_date"],
+                    extracted_text=original_doc["extracted_text"],
                     )
-                    print(f"Saved: {processed_doc_obj.to_json_no_paragraphs().get('title', 'unknown')}")
+
+                    self.my_sql_db.update_document(
+                    doc_hash=original_doc["doc_hash"],
+                    ai_updates=ai_doc_obj,
+                    )
+
+                    merged_obj = {**original_doc, **ai_doc_obj}
+                    from ..engine_embedding.embedding import Embedding_Engine
+                    Embedding_Engine().embed_processed_document(merged_obj)
+                    self.my_sql_db.mark_processed(original_doc["doc_hash"])
+
+                    print(f"Saved: {original_doc.get('title', 'unknown')}")
                except Exception as e:
                     print(f"Error processing document: {e}")
           # #=== Send the object to ollama to read over.
