@@ -35,8 +35,23 @@ class GmailIngestor(Interface_GmailIngestor):
         flow.redirect_uri = self.redirect_uri
         return flow
 
-    def build_auth_url(self, state: str) -> tuple[str, str]:
-        flow = self._build_flow(state=state)
+    def _build_flow(self, state: str | None = None, code_verifier: str | None = None) -> Flow:
+        flow = Flow.from_client_secrets_file(
+            self.credentials_path,
+            scopes=self.SCOPES,
+            state=state,
+        )
+        flow.redirect_uri = self.redirect_uri
+
+        if code_verifier:
+            flow.code_verifier = code_verifier
+
+        return flow
+
+
+    def build_auth_url(self, state: str, code_verifier: str) -> tuple[str, str]:
+        flow = self._build_flow(state=state, code_verifier=code_verifier)
+
         auth_url, returned_state = flow.authorization_url(
             access_type="offline",
             include_granted_scopes="true",
@@ -44,19 +59,19 @@ class GmailIngestor(Interface_GmailIngestor):
         )
         return auth_url, returned_state
 
-    def exchange_code_for_tokens(self, code: str, state: str) -> dict:
-        flow = self._build_flow(state=state)
-        flow.fetch_token(code=code)
-        creds = flow.credentials
 
+    def exchange_code_for_tokens(self, code: str, state: str, code_verifier: str):
+        flow = self._build_flow(state=state, code_verifier=code_verifier)
+        flow.fetch_token(code=code)
+
+        creds = flow.credentials
         return {
             "token": creds.token,
             "refresh_token": creds.refresh_token,
             "token_uri": creds.token_uri,
             "client_id": creds.client_id,
             "client_secret": creds.client_secret,
-            "scopes": list(creds.scopes or self.SCOPES),
-            "expiry": creds.expiry.isoformat() if creds.expiry else None,
+            "scopes": creds.scopes,
         }
 
     def set_credentials_from_token_info(self, token_info: dict) -> None:

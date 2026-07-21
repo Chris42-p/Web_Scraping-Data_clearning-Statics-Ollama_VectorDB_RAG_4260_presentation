@@ -32,6 +32,8 @@ from datetime import datetime
 import httpx
 import time
 
+
+
 #=== local imports
 from .injest_interface import Interface_InjestionEngine
 from .injest_interface import CONST
@@ -75,6 +77,7 @@ class Injest_Engine(Interface_InjestionEngine):
           sender: str = "",
           email_subject: str = "",
           email_date: str = "",
+          original_filename: str = "",
      ) -> dict:
           file_path = Path(file_path)
           doc_type = file_path.suffix.upper()
@@ -95,7 +98,7 @@ class Injest_Engine(Interface_InjestionEngine):
           original_doc = processed_doc_obj.to_json_no_paragraphs()
           original_doc["stored_filename"] = file_path.name
           original_doc["relative_path"] = str(file_path.relative_to(self.ingest_folder)) if file_path.is_relative_to(self.ingest_folder) else file_path.name
-          original_doc["original_filename"] = file_path.name
+          original_doc["original_filename"] = original_filename or file_path.name
           original_doc["mime_type"] = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
           original_doc["source"] = source
           original_doc["sender"] = sender

@@ -7,6 +7,7 @@ from uuid import uuid4
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
+from secrets import token_urlsafe
 
 from fastapi import FastAPI, Request, HTTPException, UploadFile, Depends, APIRouter
 from pydantic import BaseModel, Field
@@ -330,20 +331,26 @@ def get_gmail_ingestor():
 @app.get("/gmail/status")
 def gmail_status(user=Depends(get_logged_in_user)):
     connected = user["user_id"] in GMAIL_CONNECTED_ACCOUNTS
-    return {"connected": connected}
+    return {
+        "connected": connected,
+        "last_import_at": None,
+        "last_import_count": 0,
+    }
 
 # GMAIL API ROUTES
 @app.get("/auth/google/login")
 def google_login(user=Depends(get_logged_in_user)):
     gmail = get_gmail_ingestor()
     state = uuid4().hex
+    code_verifier = token_urlsafe(64)
 
     GMAIL_OAUTH_STATE[state] = {
         "user_id": user["user_id"],
         "username": user["username"],
+        "code_verifier": code_verifier,
     }
 
-    auth_url, _ = gmail.build_auth_url(state)
+    auth_url, _ = gmail.build_auth_url(state=state, code_verifier=code_verifier)
     return RedirectResponse(url=auth_url, status_code=302)
 
 # Debugging and Development Routes
@@ -374,7 +381,17 @@ def google_callback(code: str, state: str, user=Depends(get_logged_in_user)):
         raise HTTPException(status_code=403, detail="OAuth state does not match logged in user")
 
     gmail = get_gmail_ingestor()
-    token_info = gmail.exchange_code_for_tokens(code, state)
+    code_verifier = state_data.get("code_verifier")
+
+    try:
+        token_info = gmail.exchange_code_for_tokens(
+            code=code,
+            state=state,
+            code_verifier=code_verifier,
+        )
+    except Exception as exc:
+        print(f"Google OAuth callback failed: {exc}")
+        raise HTTPException(status_code=400, detail=f"Google OAuth failed: {str(exc)}")
 
     GMAIL_CONNECTED_ACCOUNTS[user["user_id"]] = token_info
     del GMAIL_OAUTH_STATE[state]
@@ -383,6 +400,8 @@ def google_callback(code: str, state: str, user=Depends(get_logged_in_user)):
         url="http://localhost:5173/app/gmail?connected=true",
         status_code=303,
     )
+
+
 # GMAIL IMPORT ROUTE
 @app.post("/gmail/import")
 def gmail_import(max_emails: int = 10, user=Depends(get_logged_in_user)):
@@ -418,6 +437,27 @@ def gmail_import(max_emails: int = 10, user=Depends(get_logged_in_user)):
         "saved_count": len(saved),
         "documents": saved,
     }
+
+@app.post("/gmail/logout")
+def gmail_logout(user=Depends(get_logged_in_user)):
+    token_info = GMAIL_CONNECTED_ACCOUNTS.get(user["user_id"])
+
+    if token_info:
+        token_to_revoke = token_info.get("refresh_token") or token_info.get("token")
+        if token_to_revoke:
+            try:
+                requests.post(
+                    "https://oauth2.googleapis.com/revoke",
+                    params={"token": token_to_revoke},
+                    headers={"content-type": "application/x-www-form-urlencoded"},
+                    timeout=10,
+                )
+            except Exception as exc:
+                print(f"Failed to revoke Google token: {exc}")
+
+        del GMAIL_CONNECTED_ACCOUNTS[user["user_id"]]
+
+    return {"connected": False, "message": "Gmail disconnected."}
 
 
 # Spiders
@@ -602,7 +642,7 @@ def query_reports(request: ReportQueryRequest, user=Depends(get_logged_in_user))
             cleaned_matches.append({
                 "doc_hash": item.get("doc_hash"),
                 "title": item.get("title"),
-                "original_filename": item.get("original_filename"),
+                "display_filename": item.get("original_filename") or item.get("title") or "",
                 "source": item.get("source"),
                 "sender": item.get("sender"),
                 "email_subject": item.get("email_subject"),
@@ -611,12 +651,42 @@ def query_reports(request: ReportQueryRequest, user=Depends(get_logged_in_user))
                 "description": item.get("description"),
             })
 
+        history_id = db.save_report_history(
+        user_id=user["user_id"],
+        question=request.question,
+        answer=answer,
+        matches=cleaned_matches,
+    )
         return {
             "answer": answer,
             "matches": cleaned_matches,
+            "history_id": history_id,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to query reports: {str(e)}")
+
+
+@app.get("/reports/history")
+def get_report_history(user=Depends(get_logged_in_user)):
+    try:
+        db = SQL_DataBase()
+        return {"history": db.get_report_history_for_user(user["user_id"])}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load report history: {str(e)}")
+
+
+@app.get("/reports/history/{history_id}")
+def get_report_history_item(history_id: int, user=Depends(get_logged_in_user)):
+    try:
+        db = SQL_DataBase()
+        item = db.get_report_history_item(history_id, user["user_id"])
+        if not item:
+            raise HTTPException(status_code=404, detail="Report history item not found")
+        return item
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load report history item: {str(e)}")
     
 
 # Get Reports Count
@@ -644,55 +714,7 @@ def get_housing_summary(user=Depends(get_logged_in_user)):
 def get_documents(user=Depends(get_logged_in_user)):
     try:
         db = SQL_DataBase()
-
-        with db._SQL_DataBase__get_conn() as conn:
-            rows = conn.execute("""
-                SELECT
-                    d.doc_hash,
-                    d.title,
-                    d.author,
-                    d.time_creation,
-                    d.modified_date,
-                    d.stored_filename,
-                    d.relative_path,
-                    d.original_filename,
-                    d.mime_type,
-                    d.source,
-                    d.sender,
-                    d.email_subject,
-                    d.email_date,
-                    a.document_type,
-                    a.summary,
-                    a.description
-                FROM documents d
-                LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
-                ORDER BY COALESCE(d.processed_at, d.modified_date, d.time_creation) DESC
-            """).fetchall()
-
-        documents = []
-        for row in rows:
-            item = dict(row)
-            documents.append({
-                "id": item.get("doc_hash", ""),
-                "doc_hash": item.get("doc_hash", ""),
-                "title": item.get("title", ""),
-                "from": item.get("sender") or item.get("author", ""),
-                "date": item.get("email_date") or item.get("modified_date") or item.get("time_creation"),
-                "type": item.get("document_type") or item.get("mime_type", ""),
-                "summary": item.get("summary", ""),
-                "description": item.get("description", ""),
-                "snippet": item.get("summary") or item.get("description", ""),
-                "stored_filename": item.get("stored_filename", ""),
-                "relative_path": item.get("relative_path", ""),
-                "original_filename": item.get("original_filename", ""),
-                "mime_type": item.get("mime_type", ""),
-                "source": item.get("source", ""),
-                "sender": item.get("sender", ""),
-                "email_subject": item.get("email_subject", ""),
-                "email_date": item.get("email_date", ""),
-            })
-
-        return {"documents": documents}
+        return {"documents": db.get_documents_summary_list()}
     except Exception as e:
         return {"error": str(e), "documents": []}
 
@@ -738,14 +760,12 @@ def get_all_documents(user=Depends(get_logged_in_user)):
 
 @app.get("/documents/{doc_id}")
 def get_document_by_id(doc_id: str, user=Depends(get_logged_in_user)):
-    data = get_documents(user)
-    documents = data.get("documents", [])
+    db = SQL_DataBase()
+    document = db.get_document_details_by_hash(doc_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return document
 
-    for document in documents:
-        if str(document.get("doc_hash")) == str(doc_id):
-            return document
-
-    raise HTTPException(status_code=404, detail="Document not found")
 
 #@app.get("/session/start")
 #def start_session():
@@ -761,6 +781,29 @@ def get_document_by_id(doc_id: str, user=Depends(get_logged_in_user)):
 #    )  # Set to True in production with HTTPS)
 #    return response
 
+@app.delete("/documents/{doc_id}")
+def delete_document(doc_id: str, user=Depends(get_logged_in_user)):
+    try:
+        db = SQL_DataBase()
+        result = db.delete_document_and_related(
+            doc_hash=doc_id,
+            ingest_root=str(INGEST_ROOT),
+        )
+
+        if not result.get("deleted"):
+            raise HTTPException(status_code=404, detail=result.get("message", "Document not found"))
+
+        return {
+            "ok": True,
+            "message": result.get("message", "Document deleted successfully."),
+            "document_id": doc_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print(f"Delete document error: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to delete document")
+    
 
 @app.get("/download/{doc_hash}")
 def download_document(doc_hash: str, user=Depends(get_logged_in_user)):
@@ -808,20 +851,23 @@ def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
 def search_documents(query: str, limit: int = 5, user=Depends(get_logged_in_user)):
     try:
         db = SQL_DataBase()
-        results = db.search_reports(query, limit)
-        return {"documents": results}
+        return {"documents": db.search_documents(query, limit)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to search documents: {str(e)}")
     
+
 @app.post("/upload")
-async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
+def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
     INGEST_ROOT.mkdir(parents=True, exist_ok=True)
+
     uploaded = []
+    duplicates = []
 
     engine = Injest_Engine(
         input_files_path=str(INGEST_ROOT),
         output_files_path=str(INGEST_ROOT),
     )
+    db = SQL_DataBase()
 
     for upload in files:
         original_filename = upload.filename or "unknown"
@@ -845,12 +891,31 @@ async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)
             sender="",
             email_subject="",
             email_date="",
+            original_filename=original_filename,
         )
 
+        doc_hash = processed.get("doc_hash")
+        if doc_hash and db.document_exists(doc_hash):
+            try:
+                if target_path.exists():
+                    target_path.unlink()
+            except Exception:
+                pass
+
+            existing = db.get_existing_document_brief(doc_hash) or {}
+            duplicates.append(
+                {
+                    "doc_hash": doc_hash,
+                    "filename": original_filename,
+                    "message": "Document already exists.",
+                    "existing": existing,
+                }
+            )
+            continue
 
         uploaded.append(
             {
-                "doc_hash": processed.get("doc_hash"),
+                "doc_hash": doc_hash,
                 "filename": original_filename,
                 "stored_filename": safe_name,
                 "relative_path": safe_name,
@@ -861,4 +926,12 @@ async def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)
             }
         )
 
-    return {"uploaded": uploaded}
+    return {
+        "uploaded": uploaded,
+        "duplicates": duplicates,
+        "message": (
+            f"{len(uploaded)} uploaded, {len(duplicates)} already existed."
+            if duplicates else
+            f"{len(uploaded)} file(s) uploaded successfully."
+        ),
+    }

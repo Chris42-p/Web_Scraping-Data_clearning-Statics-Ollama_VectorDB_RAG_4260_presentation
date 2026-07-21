@@ -1,0 +1,46 @@
+.gmail-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.gmail-stat-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(14, 43, 63, 0.92), rgba(11, 34, 51, 0.96));
+  box-shadow: var(--shadow-soft);
+}
+
+.gmail-stat-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.gmail-stat-card strong {
+  color: var(--text-main);
+  font-size: 18px;
+}
+
+.gmail-result-pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+}
+
+@media (max-width: 768px) {
+  .gmail-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

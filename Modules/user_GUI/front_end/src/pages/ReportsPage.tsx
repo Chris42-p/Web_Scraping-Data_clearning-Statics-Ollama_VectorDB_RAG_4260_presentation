@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { loadReports, queryReports } from "../services";
+import { loadReports, queryReports, loadReportHistory } from "../services";
 
 type ReportItem = {
     doc_hash: string;
@@ -37,6 +37,9 @@ export function ReportsPage() {
     const [queryError, setQueryError] = useState("");
     const [answer, setAnswer] = useState("");
     const [matches, setMatches] = useState<ReportItem[]>([]);
+
+    const [history, setHistory] = useState<any[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -114,6 +117,32 @@ export function ReportsPage() {
         };
     }, [initialQuestion]);
 
+    useEffect(() => {
+        let ignore = false;
+
+        async function fetchHistory() {
+            try {
+                setHistoryLoading(true);
+                const data = await loadReportHistory();
+                if (!ignore) {
+                    setHistory(Array.isArray(data?.history) ? data.history : []);
+                }
+            } catch (error) {
+                console.error("Failed to load report history:", error);
+            } finally {
+                if (!ignore) {
+                    setHistoryLoading(false);
+                }
+            }
+        }
+
+        fetchHistory();
+
+        return () => {
+            ignore = true;
+        };
+    }, []);
+
     return (
         <div className="dashboard-panel">
             {initialQuestion ? (
@@ -177,12 +206,13 @@ export function ReportsPage() {
                                         "Unknown"}
                                 </p>
                             </div>
+
                         ))}
                     </div>
                 </>
             ) : null}
 
-            <h3 style={{ marginTop: "1.5rem" }}>Saved generated reports</h3>
+            {/*<h3 style={{ marginTop: "1.5rem" }}>Saved generated reports</h3>*/}
 
             {loading ? <p>Loading reports...</p> : null}
             {errorMessage ? <p>{errorMessage}</p> : null}
@@ -193,7 +223,33 @@ export function ReportsPage() {
                     <p>Upload documents or import Gmail content, then run analysis to generate reports.</p>
                 </div>
             ) : null}
+            <div className="reports-history-card">
+                <h3>History</h3>
 
+                {historyLoading ? (
+                    <p>Loading history...</p>
+                ) : history.length === 0 ? (
+                    <p>No saved reports yet.</p>
+                ) : (
+                    <div className="reports-history-list">
+                        {history.map((item) => (
+                            <button
+                                key={item.id}
+                                type="button"
+                                className="reports-history-item"
+                                onClick={() => {
+                                    setAnswer(item.answer || "");
+                                    setMatches(Array.isArray(item.matches) ? item.matches : []);
+                                }}
+                            >
+                                <strong>{item.question}</strong>
+                                <span>{item.created_at}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+            {/*
             <div className="documents-list">
                 {reports.map((report) => (
                     <div key={report.doc_hash} className="documents-card">
@@ -220,7 +276,7 @@ export function ReportsPage() {
                         </p>
                     </div>
                 ))}
-            </div>
+            </div>*/}
         </div>
     );
 }

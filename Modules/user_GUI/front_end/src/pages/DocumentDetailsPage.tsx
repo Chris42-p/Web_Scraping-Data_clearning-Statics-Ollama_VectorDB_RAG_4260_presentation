@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/documentsPage.css";
 import type { DocumentItem } from "../interfaces";
-import { getDocumentById } from "../services";
+import { deleteDocument, getDocumentById } from "../services";
 import { APP_CONFIG } from "../config";
 
 export function DocumentDetailsPage() {
@@ -60,6 +60,35 @@ export function DocumentDetailsPage() {
         fetchDocument();
     }, [id]);
 
+    async function handleDelete() {
+        const targetId = id ?? document?.doc_hash;
+        if (!targetId) {
+            setErrorMessage("This document cannot be deleted.");
+            return;
+        }
+
+        const confirmed = window.confirm("Delete this document? This action cannot be undone.");
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setErrorMessage("");
+
+            await deleteDocument(targetId);
+
+            navigate("/app/documents", {
+                replace: true,
+                state: { successMessage: "Document deleted successfully." },
+            });
+        } catch (error) {
+            console.error("Failed to delete document:", error);
+            setErrorMessage(error instanceof Error ? error.message : "Failed to delete document.");
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
         let objectUrl = "";
 
@@ -112,6 +141,7 @@ export function DocumentDetailsPage() {
         window.open(downloadUrl, "_blank");
     }
 
+
     return (
         <div className="documents-page">
             <div className="documents-header">
@@ -135,6 +165,16 @@ export function DocumentDetailsPage() {
                         onClick={handleDownload}
                     >
                         Download Document
+                    </button>
+                )}
+
+                {!loading && (documentHash || id) && (
+                    <button
+                        className="documents-search-button"
+                        onClick={handleDelete}
+                        style={{ backgroundColor: "#b42318", color: "#fff" }}
+                    >
+                        Delete Document
                     </button>
                 )}
             </div>
@@ -169,12 +209,12 @@ export function DocumentDetailsPage() {
 
                         <div className="documents-meta-item">
                             <span className="documents-meta-label">Author</span>
-                            <span className="documents-meta-value">{document.from || "—"}</span>
+                            <span className="documents-meta-value">{document.from || document.sender || "Unknown"}</span>
                         </div>
 
                         <div className="documents-meta-item">
                             <span className="documents-meta-label">Date</span>
-                            <span className="documents-meta-value">{document.date || "—"}</span>
+                            <span className="documents-meta-value">{document.date || document.email_date || "Unknown"}</span>
                         </div>
 
                         <div className="documents-meta-item">
@@ -192,7 +232,7 @@ export function DocumentDetailsPage() {
                         </div>
 
                         <div className="documents-meta-item">
-                            <span className="documents-meta-label">Stored filename</span>
+                            <span className="documents-meta-label">System filename</span>
                             <span className="documents-meta-value">
                                 {document.stored_filename || "—"}
                             </span>

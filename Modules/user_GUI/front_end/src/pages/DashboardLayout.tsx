@@ -186,11 +186,18 @@ export function DashboardLayout() {
                             <button
                                 className="app-primary-button"
                                 type="button"
-                                onClick={() =>
+                                onClick={() => {
+                                    const question = reportQuestion.trim();
+
+                                    if (!question) return;
+                                    
                                     navigate("/app/reports", {
-                                        state: { initialQuestion: reportQuestion.trim() },
-                                    })
-                                }
+                                        state: { initialQuestion: question },
+                                    });
+
+                                    // Clear the textarea
+                                    setReportQuestion("");
+                                }}
                             >
                                 Open AI Generated Report
                             </button>

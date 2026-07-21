@@ -22,7 +22,15 @@ CREATE TABLE IF NOT EXISTS documents (
     time_creation TEXT,
     modified_date TEXT,
     file_computer_id TEXT,
-    
+    stored_filename TEXT,
+    relative_path TEXT,
+    original_filename TEXT,
+    mime_type TEXT,
+    source TEXT,
+    sender TEXT,
+    email_subject TEXT,
+    email_date TEXT,
+    extracted_text TEXT,
     updated_at TEXT,
     processed INTEGER DEFAULT 0
 );
@@ -40,6 +48,24 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
     language TEXT,
     date_references TEXT,
     FOREIGN KEY (doc_hash) REFERENCES documents(doc_hash)
+);
+
+CREATE TABLE IF NOT EXISTS report_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    matches_json TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS report_history_documents (
+    history_id INTEGER NOT NULL,
+    doc_hash TEXT NOT NULL,
+    PRIMARY KEY (history_id, doc_hash),
+    FOREIGN KEY (history_id) REFERENCES report_history(id) ON DELETE CASCADE,
+    FOREIGN KEY (doc_hash) REFERENCES documents(doc_hash) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS users (

@@ -27,11 +27,21 @@ export interface DocumentItem {
   type?: string;
   summary?: string;
   snippet?: string;
+  description?: string;
 
   stored_filename?: string;
   relative_path?: string;
   original_filename?: string;
   mime_type?: string;
+
+  source?: string;
+  sender?: string;
+  email_subject?: string;
+  email_date?: string;
+  extracted_text?: string;
+
+  raw_text?: string;
+  content?: string;
 }
 
 export interface SearchResponse {

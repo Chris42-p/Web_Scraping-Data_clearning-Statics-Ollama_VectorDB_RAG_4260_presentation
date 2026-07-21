@@ -1,0 +1,379 @@
+Delivered-To: favourotas26@gmail.com
+Received: by 2002:a2e:8206:0:b0:394:567d:ab5b with SMTP id w6csp1780563ljg;
+        Sun, 24 May 2026 19:03:38 -0700 (PDT)
+X-Received: by 2002:a05:690e:418c:b0:65c:ca50:d7 with SMTP id 956f58d0204a3-65ec9984b69mr13014614d50.49.1779674618422;
+        Sun, 24 May 2026 19:03:38 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779674618; cv=none;
+        d=google.com; s=arc-20240605;
+        b=HbS5HXyTY1q7mAjphisZcYDGVBL6LEmtmIU0uRTKgCbclL6jNSsOHyzIw1xoXLkkXd
+         WcOwqIFrnoylBWE43CqvSrc8wepPCanXcscAEdvW3ieK6K+H46Ii9ZD0/pdls2eJbnQU
+         z8iY+JHgjn0lPcoaQ0FIxlInDVhDZxk/9umOOTyVgl7vPGERVCSGNcqEBSRzzyxEiDbm
+         0AWug7jk5GYw7K9C6UxzbUHDtEKvEAU4Oc5gGi9gWkeJH2AKfwXoXVtLouZbRpbaQIcW
+         ugfi5LAnw9Ps2famGWt843zZdnFdweQnByr64WviJm/ZvbblRkp1mqR57jGvnfbwM8ly
+         Ux8g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:mime-version:reply-to:to:message-id
+         :subject:date:from:dkim-signature;
+        bh=n7avvkq2W2tuk4SLX2xLgtrDyjSVo7FAe6PRPI62Lrc=;
+        fh=NM1khFCUrumBtLzLvD0T+DhEOErB9z/LbzWb5OJz2WM=;
+        b=eOTmFDSz+Xf2NLPcFtkYeC8qeT0k1yDCeQytmgpl7wpQ1+EVn1guNYLUxROHHcgeYC
+         scetr9SjK3xlReQWkyukal87gNzHupOjU59C1GHuXLKgw3E+A1on7GONbPqLcGDYEDUD
+         QWGMmmYpZwXFowCnWE0XR/2jWbW0IT4Lk7nRG2WDMuzVxszfBGQLU06lUPyUQ4BNXO1D
+         vzMtQEcXg3g/S5w1RmkP46iLx629+tFD3Iv8xpYkbgRtAS4bOxhVzGNs46ultVWM3BeO
+         zxpMH7DAGg7IonMNkKGAWHKTwxkOgvV/wpCJLdCXvklhVF4kKA18lauyMwqYo3GmM1P2
+         NjqA==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@dayforce.com header.s=Corporate header.b="lkkS7UR/";
+       spf=pass (google.com: domain of notify@dayforce.com designates 67.231.152.177 as permitted sender) smtp.mailfrom=notify@dayforce.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=dayforce.com
+Return-Path: <notify@dayforce.com>
+Received: from mx0b-0001b203.pphosted.com (mx0b-0001b203.pphosted.com. [67.231.152.177])
+        by mx.google.com with ESMTPS id 956f58d0204a3-65ecfb6024fsi6598381d50.22.2026.05.24.19.03.38
+        for <favourotas26@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 24 May 2026 19:03:38 -0700 (PDT)
+Received-SPF: pass (google.com: domain of notify@dayforce.com designates 67.231.152.177 as permitted sender) client-ip=67.231.152.177;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@dayforce.com header.s=Corporate header.b="lkkS7UR/";
+       spf=pass (google.com: domain of notify@dayforce.com designates 67.231.152.177 as permitted sender) smtp.mailfrom=notify@dayforce.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=dayforce.com
+Received: from pps.filterd (m0383880.ppops.net [127.0.0.1])
+	by mx0b-0001b203.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64OM47J41500580
+	for <favourotas26@gmail.com>; Sun, 24 May 2026 22:03:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dayforce.com; h=
+	content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:reply-to:subject:to; s=Corporate; bh=n7avvkq2W2tuk
+	4SLX2xLgtrDyjSVo7FAe6PRPI62Lrc=; b=lkkS7UR/moA80PJ4myUhwhznCJMXT
+	3fm0IPteJA5JuLQJnHcEH0uT126m4c/wWVtVX0a6TrhefgKHLVZVJOA6LgwvG0oN
+	1DaCkDexOhk0oRtqLQE5NBkedH4zzCWAbFOTbwVMPcZj0b7mXm+6IYRBgJxvl6pz
+	LCfuHhUjVWwna+O9FOwB+D2u64b8/W8brEXOMM1CMEEXXslDXD7Fu8wyfEFGHSGA
+	ukQKnVzzNKZFUAjvPzFUCaMyiHNowSL86dB2YrLNcPKknnEIerEdNumx4J/Hn3Uh
+	O9xYIGMhYobdZq4vEQHqhIv7V6rcJ4h9J+uAiqMrPHDCBb7dO6Jjg3nfw==
+Received: from vir1ppt9app02.custadds.com (vir1ppt9app02.custadds.com [34.201.178.5])
+	by mx0b-0001b203.pphosted.com (PPS) with ESMTPS id 4ebvtc2t4t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <favourotas26@gmail.com>; Sun, 24 May 2026 22:03:37 -0400 (EDT)
+Received: from pps.filterd (vir1ppt9app02.custadds.com [127.0.0.1])
+	by vir1ppt9app02.custadds.com (8.18.1.7/8.18.1.7) with ESMTP id 64P1UvfI005074
+	for <favourotas26@gmail.com>; Sun, 24 May 2026 22:03:37 -0400
+Received: from azc1r72bje005 ([10.73.52.226])
+	by vir1ppt9app02.custadds.com (PPS) with ESMTP id 4eb6em52d7-1
+	for <favourotas26@gmail.com>; Sun, 24 May 2026 22:03:37 -0400 (EDT)
+From: notify@dayforce.com
+Date: Sun, 24 May 2026 22:03:36 -0400
+Subject: Subject: Reliance Home Comfort =?utf-8?b?LcKg?= Administration Clerk,
+ Operations Application Update
+Message-Id: <ZSLLQD7QCTU4.5S23W210WOH2@azc1r72bje005>
+To: favourotas26@gmail.com
+Reply-To: noreply@dayforce.com
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-GUID: RFp33_b3u4SCP0Sgj9q43CpHmfr0ncO6
+X-Proofpoint-ORIG-GUID: RFp33_b3u4SCP0Sgj9q43CpHmfr0ncO6
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI1MDAxNyBTYWx0ZWRfX1TzSBjOVQaw0
+ MTTixz4vH+mq2F/7GWgncKxRVdko6vJKGUnJYUkPQ0sdqlae0GGn0g2M0Cao3f+nFY1k6hpnIvz
+ nrDgURVExBO4PGRiXSREFPXpCASmpcWBGQP71IQwiak/XwNhmWgf+SkMIAj2A3EJ5kLt2fHrzPa
+ B0IDTmfithJU1eQuYkVEnQg/PS0aGMV3pAhQlcNEdUh1J1tTLVkwIg+zSPo+jTzr8aB34bWiOgQ
+ JU2U84RhN24AmofOyXk9rEv/OxFqF5z3/O3XbyYGMu7GvKGP+KWSZFQAnezoUW47fHgg7gfjNZA
+ To7SwlbiNY2RkoosXcyqsVR0cwyWeYCo3mIjQ0f3XmnOZldBF+eLGe65vttArRWKVw+RGeMSMma
+ V3WmVazmVxsr+VAWB2t1AcgPYjmX4HCFuGW+TXEIOFDZlvmDzZk=
+X-Authority-Analysis: v=2.4 cv=XpjK/1F9 c=1 sm=1 tr=0 ts=6a13adf9 b=1 cx=c_pps
+ a=A0JLZPsZM8YMw+7LinG+Qw==:117 a=A0JLZPsZM8YMw+7LinG+Qw==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=5KLPUuaC_9wA:10 a=g8TUdU_LZmEA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=c7ZXCppmvMDHnnlSwrXa:22 a=dghrlVdePXFPFScH7ET4:22
+ a=F6iDvlndAAAA:8 a=Ifbds3OEAAAA:8 a=SSmOFEACAAAA:8 a=lQRRYvuPyQV93rdr-FUA:9
+ a=ILk-k7kBmJLcIscJ:21 a=frz4AuCg-hUA:10 a=QEXdDO2ut3YA:10
+ a=RQI94NIh3S_wcN_ndn_T:22 a=E9rMgTsFZoNfoxLLdidO:22 cc=ntf
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-24_07,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Reason: orgsafe
+
+
+                <!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xht=
+ml1/DTD/xhtml1-transitional.dtd">
+<html lang=3D"en" xmlns=3D"http://www.w3.org/1999/xhtml" xmlns:v=3D"urn:sch=
+emas-microsoft-com:vml"
+  xmlns:o=3D"urn:schemas-microsoft-com:office:office">
+<!-- Copyright (C) 2019 Perkuto Solutions Inc - All Rights Reserved.
+You may use and modify this code under the terms of the Perkuto Template li=
+cense available here: http://perkuto.com/terms-and-conditions -->
+
+<head>
+  <meta name=3D"robots" content=3D"noindex, nofollow" />
+  <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3DUTF-8" =
+/>
+  <!--[if gte mso 9
+      ]><xml>
+        <o:OfficeDocumentSettings>
+          <o:AllowPNG />
+          <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+      </xml><!
+    [endif]-->
+  <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3DUTF-8" =
+/>
+  <meta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scale=3D=
+1, minimum-scale=3D1, maximum-scale=3D1" />
+  <meta http-equiv=3D"X-UA-Compatible" content=3D"IE=3Dedge" />
+  <meta name=3D"format-detection" content=3D"telephone=3Dno" />
+  <title>DAYFORCE</title>
+  <!-- Start Marketo Variable Definitions -->
+  <!-- Language/Head -->
+  <!-- Spacers -->
+  <!-- Bg Image -->
+  <!-- Switches -->
+  <!-- Align -->
+  <!-- Button -->
+  <!-- Colors -->
+  <!-- Fonts -->
+  <!-- Start Marketo Variable Definitions -->
+  <style type=3D"text/css">
+    body {
+      -webkit-text-size-adjust: none;
+      -ms-text-size-adjust: none;
+      background-color: #ffffff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    table td {
+      border-collapse: collapse;
+    }
+
+    table {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    table,
+    td {
+      mso-table-lspace: 0pt !important;
+      mso-table-rspace: 0pt !important;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
+      margin-bottom: 0;
+    }
+
+    body {
+      background-color: #ffffff;
+      width: 100%;
+      min-width: 100% !important;
+    }
+
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+    }
+
+    u+#body a {
+      color: inherit;
+      text-decoration: none;
+      font-size: inherit;
+      font-family: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+    }
+
+    a,
+    a:link,
+    a:visited {
+      color: #3067db;
+      text-decoration: none;
+    }
+
+    @media only screen and (max-width:600px) {
+      body {
+        min-width: 100% !important;
+      }
+
+      p {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+
+      table.tableCollapse {
+        width: 100% !important;
+      }
+
+      table.mainContainer {
+        width: 350px !important;
+      }
+    }
+  </style>
+</head>
+
+<body bgcolor=3D"#ffffff">
+  <div id=3D"body_style" style=3D"background-color: #ffffff">
+    <table role=3D"presentation" width=3D"100%" bgcolor=3D"#ffffff" cellpad=
+ding=3D"0" cellspacing=3D"0" border=3D"0" align=3D"center"
+      style=3D"
+          margin: 0px auto;
+          width: 100% !important;
+          min-width: 100% !important;
+        ">
+      <tbody>
+        <tr>
+          <td>
+            <table role=3D"presentation" bgcolor=3D"#ffffff" cellpadding=3D=
+"0" cellspacing=3D"0" border=3D"0"
+              class=3D"tableCollapse mainContainer" align=3D"center" style=3D=
+"margin: 0px auto; width: 600px">
+              <tbody>
+                <tr>
+                  <td class=3D"mktoContainer" id=3D"MainContainer" bgcolor=3D=
+"#ffffff" align=3D"center" valign=3D"top">
+                    <table role=3D"presentation" bgcolor=3D"#ffffff" width=3D=
+"100%" cellpadding=3D"0" cellspacing=3D"0" border=3D"0"
+                      align=3D"center" class=3D"mktoModule tableCollapse hi=
+deTable" id=3D"BGSpacerModule" style=3D"
+                          margin: 0px auto;
+                          width: 100% !important;
+                          min-width: 100% !important;
+                        ">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <table role=3D"presentation" width=3D"100%" cel=
+lpadding=3D"0" cellspacing=3D"0" border=3D"0"
+                              class=3D"tableCollapse" align=3D"center" styl=
+e=3D"
+                                  margin: 0px auto;
+                                  width: 100% !important;
+                                  min-width: 100% !important;
+                                ">
+                              <tbody>
+                                <tr>
+                                  <td height=3D"50" style=3D"
+                                        height: 50px;
+                                        font-size: 1px;
+                                        line-height: 1px;
+                                      ">
+                                    &nbsp;
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table role=3D"presentation" bgcolor=3D"#ffffff" width=3D=
+"100%" align=3D"center" cellpadding=3D"0"
+                      cellspacing=3D"0" border=3D"0" class=3D"mktoModule ta=
+bleCollapse" id=3D"TextModule01" style=3D"
+                          margin: 0px auto;
+                          width: 100% !important;
+                          min-width: 100% !important;
+                        ">
+                      <tbody style=3D"
+                                font-family: Arial, sans-serif;
+                                font-size: 1rem;
+                                color: #808285;
+                                text-align: left;
+                                font-weight: normal;
+                                word-wrap: break-word;
+                              ">
+                        <html xmlns=3D"http://www.w3.org/1999/xhtml"><p><sp=
+an style=3D"font-size: 10pt;">Dear Favour,=C2=A0</span></p> <p><span style=3D=
+"font-size: 10pt;">Thank you for your interest in Reliance Home Comfort. </=
+span></p> <p><span style=3D"font-size: 10pt;">Your application for the Admi=
+nistration Clerk, Operations position has been received and is currently un=
+der review by the Talent Acquisition team. Should your background and exper=
+ience align with our current needs, someone from Talent Acquisition will re=
+ach out to you directly.=C2=A0</span></p> <p><span style=3D"font-size: 10pt=
+;">Please note that only candidates who have been selected for an interview=
+, will be contacted. We encourage you to continue to explore opportunities =
+at Reliance Home Comfort via our career site at <a href=3D"https://www.reli=
+ancehomecomfort.com">www.reliancehomecomfort.com</a></span></p> <p>=C2=A0</=
+p> <p><span style=3D"font-size: 10pt;">Thank you,=C2=A0</span><br /><span s=
+tyle=3D"font-size: 10pt;">Reliance Home Comfort Talent Acquisition=C2=A0</s=
+pan></p></html>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table role=3D"presentation" width=3D"600px" cellpadding=3D"0" =
+cellspacing=3D"0" border=3D"0" align=3D"center"
+              class=3D"tableCollapse" id=3D"FooterModule02" style=3D"
+                  margin: 0px auto;
+                  width: 600px;
+                ">
+              <tbody style=3D"
+                font-family: Arial, sans-serif;
+                font-size: 10px;
+                color: #808285;
+                padding-top: 20px;
+                padding-bottom: 50px;
+                padding-left: 30px;
+                padding-right: 30px;
+              ">
+              =20
+                <tr>
+                  <td class=3D"mktEditable" id=3D"FooterDeactivateUrl" styl=
+e=3D"padding: 26px 30px 0px;">
+                    <p style=3D"text-align: center;"><a href=3D"https://job=
+s.dayforcehcm.com/en-CA/reliancecomfort/CANDIDATEPORTAL/deleteApplication/7=
+uGFXDrt?useConfirmationCode=3Dtrue">Did you receive this email in error?</a=
+></p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class=3D"mktEditable" id=3D"ConfirmationCode" style=3D=
+"padding: 12.5px 30px 0px;">
+                    <p style=3D"text-align: left;">Confirmation Number: 7uG=
+FXDrt</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class=3D"mktEditable" id=3D"FooterDisclaimer" style=3D=
+"padding: 12.5px 30px 0px;">
+                    <p style=3D"text-align: left;">If you no longer want to=
+ receive email alerts for this saved search, click the unsubscribe link abo=
+ve. To manage your other job alert subscriptions for this site, log in to y=
+our account and go to the Job Alerts tab.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class=3D"mktEditable" id=3D"FooterPrivacyPolicy" styl=
+e=3D"padding: 12.5px 30px 0px;">
+                    <p style=3D"text-align: left;">Refer to <a href=3D"http=
+s://jobs.dayforcehcm.com/en-CA/reliancecomfort/CANDIDATEPORTAL/privacyPolic=
+y">Dayforce's Privacy Policy</a></p>
+                  </td>
+                </tr>
+               =20
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- This is a work around! This div creates an invisible footer because =
+the Gmail mobile app has a loading issue. When it loads the Logo for the se=
+cond time it will start to cut off the footer. -->
+  <!-- This div is placed here in order for the Gmail app to cut this off i=
+nstead of the actual footer content. ADO Ticket Number: 1553446 -->
+  <div style=3D"
+      background-color: #ffffff;
+      height: 100px !important;
+      ">
+  </div>
+</body>
+</html>=

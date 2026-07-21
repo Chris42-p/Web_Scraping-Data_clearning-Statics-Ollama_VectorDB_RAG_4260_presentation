@@ -1,5 +1,6 @@
 import sqlite3 
 import json
+import os
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from contextlib import closing
@@ -34,11 +35,12 @@ class SQL_DataBase():
 
           self.__initialize()
 
-#== Create    
+     #== Create    
      #-- DB initalize  
      def __get_conn(self ) -> sqlite3.Connection:
           conn = sqlite3.connect(self.DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
           conn.row_factory = sqlite3.Row
+          conn.execute("PRAGMA foreign_keys = ON")
           return conn
 
      def __initialize(self) -> None:
@@ -190,8 +192,8 @@ class SQL_DataBase():
           ai_serialized = ai_doc.copy()
           
           for field in CONST["JSON_FIELDS"]:
-               if field in ai_serialized and isinstance(ai_serialized[field], list):
-                    ai_serialized[field] = json.dumps(ai_serialized[field])
+               if field in ai_serialized:
+                    ai_serialized[field] = self.__prepare_db_value(ai_serialized[field])
 
           # both inserts share the same doc_hash, wrap in one transaction
           with self.__get_conn() as conn:
@@ -201,43 +203,42 @@ class SQL_DataBase():
 
 #== update
      def update_document(self, doc_hash: str, doc_updates: dict = None, ai_updates: dict = None) -> None:
-          """Update fields in either or both tables by doc_hash."""
           with self.__get_conn() as conn:
-
                if doc_updates:
-                    # serialize any list fields
-                    for field in self.JSON_FIELDS:
-                         if field in doc_updates and isinstance(doc_updates[field], list):
-                              doc_updates[field] = json.dumps(doc_updates[field])
+                    normalized_doc_updates = {
+                         key: self.__prepare_db_value(value)
+                         for key, value in doc_updates.items()
+                    }
 
-                    fields = ", ".join(f"{k} = :{k}" for k in doc_updates.keys())
+                    fields = ", ".join(f"{k} = :{k}" for k in normalized_doc_updates.keys())
                     sql = f"UPDATE documents SET {fields} WHERE doc_hash = :doc_hash"
-                    conn.execute(sql, {**doc_updates, "doc_hash": doc_hash})
+                    conn.execute(sql, {**normalized_doc_updates, "doc_hash": doc_hash})
 
                if ai_updates:
-                    for field in self.JSON_FIELDS:
-                         if field in ai_updates and isinstance(ai_updates[field], list):
-                              ai_updates[field] = json.dumps(ai_updates[field])
+                    normalized_ai_updates = {
+                         key: self.__prepare_db_value(value)
+                         for key, value in ai_updates.items()
+                    }
 
                     conn.execute(
                          "INSERT OR IGNORE INTO ai_analysis (doc_hash) VALUES (?)",
-                         (doc_hash,)
+                         (doc_hash,),
                     )
 
-                    fields = ", ".join(f"{k} = :{k}" for k in ai_updates.keys())
+                    fields = ", ".join(f"{k} = :{k}" for k in normalized_ai_updates.keys())
                     sql = f"UPDATE ai_analysis SET {fields} WHERE doc_hash = :doc_hash"
-                    conn.execute(sql, {**ai_updates, "doc_hash": doc_hash})
+                    conn.execute(sql, {**normalized_ai_updates, "doc_hash": doc_hash})
+
                conn.commit()
 
-#==delte
+     #==delte
      def delete_document(self, doc_hash: str) -> None:
-          """Delete a document and its ai_analysis by doc_hash."""
-          with self.__get_conn() as conn:
-               conn.execute("DELETE FROM ai_analysis WHERE doc_hash = ?", (doc_hash,))
-               conn.execute("DELETE FROM documents WHERE doc_hash = ?", (doc_hash,))
-               conn.commit()
+          self.delete_document_and_related(doc_hash)
 
-#== read
+     def delete_document_by_id_or_hash(self, doc_hash: str) -> None:
+          self.delete_document_and_related(doc_hash)
+
+     #== read
      def get_document_by_hash(self, doc_hash: str) -> dict | None:
           """Get a single document joined with its ai_analysis by doc_hash."""
           sql = """
@@ -266,9 +267,185 @@ class SQL_DataBase():
                row = conn.execute(sql).fetchone()
                return self.__deserialize_row(row) if row else None
 
-     
+     def get_documents_summary_list(self) -> list[dict]:
+          sql = """
+               SELECT
+                    d.doc_hash,
+                    d.title,
+                    d.author,
+                    d.time_creation,
+                    d.modified_date,
+                    d.stored_filename,
+                    d.relative_path,
+                    d.original_filename,
+                    d.mime_type,
+                    d.source,
+                    d.sender,
+                    d.processed_at,
+                    d.updated_at,
+                    d.email_subject,
+                    d.email_date,
+                    d.extracted_text,
+                    a.document_type,
+                    a.summary,
+                    a.description
+               FROM documents d
+               LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
+               ORDER BY COALESCE(d.processed_at, d.modified_date, d.time_creation) DESC
+          """
+          with self.__get_conn() as conn:
+               rows = conn.execute(sql).fetchall()
 
-#== Util 
+          documents = []
+          for row in rows:
+               item = dict(row)
+               documents.append({
+                    "id": item.get("doc_hash", ""),
+                    "doc_hash": item.get("doc_hash", ""),
+                    "title": item.get("title", ""),
+                    "from": item.get("sender") or item.get("author") or "Unknown",
+                    "date": (
+                         item.get("email_date")
+                         or item.get("modified_date")
+                         or item.get("time_creation")
+                         or item.get("processed_at")
+                         or item.get("updated_at")
+                         or ""
+                    ),
+                    "type": item.get("document_type") or item.get("mime_type", ""),
+                    "summary": item.get("summary", ""),
+                    "description": item.get("description", ""),
+                    "snippet": item.get("summary") or item.get("description", ""),
+                    "stored_filename": item.get("stored_filename", ""),
+                    "relative_path": item.get("relative_path", ""),
+                    "original_filename": item.get("original_filename", ""),
+                    "mime_type": item.get("mime_type", ""),
+                    "source": item.get("source", ""),
+                    "sender": item.get("sender", ""),
+                    "email_subject": item.get("email_subject", ""),
+                    "email_date": item.get("email_date", ""),
+                    "extracted_text": item.get("extracted_text", ""),
+               })
+          return documents
+     
+     def search_documents(self, query: str, limit: int = 5) -> list[dict]:
+          sql = """
+               SELECT
+                    d.doc_hash,
+                    d.title,
+                    d.author,
+                    d.original_filename,
+                    d.mime_type,
+                    d.source,
+                    d.sender,
+                    d.email_subject,
+                    d.email_date,
+                    d.time_creation,
+                    d.modified_date,
+                    d.extracted_text,
+                    a.summary,
+                    a.description,
+                    a.document_type,
+                    a.sentiment,
+                    a.language
+               FROM documents d
+               LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
+               WHERE
+                    COALESCE(d.title, '') LIKE ?
+                    OR COALESCE(d.original_filename, '') LIKE ?
+                    OR COALESCE(d.sender, '') LIKE ?
+                    OR COALESCE(d.email_subject, '') LIKE ?
+                    OR COALESCE(d.extracted_text, '') LIKE ?
+                    OR COALESCE(a.summary, '') LIKE ?
+                    OR COALESCE(a.description, '') LIKE ?
+               ORDER BY COALESCE(d.email_date, d.modified_date, d.time_creation) DESC
+               LIMIT ?
+          """
+          like_query = f"%{query}%"
+          with self.__get_conn() as conn:
+               rows = conn.execute(
+                    sql,
+                    (like_query, like_query, like_query, like_query, like_query, like_query, like_query, limit),
+               ).fetchall()
+          return [self.__deserialize_row(row) for row in rows]
+
+
+     def get_document_details_by_hash(self, doc_hash: str) -> dict | None:
+          sql = """
+               SELECT
+                    d.doc_hash,
+                    d.title,
+                    d.author,
+                    d.time_creation,
+                    d.modified_date,
+                    d.stored_filename,
+                    d.relative_path,
+                    d.original_filename,
+                    d.mime_type,
+                    d.source,
+                    d.sender,
+                    d.email_subject,
+                    d.email_date,
+                    d.extracted_text,
+                    a.summary,
+                    a.description,
+                    a.send_reason,
+                    a.keywords,
+                    a.topics,
+                    a.entities,
+                    a.document_type,
+                    a.sentiment,
+                    d.processed_at,
+                    d.updated_at,
+                    a.language,
+                    a.date_references
+               FROM documents d
+               LEFT JOIN ai_analysis a ON d.doc_hash = a.doc_hash
+               WHERE d.doc_hash = ?
+               LIMIT 1
+          """
+          with self.__get_conn() as conn:
+               row = conn.execute(sql, (doc_hash,)).fetchone()
+
+          item = self.__deserialize_row(row)
+          if not item:
+               return None
+
+          return {
+               "id": item.get("doc_hash", ""),
+               "doc_hash": item.get("doc_hash", ""),
+               "title": item.get("title", ""),
+               "from": item.get("sender") or item.get("author") or "Unknown",
+               "date": (
+               item.get("email_date")
+                    or item.get("modified_date")
+                    or item.get("time_creation")
+                    or item.get("processed_at")
+                    or item.get("updated_at")
+                    or ""
+               ),
+               "type": item.get("document_type") or item.get("mime_type", ""),
+               "summary": item.get("summary", ""),
+               "description": item.get("description", ""),
+               "snippet": item.get("summary") or item.get("description", ""),
+               "stored_filename": item.get("stored_filename", ""),
+               "relative_path": item.get("relative_path", ""),
+               "original_filename": item.get("original_filename", ""),
+               "mime_type": item.get("mime_type", ""),
+               "source": item.get("source", ""),
+               "sender": item.get("sender", ""),
+               "email_subject": item.get("email_subject", ""),
+               "email_date": item.get("email_date", ""),
+               "extracted_text": item.get("extracted_text", ""),
+               "keywords": item.get("keywords", []),
+               "topics": item.get("topics", []),
+               "entities": item.get("entities", []),
+               "sentiment": item.get("sentiment", ""),
+               "language": item.get("language", ""),
+               "date_references": item.get("date_references", []),
+          }
+
+     #== Util 
      def mark_processed(self, doc_hash: str) -> None:
           with self.__get_conn() as conn:
                conn.execute(
@@ -505,6 +682,166 @@ class SQL_DataBase():
                     ),
                )
                conn.commit()
+
+
+     def save_report_history(self, user_id: int, question: str, answer: str, matches: list[dict]) -> int:
+          matches_json = json.dumps(matches)
+          with self.__get_conn() as conn:
+               cursor = conn.execute(
+                    """
+                    INSERT INTO report_history (user_id, question, answer, matches_json)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (user_id, question, answer, matches_json),
+               )
+               conn.commit()
+               return int(cursor.lastrowid)
+
+
+     def get_report_history_for_user(self, user_id: int) -> list[dict]:
+          with self.__get_conn() as conn:
+               rows = conn.execute(
+                    """
+                    SELECT id, question, answer, matches_json, created_at
+                    FROM report_history
+                    WHERE user_id = ?
+                    ORDER BY created_at DESC, id DESC
+                    """,
+                    (user_id,),
+               ).fetchall()
+
+          history = []
+          for row in rows:
+               item = dict(row)
+               try:
+                    item["matches"] = json.loads(item.get("matches_json") or "[]")
+               except json.JSONDecodeError:
+                    item["matches"] = []
+               history.append(item)
+
+          return history
+     
+
+     def get_report_history_item(self, history_id: int, user_id: int) -> dict | None:
+          with self.__get_conn() as conn:
+               row = conn.execute(
+                    """
+                    SELECT id, question, answer, matches_json, created_at
+                    FROM report_history
+                    WHERE id = ? AND user_id = ?
+                    LIMIT 1
+                    """,
+                    (history_id, user_id),
+               ).fetchone()
+
+          if not row:
+               return None
+
+          item = dict(row)
+          try:
+               item["matches"] = json.loads(item.get("matches_json") or "[]")
+          except json.JSONDecodeError:
+               item["matches"] = []
+
+          return item
+     
+     def document_exists(self, doc_hash: str) -> bool:
+          with self.__get_conn() as conn:
+               row = conn.execute(
+                    "SELECT 1 FROM documents WHERE doc_hash = ? LIMIT 1",
+                    (doc_hash,),
+               ).fetchone()
+               return row is not None
+          
+     def get_existing_document_brief(self, doc_hash: str) -> dict | None:
+          with self.__get_conn() as conn:
+               row = conn.execute(
+                    """
+                    SELECT doc_hash, title, original_filename, source, processed_at, updated_at
+                    FROM documents
+                    WHERE doc_hash = ?
+                    LIMIT 1
+                    """,
+                    (doc_hash,),
+               ).fetchone()
+          return dict(row) if row else None
+
+     def ensure_document_metadata_columns(self) -> None:
+          required_columns = {
+               "stored_filename": "TEXT",
+               "relative_path": "TEXT",
+               "original_filename": "TEXT",
+               "mime_type": "TEXT",
+               "source": "TEXT",
+               "sender": "TEXT",
+               "email_subject": "TEXT",
+               "email_date": "TEXT",
+               "extracted_text": "TEXT",
+          }
+
+          with self.__get_conn() as conn:
+               existing = {
+                    row["name"]
+                    for row in conn.execute("PRAGMA table_info(documents)").fetchall()
+               }
+
+               for column_name, column_type in required_columns.items():
+                    if column_name not in existing:
+                         conn.execute(f"ALTER TABLE documents ADD COLUMN {column_name} {column_type}")
+
+               conn.commit()
+
+     def delete_document_and_related(self, doc_hash: str, ingest_root: str | None = None) -> dict:
+          with self.__get_conn() as conn:
+               row = conn.execute(
+                    """
+                    SELECT doc_hash, relative_path, stored_filename
+                    FROM documents
+                    WHERE doc_hash = ?
+                    LIMIT 1
+                    """,
+                    (doc_hash,),
+               ).fetchone()
+
+               if not row:
+                    return {"deleted": False, "message": "Document not found."}
+
+               document = dict(row)
+
+               if ingest_root:
+                    relative_path = document.get("relative_path") or document.get("stored_filename") or ""
+                    if relative_path:
+                         file_path = Path(ingest_root) / relative_path
+                         try:
+                              if file_path.exists() and file_path.is_file():
+                                   file_path.unlink()
+                         except Exception as exc:
+                              print(f"Failed to delete stored file for {doc_hash}: {exc}")
+
+               for sql in [
+                    "DELETE FROM embeddings WHERE doc_hash = ?",
+                    "DELETE FROM ai_analysis WHERE doc_hash = ?",
+                    "DELETE FROM report_history_documents WHERE doc_hash = ?",
+                    "DELETE FROM documents WHERE doc_hash = ?",
+               ]:
+                    try:
+                         conn.execute(sql, (doc_hash,))
+                    except Exception as exc:
+                         print(f"Delete step skipped for {doc_hash}: {exc}")
+
+               conn.commit()
+
+               return {
+                    "deleted": True,
+                    "doc_hash": doc_hash,
+                    "message": "Document and related data deleted successfully.",
+               }
+          
+     def __prepare_db_value(self, value):
+          if isinstance(value, (dict, list)):
+               return json.dumps(value)
+          return value
+
 
      def DEV_drop_db_table(self):
           with self.__get_conn() as conn:

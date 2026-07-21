@@ -68,26 +68,11 @@ export async function getCurrentUser() {
 // Load document services
 
 export async function loadDocuments(): Promise<DocumentItem[]> {
-  const response = await fetch(`${API_BASE}/documents`, {
-    credentials: "include",
+  const data = await apiRequest<{ documents: DocumentItem[] }>("/documents", {
+    method: "GET",
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to load documents");
-  }
-
-  const data = await response.json();
-  console.log("loadDocuments raw json:", data);
-
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  if (Array.isArray(data.documents)) {
-    return data.documents;
-  }
-
-  return [];
+  return Array.isArray(data.documents) ? data.documents : [];
 }
 
 export async function loadSpiderJobs() {
@@ -120,30 +105,32 @@ export async function loadAllDocuments() {
   return apiRequest("/documents/all", { method: "GET" });
 }
 
-export async function searchDocuments(query: string): Promise<any[]> {
-  const data = await apiRequest<{ results: any[] }>(
-    `/search?query=${encodeURIComponent(query)}`,
+export async function searchDocuments(query: string, limit = 10): Promise<DocumentItem[]> {
+  const data = await apiRequest<{ documents: DocumentItem[] }>(
+    `/documents/search?query=${encodeURIComponent(query)}&limit=${limit}`,
     { method: "GET" }
   );
 
-  return Array.isArray(data.results) ? data.results : [];
+  return Array.isArray(data.documents) ? data.documents : [];
 }
 
 export async function getDocumentById(id: string): Promise<DocumentItem | null> {
-  const response = await fetch(`${APP_CONFIG.apiBaseUrl}/documents/${id}`, {
+  const response = await fetch(`${API_BASE}/documents/${id}`, {
     method: "GET",
     credentials: "include",
   });
 
-  if (!response.ok) {
-    if (response.status === 404) {
-      return null;
-    }
-    throw new Error("Failed to load document");
+  if (response.status === 404) {
+    return null;
   }
 
-  const data = await response.json();
-  return data;
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.detail || data?.error || "Failed to load document");
+  }
+
+  return data as DocumentItem;
 }
 
 // Connect to Gmail
@@ -265,7 +252,7 @@ export async function rerunModel(docHash: string) {
 }
 
 export async function queryReports(question: string, top_k = 5) {
-  return apiRequest<{ answer: string; matches: any[] }>("/reports/query", {
+  return apiRequest<{ answer: string; matches: any[]; history_id?: number }>("/reports/query", {
     method: "POST",
     body: JSON.stringify({ question, top_k }),
   });
@@ -278,7 +265,7 @@ export async function loadSpiderConfig(spiderKey: string): Promise<SpiderConfig>
   });
 }
 
-export async function saveSpiderConfig(spiderKey: string,config: SpiderConfig): Promise<SpiderConfig> {
+export async function saveSpiderConfig(spiderKey: string, config: SpiderConfig): Promise<SpiderConfig> {
   return apiRequest<SpiderConfig>(`/spider/config/${spiderKey}`, {
     method: "POST",
     body: JSON.stringify(config),
@@ -298,7 +285,44 @@ export async function loadSpiderStatus(): Promise<SpiderStatus> {
   });
 }
 
+export async function deleteDocument(documentId: string) {
+  const response = await fetch(`${API_BASE}/documents/${documentId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
 
+  if (response.status === 204) {
+    return { ok: true };
+  }
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.detail || data?.error || data?.message || "Failed to delete document"
+    );
+  }
+
+  return data;
+}
+
+export async function loadReportHistory() {
+  return apiRequest<{ history: any[] }>("/reports/history", {
+    method: "GET",
+  });
+}
+
+export async function getReportHistoryItem(historyId: number) {
+  return apiRequest<any>(`/reports/history/${historyId}`, {
+    method: "GET",
+  });
+}
+
+export async function disconnectGmail() {
+  return apiRequest<{ connected: boolean; message: string }>("/gmail/logout", {
+    method: "POST",
+  });
+}
 
 /*export async function getHousingSummary() {
     const response = await fetch("http://localhost:8000/reports/housing/summary", {
