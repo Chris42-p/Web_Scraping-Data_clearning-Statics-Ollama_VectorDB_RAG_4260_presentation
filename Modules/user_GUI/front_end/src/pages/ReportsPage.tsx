@@ -42,6 +42,8 @@ export function ReportsPage() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [clearingHistory, setClearingHistory] = useState(false);
 
+    const queryRan = useRef(false);
+
     useEffect(() => {
         let isMounted = true;
 
@@ -113,9 +115,15 @@ export function ReportsPage() {
 
     useEffect(() => {
         async function runInitialQuery() {
-            if (!initialQuestion) {
-                return;
-            }
+        if (!initialQuestion) {
+            return;
+        }
+
+        if (queryRan.current) {
+            return;
+        }
+
+        queryRan.current = true;
 
             try {
                 setQueryLoading(true);
