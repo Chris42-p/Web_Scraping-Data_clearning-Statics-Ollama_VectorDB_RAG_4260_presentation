@@ -78,33 +78,63 @@ class Injest_Engine(Interface_InjestionEngine):
           email_subject: str = "",
           email_date: str = "",
           original_filename: str = "",
-     ) -> dict:
-          file_path = Path(file_path)
-          doc_type = file_path.suffix.upper()
+          ) -> dict:
+          original_saved_path = Path(file_path)
+          analysis_path = original_saved_path
+          doc_type = original_saved_path.suffix.upper()
 
-          if doc_type == ".PDF" and "_ocr" not in file_path.stem.lower():
-               ocr_candidate = file_path.with_name(f"{file_path.stem}_ocr.pdf")
+          if doc_type == ".PDF" and "_ocr" not in original_saved_path.stem.lower():
+               ocr_candidate = original_saved_path.with_name(f"{original_saved_path.stem}_ocr.pdf")
                if ocr_candidate.exists():
-                    file_path = ocr_candidate
+                    analysis_path = ocr_candidate
 
-          processed_doc_obj = self.__read_a_document(doc_type, file_path)
+          processed_doc_obj = self.__read_a_document(doc_type, analysis_path)
           if processed_doc_obj is None or processed_doc_obj == CONST["ERR_CODE"]:
-               raise ValueError(f"Unable to read document: {file_path}")
+               raise ValueError(f"Unable to read document: {analysis_path}")
 
           raw_payload = processed_doc_obj.to_json()
           ai_processed_doc = self.__call_ollama_on_a_file(raw_payload)
+
           ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
 
+
+          # ===== ADD THIS =====
+          summary = (ai_doc_obj.get("summary") or "").strip()
+          description = (ai_doc_obj.get("description") or "").strip()
+          extracted_text = (processed_doc_obj.paragraphs or "").strip()
+
+          if not summary:
+               if description:
+                    ai_doc_obj["summary"] = description[:500]
+               elif extracted_text:
+                    ai_doc_obj["summary"] = extracted_text[:500]
+               else:
+                    ai_doc_obj["summary"] = "AI summary unavailable."
+
+          if not description:
+               if extracted_text:
+                    ai_doc_obj["description"] = extracted_text[:1200]
+
+
+
           original_doc = processed_doc_obj.to_json_no_paragraphs()
-          original_doc["stored_filename"] = file_path.name
-          original_doc["relative_path"] = str(file_path.relative_to(self.ingest_folder)) if file_path.is_relative_to(self.ingest_folder) else file_path.name
-          original_doc["original_filename"] = original_filename or file_path.name
-          original_doc["mime_type"] = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+
+          # IMPORTANT: store the original uploaded file for preview/download
+          original_doc["stored_filename"] = original_saved_path.name
+          original_doc["relative_path"] = (
+               str(original_saved_path.relative_to(self.ingest_folder))
+               if original_saved_path.is_relative_to(self.ingest_folder)
+               else original_saved_path.name
+          )
+          original_doc["original_filename"] = (
+               original_filename or original_saved_path.name
+          )
+          original_doc["mime_type"] = mimetypes.guess_type(original_saved_path.name)[0] or "application/octet-stream"
           original_doc["source"] = source
           original_doc["sender"] = sender
           original_doc["email_subject"] = email_subject
           original_doc["email_date"] = email_date
-          original_doc["extracted_text"] = processed_doc_obj.paragaphs
+          original_doc["extracted_text"] = processed_doc_obj.paragraphs
 
           self.my_sql_db.insert_document_with_file_metadata(
                doc_hash=original_doc["doc_hash"],
@@ -258,6 +288,24 @@ class Injest_Engine(Interface_InjestionEngine):
           ai_processed_doc = self.__call_ollama_on_a_file(processed_doc_obj.to_json())
           ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
 
+
+          # ===== ADD THIS =====
+          summary = (ai_doc_obj.get("summary") or "").strip()
+          description = (ai_doc_obj.get("description") or "").strip()
+          extracted_text = (processed_doc_obj.paragraphs or "").strip()
+
+          if not summary:
+               if description:
+                    ai_doc_obj["summary"] = description[:500]
+               elif extracted_text:
+                    ai_doc_obj["summary"] = extracted_text[:500]
+               else:
+                    ai_doc_obj["summary"] = "AI summary unavailable."
+
+          if not description:
+               if extracted_text:
+                    ai_doc_obj["description"] = extracted_text[:1200]
+
           original_doc = processed_doc_obj.to_json_no_paragraphs()
           original_doc["source"] = source
           original_doc["original_filename"] = original_filename
@@ -267,7 +315,7 @@ class Injest_Engine(Interface_InjestionEngine):
           original_doc["email_subject"] = email_subject or ""
           original_doc["email_date"] = email_date or ""
           original_doc["stored_filename"] = Path(original_filename).name if original_filename else ""
-          original_doc["extracted_text"] = processed_doc_obj.paragaphs or ""
+          original_doc["extracted_text"] = processed_doc_obj.paragraphs or ""
 
           self.my_sql_db.insert_document_with_file_metadata(
                doc_hash=original_doc["doc_hash"],
@@ -335,7 +383,7 @@ class Injest_Engine(Interface_InjestionEngine):
                read_doc_obj = self.Processed_Document_Obj(
                title=title,
 
-               paragaphs=all_text,
+               paragraphs=all_text,
                author=author,
                time_creation=time_creation,
                modified_date=modified_date,
@@ -384,7 +432,7 @@ class Injest_Engine(Interface_InjestionEngine):
                props = doc.core_properties
                read_doc_obj = self.Processed_Document_Obj(
                title=props.title if props.title else None,
-               paragaphs=doc_content,
+               paragraphs=doc_content,
                header_footer=header_text,
                table_content=all_row_data,
                author=props.author if props.author else None,
@@ -410,7 +458,7 @@ class Injest_Engine(Interface_InjestionEngine):
                file_stat = os.stat(docuemnt)
                read_doc_obj = self.Processed_Document_Obj(
                title=os.path.basename(docuemnt),
-               paragaphs=doc_content,
+               paragraphs=doc_content,
                time_creation=str(file_stat.st_ctime),
                modified_date=str(file_stat.st_mtime),
                )
@@ -428,7 +476,7 @@ class Injest_Engine(Interface_InjestionEngine):
                file_stat = os.stat(docuemnt)
                read_doc_obj = self.Processed_Document_Obj(
                title=os.path.basename(docuemnt),
-               paragaphs=doc_content,
+               paragraphs=doc_content,
                time_creation=str(file_stat.st_ctime),
                modified_date=str(file_stat.st_mtime),
                )
@@ -450,7 +498,7 @@ class Injest_Engine(Interface_InjestionEngine):
                props = prs.core_properties
                read_doc_obj = self.Processed_Document_Obj(
                     title=props.title if props.title else None,
-                    paragaphs=doc_content,
+                    paragraphs=doc_content,
                     author=props.author if props.author else None,
                     time_creation=str(props.created) if props.created else None,
                     modified_date=str(props.modified) if props.modified else None,
@@ -480,7 +528,7 @@ class Injest_Engine(Interface_InjestionEngine):
                               continue
 
 
-               read_doc_obj=self.Processed_Document_Obj(title=Path(docuemnt).stem,paragaphs=doc_content)
+               read_doc_obj=self.Processed_Document_Obj(title=Path(docuemnt).stem,paragraphs=doc_content)
                pass
           elif doc_type == ".EML":
                mail = mailparser.parse_from_file(docuemnt)
@@ -537,7 +585,7 @@ class Injest_Engine(Interface_InjestionEngine):
 
                read_doc_obj = self.Processed_Document_Obj(
                     title=subject,
-                    paragaphs=doc_content,
+                    paragraphs=doc_content,
                     header_footer="",
                     table_content=attachment_text,
                     author=sender,
@@ -604,7 +652,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     print("Model Crashed")
 
           return json.dumps({
-               "summary": "AI summary unavailable.",
+               "summary": "",
                "description": "Ollama model call failed.",
                "send_reason": "",
                "keywords": [],
@@ -619,7 +667,7 @@ class Injest_Engine(Interface_InjestionEngine):
      # parse the response from the model into a structured object
      def __ollama_parse_response_into_object(self, ollama_response ):
           fallback = self.AI_Processed_Document_Obj(
-               ai_summary="AI summary unavailable.",
+               ai_summary="",
                ai_description="Ollama response could not be parsed.",
                ai_send_reason="",
                ai_keywords=[],
@@ -635,12 +683,28 @@ class Injest_Engine(Interface_InjestionEngine):
                return fallback
 
           try:
-               parsed = json.loads(ollama_response)
+               cleaned = ollama_response.strip()
+
+               # remove markdown JSON wrapper if Ollama adds it
+               if cleaned.startswith("```"):
+                    cleaned = re.sub(r"```(?:json)?", "", cleaned)
+                    cleaned = cleaned.replace("```", "").strip()
+
+               parsed = json.loads(cleaned)
+
           except (json.JSONDecodeError, TypeError):
                print(f"{CONST['ERR_TXT']}: Ollama returned non-JSON output.")
+               print("RAW RESPONSE:")
+               print(ollama_response)
+
                return fallback
+
           return self.AI_Processed_Document_Obj(
-               ai_summary=parsed.get("summary", "AI summary unavailable."),
+               ai_summary=(
+                    parsed.get("summary")
+                    or parsed.get("description")
+                    or "AI summary unavailable."
+               ),
                ai_description=parsed.get("description", ""),
                ai_send_reason=parsed.get("send_reason", ""),
                ai_keywords=parsed.get("keywords", []),
@@ -737,7 +801,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     original_doc["sender"] = ""
                     original_doc["email_subject"] = ""
                     original_doc["email_date"] = ""
-                    original_doc["extracted_text"] = processed_doc_obj.paragaphs or ""
+                    original_doc["extracted_text"] = processed_doc_obj.paragraphs or ""
 
                     self.my_sql_db.insert_document_with_file_metadata(
                     doc_hash=original_doc["doc_hash"],
@@ -828,7 +892,7 @@ class Injest_Engine(Interface_InjestionEngine):
           #document itself #default "" since we're working with strings. 
           title =""
           docuemnt_bytes=""
-          paragaphs =""
+          paragraphs =""
           header_footer =""
           table_content =""
           #== meta data
@@ -840,11 +904,11 @@ class Injest_Engine(Interface_InjestionEngine):
           #== hahses 
           doc_hash=""
 
-          def __init__(self, title="",paragaphs="", header_footer="", 
+          def __init__(self, title="",paragraphs="", header_footer="", 
                               table_content="", author="", time_creation="", 
                               modified_date="", file_computer_id=""):
                self.title=title
-               self.paragaphs=paragaphs 
+               self.paragraphs=paragraphs 
                self.header_footer=header_footer 
                self.table_content=table_content 
 
@@ -881,7 +945,7 @@ class Injest_Engine(Interface_InjestionEngine):
 
                tmp={
                     "title": self.standardize_text( "title"),
-                    "paragraphs":self.standardize_text ("paragaphs"),   #using AI to summarize this
+                    "paragraphs":self.standardize_text ("paragraphs"),   #using AI to summarize this
                     "header_footer":self.standardize_text ("header_footer"),
                     "table_content":self.standardize_text ("table_content"),
                     "author":self.standardize_text ("author"),
@@ -905,7 +969,7 @@ class Injest_Engine(Interface_InjestionEngine):
 
                return {
                     "title": self.standardize_text( "title"),
-                    # "paragraphs":self.standardize_text ("paragaphs"),   #using AI to summarize this
+                    # "paragraphs":self.standardize_text ("paragraphs"),   #using AI to summarize this
                     "document_bytes":self.docuemnt_bytes,
                     "header_footer":self.standardize_text ("header_footer"),
                     "table_content":self.standardize_text ("table_content"),
@@ -926,9 +990,21 @@ class Injest_Engine(Interface_InjestionEngine):
 
 
           def __hash_document(self):
+               content = (
+                    str(self.title)
+                    + str(self.author)
+                    + str(self.paragraphs)
+               )
+
+               self.doc_hash = hashlib.sha256(
+                    content.encode("utf-8")
+               ).hexdigest()
+
+
+          #def __hash_document(self):
                #hash the title, and author? -- quick look up?
-               content = str(self.author) + str(self.title)
-               self.doc_hash = hashlib.md5(content.encode()).hexdigest()
+          #     content = str(self.author) + str(self.title)
+          #     self.doc_hash = hashlib.md5(content.encode()).hexdigest()
 
 
      class AI_Processed_Document_Obj:

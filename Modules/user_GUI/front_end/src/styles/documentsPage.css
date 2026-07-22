@@ -439,11 +439,17 @@
   word-break: break-word;
 }
 
-.documents-card p {
+.documents-card-preview {
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.report-answer-text {
+  display: block;
+  overflow: visible;
+  white-space: normal;
 }
 
 .documents-card-meta {
@@ -523,4 +529,32 @@
 .reports-history-item span {
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.reports-history-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reports-clear-history-button {
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 107, 87, 0.35);
+  border-radius: 12px;
+  background: rgba(220, 38, 38, 0.16);
+  color: #ffd5cf;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.reports-clear-history-button:hover {
+  background: rgba(220, 38, 38, 0.24);
+  border-color: rgba(255, 107, 87, 0.48);
+}
+
+.reports-clear-history-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

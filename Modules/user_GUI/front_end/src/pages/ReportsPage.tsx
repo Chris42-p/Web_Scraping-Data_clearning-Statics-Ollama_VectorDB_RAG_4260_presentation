@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { loadReports, queryReports, loadReportHistory } from "../services";
+import { loadReports, queryReports, loadReportHistory, clearReportHistory } from "../services";
 
 type ReportItem = {
     doc_hash: string;
@@ -40,6 +40,7 @@ export function ReportsPage() {
 
     const [history, setHistory] = useState<any[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+    const [clearingHistory, setClearingHistory] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -73,14 +74,46 @@ export function ReportsPage() {
         };
     }, []);
 
-    useEffect(() => {
-        let ignore = false;
+    const refreshReports = async () => {
+        try {
+            setLoading(true);
 
+            const data = await loadReports();
+
+            setReports(
+                Array.isArray(data?.reports)
+                    ? data.reports
+                    : []
+            );
+
+        } catch (error) {
+            console.error("Failed to load reports:", error);
+            setErrorMessage("Unable to load generated reports.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const refreshHistory = async () => {
+        try {
+            const data = await loadReportHistory();
+
+            setHistory(
+                Array.isArray(data?.history)
+                    ? data.history
+                    : []
+            );
+
+        } catch (error) {
+            console.error("Failed to refresh history:", error);
+        }
+    };
+
+
+    useEffect(() => {
         async function runInitialQuery() {
             if (!initialQuestion) {
-                setAnswer("");
-                setMatches([]);
-                setQueryError("");
                 return;
             }
 
@@ -92,30 +125,39 @@ export function ReportsPage() {
 
                 const result = await queryReports(initialQuestion, 5);
 
-                if (!ignore) {
-                    setAnswer(result?.answer || "No answer returned.");
-                    setMatches(Array.isArray(result?.matches) ? result.matches : []);
-                }
+                setAnswer(
+                    result?.answer || "No answer returned."
+                );
+
+                setMatches(
+                    Array.isArray(result?.matches)
+                        ? result.matches
+                        : []
+                );
+
+                // refresh UI after backend generated report
+                await refreshReports();
+                await refreshHistory();
+
             } catch (error) {
                 console.error("Failed to query reports:", error);
-                if (!ignore) {
-                    setQueryError("Unable to generate an AI report answer.");
-                    setAnswer("");
-                    setMatches([]);
-                }
+
+                setQueryError(
+                    "Unable to generate an AI report answer."
+                );
+
+                setAnswer("");
+                setMatches([]);
+
             } finally {
-                if (!ignore) {
-                    setQueryLoading(false);
-                }
+                setQueryLoading(false);
             }
         }
 
         runInitialQuery();
 
-        return () => {
-            ignore = true;
-        };
     }, [initialQuestion]);
+
 
     useEffect(() => {
         let ignore = false;
@@ -143,19 +185,28 @@ export function ReportsPage() {
         };
     }, []);
 
+    const handleClearHistory = async () => {
+        const confirmed = window.confirm("Clear all saved AI report history?");
+        if (!confirmed) return;
+
+        try {
+            setClearingHistory(true);
+            await clearReportHistory();
+            setHistory([]);
+            setAnswer("");
+            setMatches([]);
+            setQueryError("");
+        } catch (error) {
+            console.error("Failed to clear report history:", error);
+            alert(error instanceof Error ? error.message : "Failed to clear history");
+        } finally {
+            setClearingHistory(false);
+        }
+    };
+
     return (
         <div className="dashboard-panel">
-            {initialQuestion ? (
-                <div className="documents-card">
-                    <h3>Question</h3>
-                    <p>{initialQuestion}</p>
-                </div>
-            ) : (
-                <div className="documents-card">
-                    <h3>AI Report</h3>
-                    <p>Select “Open AI Generated Report” from the sidebar after entering a question.</p>
-                </div>
-            )}
+
 
             {queryLoading ? (
                 <div className="documents-card">
@@ -212,6 +263,7 @@ export function ReportsPage() {
                 </>
             ) : null}
 
+
             {/*<h3 style={{ marginTop: "1.5rem" }}>Saved generated reports</h3>*/}
 
             {loading ? <p>Loading reports...</p> : null}
@@ -223,6 +275,18 @@ export function ReportsPage() {
                     <p>Upload documents or import Gmail content, then run analysis to generate reports.</p>
                 </div>
             ) : null}
+
+            <div className="reports-history-actions">
+                <button
+                    type="button"
+                    className="reports-clear-history-button"
+                    onClick={handleClearHistory}
+                    disabled={clearingHistory || historyLoading || history.length === 0}
+                >
+                    {clearingHistory ? "Clearing..." : "Clear History"}
+                </button>
+            </div>
+
             <div className="reports-history-card">
                 <h3>History</h3>
 
@@ -248,6 +312,7 @@ export function ReportsPage() {
                         ))}
                     </div>
                 )}
+
             </div>
             {/*
             <div className="documents-list">

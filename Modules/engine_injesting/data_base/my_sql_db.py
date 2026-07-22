@@ -202,38 +202,113 @@ class SQL_DataBase():
                conn.commit()
 
 #== update
-     def update_document(self, doc_hash: str, doc_updates: dict = None, ai_updates: dict = None) -> None:
+     def update_document(
+          self,
+          doc_hash: str,
+          doc_updates: dict = None,
+          ai_updates: dict = None
+          ) -> None:
+
           with self.__get_conn() as conn:
+
+               # -------------------------
+               # Update documents table
+               # -------------------------
                if doc_updates:
+
                     normalized_doc_updates = {
                          key: self.__prepare_db_value(value)
                          for key, value in doc_updates.items()
                     }
 
-                    fields = ", ".join(f"{k} = :{k}" for k in normalized_doc_updates.keys())
-                    sql = f"UPDATE documents SET {fields} WHERE doc_hash = :doc_hash"
-                    conn.execute(sql, {**normalized_doc_updates, "doc_hash": doc_hash})
+                    fields = ", ".join(
+                         f"{k} = :{k}"
+                         for k in normalized_doc_updates.keys()
+                    )
 
+                    sql = f"""
+                         UPDATE documents
+                         SET {fields}
+                         WHERE doc_hash = :doc_hash
+                    """
+
+                    conn.execute(
+                         sql,
+                         {
+                              **normalized_doc_updates,
+                              "doc_hash": doc_hash
+                         }
+                    )
+
+
+               # -------------------------
+               # Update ai_analysis table
+               # -------------------------
                if ai_updates:
+
+                    allowed_ai_fields = {
+                         "summary",
+                         "description",
+                         "send_reason",
+                         "keywords",
+                         "topics",
+                         "entities",
+                         "document_type",
+                         "sentiment",
+                         "language",
+                         "date_references",
+                    }
+
+
                     normalized_ai_updates = {
                          key: self.__prepare_db_value(value)
                          for key, value in ai_updates.items()
+                         if key in allowed_ai_fields
                     }
 
+
+                    # Make sure ai_analysis row exists
                     conn.execute(
-                         "INSERT OR IGNORE INTO ai_analysis (doc_hash) VALUES (?)",
-                         (doc_hash,),
+                         """
+                         INSERT OR IGNORE INTO ai_analysis (doc_hash)
+                         VALUES (?)
+                         """,
+                         (doc_hash,)
                     )
 
-                    fields = ", ".join(f"{k} = :{k}" for k in normalized_ai_updates.keys())
-                    sql = f"UPDATE ai_analysis SET {fields} WHERE doc_hash = :doc_hash"
-                    conn.execute(sql, {**normalized_ai_updates, "doc_hash": doc_hash})
+
+                    if normalized_ai_updates:
+
+                         fields = ", ".join(
+                              f"{k} = :{k}"
+                              for k in normalized_ai_updates.keys()
+                         )
+
+                         sql = f"""
+                              UPDATE ai_analysis
+                              SET {fields}
+                              WHERE doc_hash = :doc_hash
+                         """
+
+                         conn.execute(
+                              sql,
+                              {
+                              **normalized_ai_updates,
+                              "doc_hash": doc_hash
+                              }
+                         )
+
 
                conn.commit()
 
      #==delte
      def delete_document(self, doc_hash: str) -> None:
-          self.delete_document_and_related(doc_hash)
+          ingest_root = Path(__file__).resolve().parents[2] / "___ingest_file"
+          self.delete_document_and_related(
+               doc_hash,
+               str(ingest_root)
+          )
+
 
      def delete_document_by_id_or_hash(self, doc_hash: str) -> None:
           self.delete_document_and_related(doc_hash)
@@ -313,9 +388,19 @@ class SQL_DataBase():
                          or ""
                     ),
                     "type": item.get("document_type") or item.get("mime_type", ""),
-                    "summary": item.get("summary", ""),
+                    "summary": (
+                         item.get("summary")
+                         or item.get("description")
+                         or item.get("extracted_text", "")[:500]
+                         or "No summary available."
+                    ),
                     "description": item.get("description", ""),
-                    "snippet": item.get("summary") or item.get("description", ""),
+                    "snippet": (
+                         item.get("summary")
+                         or item.get("description")
+                         or item.get("extracted_text", "")[:300]
+                         or "No summary available."
+                    ),
                     "stored_filename": item.get("stored_filename", ""),
                     "relative_path": item.get("relative_path", ""),
                     "original_filename": item.get("original_filename", ""),
@@ -425,9 +510,20 @@ class SQL_DataBase():
                     or ""
                ),
                "type": item.get("document_type") or item.get("mime_type", ""),
-               "summary": item.get("summary", ""),
+               "summary": (
+                    item.get("summary")
+                    or item.get("description")
+                    or item.get("extracted_text", "")[:500]
+                    or "No summary available."
+               ),
+
                "description": item.get("description", ""),
-               "snippet": item.get("summary") or item.get("description", ""),
+               "snippet": (
+                    item.get("summary")
+                    or item.get("description")
+                    or item.get("extracted_text", "")[:300]
+                    or "No summary available."
+               ),
                "stored_filename": item.get("stored_filename", ""),
                "relative_path": item.get("relative_path", ""),
                "original_filename": item.get("original_filename", ""),
@@ -720,6 +816,38 @@ class SQL_DataBase():
                history.append(item)
 
           return history
+     
+
+     def clear_report_history_for_user(self, user_id: int) -> None:
+          with self.__get_conn() as conn:
+               try:
+                    conn.execute(
+                         """
+                         DELETE FROM report_history_documents
+                         WHERE history_id IN (
+                              SELECT id
+                              FROM report_history
+                              WHERE user_id = ?
+                         )
+                         """,
+                         (user_id,),
+                    )
+                    print("Deleted from report_history_documents")
+               except Exception as exc:
+                    print("Failed deleting report_history_documents:", repr(exc))
+                    raise
+
+               try:
+                    conn.execute(
+                         "DELETE FROM report_history WHERE user_id = ?",
+                         (user_id,),
+                    )
+                    print("Deleted from report_history")
+               except Exception as exc:
+                    print("Failed deleting report_history:", repr(exc))
+                    raise
+
+               conn.commit()
      
 
      def get_report_history_item(self, history_id: int, user_id: int) -> dict | None:

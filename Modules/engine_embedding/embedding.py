@@ -12,6 +12,7 @@ class Embedding_Engine(Embedding_Interface):
 
      #get the objects from the DB one at a time .
      def __init__(self):
+          self.db_client = None
           self.collection = self.__get_DB_connection()
 
 
@@ -26,8 +27,8 @@ class Embedding_Engine(Embedding_Interface):
 
      def __create_persistent_data_base(self, db_path):
           #https://cookbook.chromadb.dev/core/configuration/#hnsw-index-configuration
-          db_client=chromadb.PersistentClient(path=str(db_path))
-          collection = db_client.get_or_create_collection(
+          self.db_client=chromadb.PersistentClient(path=str(db_path))
+          collection = self.db_client.get_or_create_collection(
                name=CONST["CHROMA_DB_TABLE_NAME"],
                metadata={"hnsw:space": CONST["CHROMA_DB_CONFIG_space"]},
                #configuration={
@@ -154,7 +155,33 @@ class Embedding_Engine(Embedding_Interface):
 
           
      def delete_document(self, doc_hash: str):
+          doc_hash = (doc_hash or "").strip()
+          if not doc_hash:
+               return
           self.collection.delete(ids=[doc_hash])
+
+     # == Delete one or more documents from Chroma by metadata
+     def delete_document_by_metadata(self, doc_hash: str):
+          doc_hash = (doc_hash or "").strip()
+          if not doc_hash:
+               return
+          self.collection.delete(where={"doc_hash": doc_hash})
+
+     # == Delete all vectors in the collection but keep the collection
+     def clear_all_vectors(self):
+          all_items = self.collection.get()
+          all_ids = all_items.get("ids", []) if all_items else []
+          if all_ids:
+               self.collection.delete(ids=all_ids)
+
+     # == Delete the entire Chroma collection
+     def delete_collection(self):
+          if not self.db_client:
+               db_path = self.__create_db_dir_n_path()
+               self.db_client = chromadb.PersistentClient(path=str(db_path))
+
+          self.db_client.delete_collection(name=CONST["CHROMA_DB_TABLE_NAME"])
+
 
      #== Create entries. 
      #def __create_chromaDB_entry(self, collection, obj, hash):

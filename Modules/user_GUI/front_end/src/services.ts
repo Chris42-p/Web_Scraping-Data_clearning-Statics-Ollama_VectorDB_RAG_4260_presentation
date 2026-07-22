@@ -324,6 +324,12 @@ export async function disconnectGmail() {
   });
 }
 
+export async function clearReportHistory() {
+  return apiRequest<{ ok: boolean; message: string }>("/reports/history/clear", {
+    method: "POST",
+  });
+}
+
 /*export async function getHousingSummary() {
     const response = await fetch("http://localhost:8000/reports/housing/summary", {
         credentials: "include",

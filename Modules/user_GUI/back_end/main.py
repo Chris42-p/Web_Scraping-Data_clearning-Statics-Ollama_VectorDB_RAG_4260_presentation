@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from secrets import token_urlsafe
 
+from requests.exceptions import Timeout, RequestException
 from fastapi import FastAPI, Request, HTTPException, UploadFile, Depends, APIRouter
 from pydantic import BaseModel, Field
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
@@ -108,7 +109,7 @@ class FeedbackRequest(BaseModel):
 
 class ReportQueryRequest(BaseModel):
     question: str
-    top_k: int = Field(default=5, ge=1, le=10)
+    top_k: int = Field(default=3, ge=1, le=10)
 
 
 class ReportQueryMatch(BaseModel):
@@ -131,12 +132,17 @@ class ReportQueryResponse(BaseModel):
 def get_db():
     return SQL_DataBase()
 
+
 def ask_ollama_about_documents(question: str, matches: list[dict]) -> str:
         if not matches:
             return "I could not find matching Gmail messages or uploaded documents in the database."
 
         context_blocks = []
-        for i, row in enumerate(matches, start=1):
+        for i, row in enumerate(matches[:3], start=1):
+            extracted = (row.get("extracted_text") or "").strip()
+            summary = (row.get("summary") or "").strip()
+            description = (row.get("description") or "").strip()
+
             context_blocks.append(
                 f"""Document {i}
     Title: {row.get('title') or 'Untitled'}
@@ -145,42 +151,74 @@ def ask_ollama_about_documents(question: str, matches: list[dict]) -> str:
     Sender: {row.get('sender') or 'N/A'}
     Email subject: {row.get('email_subject') or 'N/A'}
     Email date: {row.get('email_date') or 'N/A'}
-    Summary: {row.get('summary') or 'N/A'}
-    Description: {row.get('description') or 'N/A'}
-    Extracted text:
-    {(row.get('extracted_text') or '')[:4000]}
+    Summary: {summary[:800]}
+    Description: {description[:800]}
+    Extracted text: {extracted[:1200]}
     """
             )
 
         prompt = f"""
-    You are helping with a presentation demo for a Vancouver Rental Market Intelligence Platform.
+    You are answering questions using only the provided database records.
 
-    Answer ONLY from the database records provided below.
-    If the answer is not in the records, say so clearly.
-    If the request sounds like the user wants a source document, identify the most relevant matching document.
+    Rules:
+    - Answer only from the records below.
+    - If the answer is missing, say that clearly.
+    - Keep the answer concise and presentation-ready.
+    - If relevant, mention the most relevant document title.
 
     User question:
     {question}
 
     Database records:
     {chr(10).join(context_blocks)}
-
-    Return a concise, presentation-ready answer.
     """
 
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": OLLAMA_MODEL,
-                "prompt": prompt,
-                "stream": False,
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data.get("response", "").strip() or "No answer returned from Ollama."
+        try:
+            response = requests.post(
+                OLLAMA_URL,
+                json={
+                    "model": OLLAMA_MODEL,
+                    "prompt": prompt,
+                    "stream": False,
+                    "keep_alive": "30m",
+                },
+                timeout=180,
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("response", "").strip() or build_report_fallback(matches)
 
+        except Timeout:
+            print("Ollama request timed out in ask_ollama_about_documents")
+            return build_report_fallback(matches)
+
+        except RequestException as exc:
+            print(f"Ollama request failed: {exc}")
+            return build_report_fallback(matches)
+
+
+def build_report_fallback(matches: list[dict]) -> str:
+    if not matches:
+        return "No matching documents were found."
+
+    top = matches[0]
+    title = top.get("title") or top.get("original_filename") or "Untitled document"
+    summary = (top.get("summary") or "").strip()
+    description = (top.get("description") or "").strip()
+    extracted = (top.get("extracted_text") or "").strip()
+
+    parts = [f"Most relevant document: {title}."]
+
+    if summary:
+        parts.append(f"Summary: {summary[:500]}")
+    elif description:
+        parts.append(f"Description: {description[:500]}")
+    elif extracted:
+        parts.append(f"Extracted content: {extracted[:500]}")
+    else:
+        parts.append("A matching document was found, but no summary text is available yet.")
+
+    return " ".join(parts)
 
 # Timer for spider run
 def run_spider_job(spider_key: str):
@@ -688,7 +726,22 @@ def get_report_history_item(history_id: int, user=Depends(get_logged_in_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load report history item: {str(e)}")
     
+@app.post("/reports/history/clear")
+def clear_report_history(user=Depends(get_logged_in_user)):
 
+    user_id = user.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    
+    try:
+        db = SQL_DataBase()
+        db.clear_report_history_for_user(user["user_id"])
+        return {"ok": True, "message": "Report history cleared successfully."}
+    except Exception as exc:
+        print(f"Clear report history failed: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to clear report history")
+    
+    
 # Get Reports Count
 @app.get("/reports/count")
 def get_reports_count(user=Depends(get_logged_in_user)):
@@ -785,59 +838,135 @@ def get_document_by_id(doc_id: str, user=Depends(get_logged_in_user)):
 def delete_document(doc_id: str, user=Depends(get_logged_in_user)):
     try:
         db = SQL_DataBase()
+        embedding_engine = Embedding_Engine()
+
+        # 1) Delete from Chroma by exact id
+        try:
+            embedding_engine.delete_document(doc_id)
+        except Exception as exc:
+            print(f"Chroma delete by id failed for {doc_id}: {exc}")
+
+        # 2) Delete from Chroma again by metadata as a safety cleanup
+        try:
+            embedding_engine.delete_document_by_metadata(doc_id)
+        except Exception as exc:
+            print(f"Chroma delete by metadata failed for {doc_id}: {exc}")
+
+        # 3) Delete file + SQL rows
         result = db.delete_document_and_related(
             doc_hash=doc_id,
             ingest_root=str(INGEST_ROOT),
         )
 
         if not result.get("deleted"):
-            raise HTTPException(status_code=404, detail=result.get("message", "Document not found"))
+            raise HTTPException(
+                status_code=404,
+                detail=result.get("message", "Document not found")
+            )
 
         return {
             "ok": True,
             "message": result.get("message", "Document deleted successfully."),
             "document_id": doc_id,
         }
+
     except HTTPException:
         raise
     except Exception as exc:
         print(f"Delete document error: {exc}")
         raise HTTPException(status_code=500, detail="Failed to delete document")
-    
 
+        
 @app.get("/download/{doc_hash}")
 def download_document(doc_hash: str, user=Depends(get_logged_in_user)):
-    doc = SQL_DataBase().get_document_by_hash(doc_hash)
-    if not doc:
-        raise HTTPException(status_code=404, detail="Document not found")
 
-    ingest_root = Path(__file__).resolve().parents[2] / "___ingest_file"
-    relative_path = doc.get("relative_path")
+    db = SQL_DataBase()
+    doc = db.get_document_by_hash(doc_hash)
+
+    if not doc:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found"
+        )
+
+    ingest_root = (
+        Path(__file__)
+        .resolve()
+        .parents[2]
+        / "___ingest_file"
+    )
+
+    relative_path = (
+        doc.get("relative_path")
+        or doc.get("stored_filename")
+        or doc.get("original_filename")
+    )
 
     if not relative_path:
-        raise HTTPException(status_code=404, detail="Document file metadata missing")
+        raise HTTPException(
+            status_code=404,
+            detail="No file path stored"
+        )
 
-    file_path = ingest_root / relative_path
 
-    if not file_path.exists() or not file_path.is_file():
+    file_path = (ingest_root / relative_path).resolve()
+
+    # Fallback: database filename may be stale after duplicate upload
+    if not file_path.exists():
+
+        original_filename = doc.get("original_filename")
+
+        if original_filename:
+            matches = list(
+                ingest_root.glob(f"*_{original_filename}")
+            )
+
+            if matches:
+                file_path = matches[0].resolve()
+                print("Fallback matched:", file_path)
+
+
+
+    print(file_path)
+    print("DOWNLOAD DEBUG")
+    print("Root:", ingest_root)
+    print("Relative:", relative_path)
+    print("Final:", file_path)
+
+
+    print("Exists:", file_path.exists())
+    print("Is file:", file_path.is_file())
+
+    if not file_path.exists():
+        print("Directory contents:")
+        for f in ingest_root.iterdir():
+            print(repr(f.name))
+
+    if not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found on disk")
 
-    mime_type = doc.get("mime_type") or "application/octet-stream"
-    download_name = doc.get("original_filename") or file_path.name
-    is_pdf = mime_type == "application/pdf" or file_path.suffix.lower() == ".pdf"
+
+
+    mime_type = (
+        doc.get("mime_type")
+        or "application/octet-stream"
+    )
+
+    filename = (
+        doc.get("original_filename")
+        or file_path.name
+    )
+
 
     return FileResponse(
-        path=str(file_path),
-        filename=download_name,
+        path=file_path,
+        filename=filename,
         media_type=mime_type,
-        headers={
-            "Content-Disposition": (
-                f'inline; filename="{download_name}"'
-                if is_pdf
-                else f'attachment; filename="{download_name}"'
-            )
-        }
+        content_disposition_type="inline"
+        if mime_type == "application/pdf"
+        else "attachment"
     )
+
 
 @app.get("/search")
 def search(query: str, num_results: int = 5, user=Depends(get_logged_in_user)):
@@ -861,13 +990,10 @@ def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
     INGEST_ROOT.mkdir(parents=True, exist_ok=True)
 
     uploaded = []
-    duplicates = []
-
     engine = Injest_Engine(
         input_files_path=str(INGEST_ROOT),
         output_files_path=str(INGEST_ROOT),
     )
-    db = SQL_DataBase()
 
     for upload in files:
         original_filename = upload.filename or "unknown"
@@ -894,31 +1020,12 @@ def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
             original_filename=original_filename,
         )
 
-        doc_hash = processed.get("doc_hash")
-        if doc_hash and db.document_exists(doc_hash):
-            try:
-                if target_path.exists():
-                    target_path.unlink()
-            except Exception:
-                pass
-
-            existing = db.get_existing_document_brief(doc_hash) or {}
-            duplicates.append(
-                {
-                    "doc_hash": doc_hash,
-                    "filename": original_filename,
-                    "message": "Document already exists.",
-                    "existing": existing,
-                }
-            )
-            continue
-
         uploaded.append(
             {
-                "doc_hash": doc_hash,
+                "doc_hash": processed.get("doc_hash"),
                 "filename": original_filename,
-                "stored_filename": safe_name,
-                "relative_path": safe_name,
+                "stored_filename": target_path.name,
+                "relative_path": target_path.name,
                 "mime_type": content_type,
                 "title": processed.get("title", Path(original_filename).stem),
                 "summary": processed.get("summary", ""),
@@ -928,10 +1035,6 @@ def upload_files(files: list[UploadFile], user=Depends(get_logged_in_user)):
 
     return {
         "uploaded": uploaded,
-        "duplicates": duplicates,
-        "message": (
-            f"{len(uploaded)} uploaded, {len(duplicates)} already existed."
-            if duplicates else
-            f"{len(uploaded)} file(s) uploaded successfully."
-        ),
+        "duplicates": [],
+        "message": f"{len(uploaded)} file(s) uploaded successfully.",
     }
