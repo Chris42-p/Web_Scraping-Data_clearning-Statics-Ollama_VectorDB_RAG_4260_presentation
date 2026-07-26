@@ -26,6 +26,7 @@ geopy==2.4.1
 fastapi==0.136.3
 uvicorn==0.34.2
 python-multipart
+apscheduler==3.11.3
 
 # === Email
 mail-parser==4.1.4
