@@ -16,7 +16,7 @@ werkzeug
 ollama==0.6.2
 chromadb==1.5.9
 pandas==3.0.3
-numpy==2.5.0
+numpy==2.4.6
 ipykernel==7.3.0
 jupyter==1.1.1
 #== ML: data cleaning
