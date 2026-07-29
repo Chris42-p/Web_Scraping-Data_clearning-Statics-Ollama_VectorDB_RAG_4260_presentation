@@ -2,6 +2,9 @@ from pathlib import Path
 import sys
 import re
 
+from geopy.geocoders import Nominatim
+import time
+
 # == Import default object dynamically ==
 current = Path(__file__).resolve()
 for parent in current.parents:
@@ -13,7 +16,6 @@ from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 
 
 class RewSpiderPipeline:
-
     def process_item(self, item, spider):
         post_id = item.get("post_id", "N/A")
         address = item.get("address", "N/A")
@@ -39,23 +41,35 @@ class RewSpiderPipeline:
         post.province = province
         post.postal_code = postal_code
 
+        post.latitude = item.get("latitude")
+        post.longitude = item.get("longitude")
+        post.address_osm = address
+
         post.bed = bed
         post.bath = bath
-
         post.post_description = item.get("post_description", "N/A")
         post.rent_period = item.get("rent_period", "monthly")
         post.leasing_agent = item.get("leasing_agent", "N/A")
         post.source_spider = spider.name
-
-        # Fields used by save_new_post_to_db but not always present in REW items
         post.img_url = item.get("first_pic", "N/A")
-        post.post_description_obj = None
-
-        spider.logger.info(f"Saving REW item through Post_Data: {post_id}")
 
         post.save_new_post_to_db()
-
         return item
+
+    def __geocode_address(self, street_number, city, province, postal_code):
+        parts = [street_number, city, province, postal_code, "Canada"]
+        query = ", ".join([part for part in parts if part and part != "N/A"])
+
+        try:
+            geolocator = Nominatim(user_agent="housing_scraper_geocoder")
+            location = geolocator.geocode(query, timeout=10)
+            if not location:
+                return None, None, None
+
+            return float(location.latitude), float(location.longitude), location.address
+        except Exception as exc:
+            print(f"Geocode failed for '{query}': {exc}")
+            return None, None, None
 
     def __get_bed_bath(self, item):
         bed_bath = item.get("bed_and_bath")

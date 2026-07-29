@@ -3,7 +3,6 @@ from pathlib import Path
 
 
 CONST={
-<<<<<<< HEAD:Modules/spiders/cregslist_spider/cregslist_spider/spider_interface.py
      #==== dev 
      "DISPLAY_TEXT":True,
      
@@ -14,10 +13,6 @@ CONST={
      #==== spider.py
      "HTTPCACHE_DIR": "cregslist_spider_cache", #set this one dynamically #get_cache_path(),
      # cregslist_spider.py
-=======
-     "HTTPCACHE_DIR": "cragslist_spider_cache", #set this one dynamically #get_cache_path(),
-     # cragslist_spider.py
->>>>>>> ab6416e419e181b8d96a1250cd7b33ed8c696de5:Modules/spiders/cragslist_spider/cragslist_spider/spider_interface.py
      "ALLOWED_DOMAINS":["craigslist.org"],
      "START_URL":["https://www.craigslist.org/search/subarea/van?cat=hhh"],
 

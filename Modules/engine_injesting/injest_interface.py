@@ -23,7 +23,7 @@ CONST={
 
      # #===== AI instructions
      # "MODEL_NAME":"deepseek-r1:8b", #prod AI  
-     "MODEL_NAME":"llama3.2:latest", #dev AI  
+     "MODEL_NAME":"llama3.2:1b", #dev AI  
      
      "PROMPT": """
 Read the following document and return ONLY a raw JSON object (no markdown, no backticks, no explanation).
@@ -32,9 +32,9 @@ Required fields:
 - "summary":          100 words max. Overview of the document content.
 - "description":      300 words max. Detailed description of the content.
 - "send_reason":      150 words max. Why this communication was sent.
-- "keywords":         List of up to 15 relevant keywords (array of strings).
-- "topics":           List of up to 5 broad topic categories (array of strings).
-- "entities":         Named entities found in the document (people, orgs, places, dates).
+- "keywords":         EXACTLY 10 keywords maximum.
+- "topics":           EXACTLY 5 topics maximum.
+- "entities":         MAXIMUM 10 entities.
 - "document_type":    Single label e.g. "invoice", "legal", "email", "report".
 - "sentiment":        Overall tone: "positive", "neutral", or "negative".
 - "language":         Language the document is written in e.g. "en", "fr".

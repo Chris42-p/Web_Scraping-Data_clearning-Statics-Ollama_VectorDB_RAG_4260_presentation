@@ -104,11 +104,14 @@ CREATE TABLE IF NOT EXISTS listings (
      
 
      -- location
-     general_area    TEXT,
-     street_number   TEXT,
-     city            TEXT,
-     province        TEXT,
-     postal_code     TEXT,
+     general_area      TEXT,
+     street_number     TEXT,
+     city              TEXT,
+     province          TEXT,
+     postal_code       TEXT,
+     latitude          REAL,
+     longitude         REAL,
+     address_osm       TEXT,
      
      -- pricing
      price           INTEGER,
@@ -178,29 +181,32 @@ CREATE TABLE IF NOT EXISTS post_status(
      """,
 
      #== add listing into db 
-     "INSERT_LISTING":"""
+     "INSERT_LISTING": """
 INSERT OR REPLACE INTO listings (
-     post_id,
-     post_url,
-     source_spider,
-     time_of_post,
-     leasing_agent,
-     general_area,
-     street_number,
-     city,
-     province,
-     postal_code,
-     price,
-     sqr_feet,
-     bed,
-     bath,
-     rent_period,
-     user_post_title,
-     first_pic,
-     user_meta_tags,
-     post_description,
-     img_url
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    post_id,
+    post_url,
+    source_spider,
+    time_of_post,
+    leasing_agent,
+    general_area,
+    street_number,
+    city,
+    province,
+    postal_code,
+    latitude,
+    longitude,
+    address_osm,
+    price,
+    sqr_feet,
+    bed,
+    bath,
+    rent_period,
+    user_post_title,
+    first_pic,
+    user_meta_tags,
+    post_description,
+    img_url
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, #20 fields that're going to be added -- scraped at is auto generated
      "INSERT_PARSED_POST_DESCRIPTION":"""
 INSERT OR REPLACE INTO parsed_descriptions (

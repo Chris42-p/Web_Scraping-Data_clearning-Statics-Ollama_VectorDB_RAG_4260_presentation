@@ -69,7 +69,7 @@ class Injest_Engine(Interface_InjestionEngine):
           self.files_grouped_typ_type = {k: [] for k in 
                                        CONST["DOCUMENT_TYPES"].keys()} # .PDF, .DOCX, .CSV, .EML, .TXT, .PPTX, .ZIP  -- dict keys
      
-
+     import time
      def process_saved_file(
           self,
           file_path: str | Path,
@@ -79,6 +79,9 @@ class Injest_Engine(Interface_InjestionEngine):
           email_date: str = "",
           original_filename: str = "",
           ) -> dict:
+
+          overall_start = time.perf_counter()
+
           original_saved_path = Path(file_path)
           analysis_path = original_saved_path
           doc_type = original_saved_path.suffix.upper()
@@ -88,15 +91,43 @@ class Injest_Engine(Interface_InjestionEngine):
                if ocr_candidate.exists():
                     analysis_path = ocr_candidate
 
+          t = time.perf_counter()
+
           processed_doc_obj = self.__read_a_document(doc_type, analysis_path)
+
+          print(f"[TIME] Read document: {time.perf_counter() - t:.2f}s")
+
           if processed_doc_obj is None or processed_doc_obj == CONST["ERR_CODE"]:
                raise ValueError(f"Unable to read document: {analysis_path}")
 
-          raw_payload = processed_doc_obj.to_json()
+          raw_payload = {
+               "title": processed_doc_obj.title,
+               "paragraphs": processed_doc_obj.paragraphs[:3000],
+               "header_footer": processed_doc_obj.header_footer[:500],
+          }
+
+
+          t = time.perf_counter()
+
+          import json
+
+          print(
+          "[DEBUG] Ollama input chars:",
+          len(json.dumps(raw_payload))
+          )
+
+
           ai_processed_doc = self.__call_ollama_on_a_file(raw_payload)
+
+          print(f"[TIME] Ollama: {time.perf_counter() - t:.2f}s")
+
 
           ai_doc_obj = self.__ollama_parse_response_into_object(ai_processed_doc)
 
+          if not ai_doc_obj.get("summary"):
+               ai_doc_obj["summary"] = "No summary generated"
+          print("AI SUMMARY:")
+          print(ai_doc_obj.get("summary"))
 
           # ===== ADD THIS =====
           summary = (ai_doc_obj.get("summary") or "").strip()
@@ -136,6 +167,7 @@ class Injest_Engine(Interface_InjestionEngine):
           original_doc["email_date"] = email_date
           original_doc["extracted_text"] = processed_doc_obj.paragraphs
 
+          t = time.perf_counter()
           self.my_sql_db.insert_document_with_file_metadata(
                doc_hash=original_doc["doc_hash"],
                title=original_doc["title"],
@@ -151,15 +183,29 @@ class Injest_Engine(Interface_InjestionEngine):
                extracted_text=original_doc["extracted_text"],
           )
 
+          print(f"[TIME] SQL insert: {time.perf_counter() - t:.2f}s")
+
+          t = time.perf_counter()
+
           self.my_sql_db.update_document(
                doc_hash=original_doc["doc_hash"],
                ai_updates=ai_doc_obj,
           )
 
+          print(f"[TIME] SQL update: {time.perf_counter() - t:.2f}s")
+
           merged_obj = {**original_doc, **ai_doc_obj}
           from ..engine_embedding.embedding import Embedding_Engine
+          t = time.perf_counter()
+
           Embedding_Engine().embed_processed_document(merged_obj)
+
+          print(f"[TIME] Chroma embedding: {time.perf_counter() - t:.2f}s")
+
           self.my_sql_db.mark_processed(original_doc["doc_hash"])
+
+          print(f"[TIME] TOTAL: {time.perf_counter() - overall_start:.2f}s")
+
           return merged_obj
      
      #get the path of the files that're in the dir. 
@@ -616,7 +662,7 @@ class Injest_Engine(Interface_InjestionEngine):
                     except Exception as e:
                          print(f"{self.err_text}: Failed to unzip {item}: {e}")
 
-
+     
      #====== AI section
      #-- Call out to model to get metadata tags. 
      def __call_ollama_on_a_file(self, document):       #private method
@@ -627,24 +673,60 @@ class Injest_Engine(Interface_InjestionEngine):
                try:
                     print("sending request to model ")
                     
-                    content=f"{CONST['PROMPT']} \n {document}"
-                    response=ollama.chat(
-                         model=CONST["MODEL_NAME"],               
-                         messages=[{
-                              "role":"user",
-                              "content": content,
-                              # "content": f"how are you doing today?"
-                              }],
-                              stream= True
-                         )
+                    content = CONST["PROMPT"] + "\n\n" + document["paragraphs"]
 
-                    full_response = ""
-                    for chunk in response:
-                         token = chunk['message']['content']
-                         # print(token, end='', flush=True)
-                         full_response += token
+
+                    print("=" * 60)
+                    print(f"Characters sent: {len(content):,}")
+                    print(f"Words sent: {len(content.split()):,}")
+                    print("=" * 60)
+
+                    start = time.perf_counter()
+
+                    response = ollama.chat(
+                    model=CONST["MODEL_NAME"],
+                    messages=[
+                         {
+                              "role": "user",
+                              "content": content
+                         }
+                    ],
+                    format="json",
+                    stream=False
+                    )
+
+                    full_response = response["message"]["content"]
+
+                    if not full_response:
+                         print("EMPTY RESPONSE FROM OLLAMA")
+                         return json.dumps({
+                              "summary": "",
+                              "description": "",
+                              "keywords": []
+                    })
+
+                    print(full_response)
 
                     return full_response
+
+
+                    print(
+                         "[TIME] Ollama generation:",
+                         time.perf_counter() - start
+                    )
+
+                    print(
+                         "[DEBUG] Response chars:",
+                         len(full_response)
+                    )
+
+                    print("RAW OLLAMA OUTPUT:")
+                    print(full_response)
+
+                    return full_response
+
+                    
+
 
                except Exception as e:
                     crashes += 1
@@ -690,7 +772,15 @@ class Injest_Engine(Interface_InjestionEngine):
                     cleaned = re.sub(r"```(?:json)?", "", cleaned)
                     cleaned = cleaned.replace("```", "").strip()
 
-               parsed = json.loads(cleaned)
+               start = cleaned.find("{")
+               end = cleaned.rfind("}")
+
+               if start != -1 and end != -1:
+                    cleaned = cleaned[start:end+1]
+
+               from json_repair import repair_json
+
+               parsed = json.loads(repair_json(cleaned))
 
           except (json.JSONDecodeError, TypeError):
                print(f"{CONST['ERR_TXT']}: Ollama returned non-JSON output.")
@@ -699,12 +789,15 @@ class Injest_Engine(Interface_InjestionEngine):
 
                return fallback
 
+          ai_summary = (
+               parsed.get("summary")
+               or parsed.get("description")
+               or "AI summary unavailable."
+          )
+
           return self.AI_Processed_Document_Obj(
-               ai_summary=(
-                    parsed.get("summary")
-                    or parsed.get("description")
-                    or "AI summary unavailable."
-               ),
+               
+               ai_summary=ai_summary,
                ai_description=parsed.get("description", ""),
                ai_send_reason=parsed.get("send_reason", ""),
                ai_keywords=parsed.get("keywords", []),
@@ -937,27 +1030,29 @@ class Injest_Engine(Interface_InjestionEngine):
                setattr(self, value, s)
                return s
 
-          def to_json(self):
+          def to_json(self, max_ai_chars=None):
                # ensure hash is up to date
                #if self.__hash_document == "":
+               paragraphs = self.standardize_text("paragraphs")
                if self.doc_hash == "":
                     self.__hash_document()
 
-               tmp={
+               if max_ai_chars:
+                    paragraphs = paragraphs[:max_ai_chars]
+     
+               self.__hash_document()
+
+               return {
                     "title": self.standardize_text( "title"),
-                    "paragraphs":self.standardize_text ("paragraphs"),   #using AI to summarize this
-                    "header_footer":self.standardize_text ("header_footer"),
-                    "table_content":self.standardize_text ("table_content"),
+                    "paragraphs":paragraphs,   #using AI to summarize this
+                    "header_footer":self.standardize_text ("header_footer")[:1000],
+                    "table_content":self.standardize_text ("table_content")[:2000],
                     "author":self.standardize_text ("author"),
                     "time_creation":self.standardize_text ("time_creation"),
                     "modified_date":self.standardize_text ("modified_date"),
                     "file_computer_id":self.standardize_text ("file_computer_id"),
                     "doc_hash":self.standardize_text ("doc_hash"),
                }
-
-               self.__hash_document()
-
-               return tmp
 
           def get_hash(self):
                return self.doc_hash

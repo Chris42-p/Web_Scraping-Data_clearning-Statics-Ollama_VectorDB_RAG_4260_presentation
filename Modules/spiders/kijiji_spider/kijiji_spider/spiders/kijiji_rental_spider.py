@@ -29,7 +29,7 @@ import json
 import re
 
 from ..spider_interface import CONST
-from kijiji_spider.items import KijijiSpiderItem
+from ..items import KijijiSpiderItem
 
 
 class KijijiRentalsSpider(scrapy.Spider):

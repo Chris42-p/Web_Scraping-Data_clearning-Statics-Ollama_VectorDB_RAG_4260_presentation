@@ -17,8 +17,10 @@ import re
 import time
 from pathlib import Path
 import sys
+from geopy.geocoders import Nominatim
+import time
 
-from kijiji_spider.spider_interface import CONST
+from .spider_interface import CONST
 
 VANCOUVER_AREAS = [
     "Vancouver", "North Vancouver", "West Vancouver", "Burnaby", "Richmond",
@@ -127,6 +129,14 @@ class KijijiSpiderPipeline:
         # == leasing_agent
         leasing_agent = item.get("leasing_agent", "N/A")
 
+        latitude, longitude, address_osm = self.__geocode_address(
+            street_number,
+            city,
+            province,
+            postal_code,
+        )
+        time.sleep(1)
+
         Post_Data(
             post_id=str(post_id),
             time_of_post=str(time_of_post),
@@ -141,6 +151,9 @@ class KijijiSpiderPipeline:
             city=str(city),
             province=str(province),
             postal_code=str(postal_code),
+            latitude=latitude,
+            longitude=longitude,
+            address_osm=address_osm,
             bed=str(bed),
             bath=str(bath),
             square_feet_unit=str(square_feet_unit),
@@ -152,6 +165,21 @@ class KijijiSpiderPipeline:
         ).save_new_post_to_db()
 
         return item
+
+    def __geocode_address(self, street_number, city, province, postal_code):
+        parts = [street_number, city, province, postal_code, "Canada"]
+        query = ", ".join([part for part in parts if part and part != "N/A"])
+
+        try:
+            geolocator = Nominatim(user_agent="housing_scraper_geocoder")
+            location = geolocator.geocode(query, timeout=10)
+            if not location:
+                return None, None, None
+
+            return float(location.latitude), float(location.longitude), location.address
+        except Exception as exc:
+            print(f"Geocode failed for '{query}': {exc}")
+            return None, None, None
 
     def __get_postal_code(self, address: str, spider) -> str:
         """

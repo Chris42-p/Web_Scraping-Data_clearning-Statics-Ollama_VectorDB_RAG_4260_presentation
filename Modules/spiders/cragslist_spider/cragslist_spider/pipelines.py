@@ -17,10 +17,12 @@ import json
 import sys
 import os
 import re
+import time
 
 #=== internal lib import 
 
 from .spider_interface import CONST
+from geopy.geocoders import Nominatim
 
 #== IMPORT THE DEFUALT OBJECT DYNAMICALLY =====
 from pathlib import Path
@@ -38,37 +40,84 @@ from Modules.spiders.spider_default_obj.spider_default_obj import Post_Data
 
 
 class CregslistSpiderPipeline:
-    def process_item(self, item, spider):
+    @classmethod
+    def from_crawler(cls, crawler):
+        pipe = cls()
+        pipe.crawler = crawler
+        return pipe
+
+    def process_item(self, item):
         if CONST["DISPLAY_TEXT"]:
-            print("\n\n======== GOING TO PARSE THE OBJECT ========\n")
-            print(f"{item}\n\n")
+            try:
+                safe_preview = str(item).encode("utf-8", errors="replace").decode("utf-8")
+                print("\n\n======== GOING TO PARSE THE OBJECT ========\n")
+                print(f"{safe_preview[:1500]}\n")
+            except Exception:
+                print("\n\n======== GOING TO PARSE THE OBJECT ========\n")
 
         street_number, city, province, postal_code = self.__process_address(item)
-        bed, bath=self.get_bed_bath(item)
-        
-        Post_Data().save_new_post_to_db(
-            post_id=self.get_post_id(item), 
-            post_url=self.get_post_url(item),
+        bed, bath = self.get_bed_bath(item)
+
+        latitude, longitude, address_osm = self.__geocode_address(
+            street_number,
+            city,
+            province,
+            postal_code,
+        )
+
+        spider = getattr(self.crawler, "spider", None)
+        source_spider = spider.name if spider else "craigslist"
+
+        post = Post_Data(
+            post_id=self.get_post_id(item),
             time_of_post=self.get_time_of_post(item),
-            leasing_agent=self.get_leasing_agent(item),
+            user_post_title=self.get_user_post_title(item),
+            first_pic=self.get_first_pic(item),
+            user_meta_tags=self.get_user_meta_tags(item),
+            post_url=self.get_post_url(item),
+            price_of_the_unit=self.get_price_of_the_unit(item),
+            sqr_feet=None,
             general_area=self.get_general_area(item),
             street_number=street_number,
             city=city,
-            province=province, 
+            province=province,
             postal_code=postal_code,
-            price_of_the_unit=self.get_price_of_the_unit(item),
-            square_feet_unit=self.get_square_feet_unit(item),
+            latitude=latitude,
+            longitude=longitude,
+            address_osm=address_osm,
             bed=bed,
-            bath=bath,            
-            rent_period=self.get_rent_period(item),
-            user_post_title=self.get_user_post_title(item),
-            user_meta_tags=self.get_user_meta_tags(item),
+            bath=bath,
+            square_feet_unit=self.get_square_feet_unit(item),
             post_description=self.get_post_description(item),
-            first_img_url=self.get_first_pic(item),
-            sqr_feet_lot=None,
-            source_spider=spider.name, #not provided by Cregs list
-        ).save_new_post_to_db()
+            rent_period=self.get_rent_period(item),
+            leasing_agent=self.get_leasing_agent(item),
+            source_spider=source_spider,
+            img_url=self.get_first_pic(item),
+        )
+
+        post.save_new_post_to_db()
         return item
+
+
+    def __geocode_address(self, street_number, city, province, postal_code):
+        if not street_number or not city:
+            return None, None, None
+
+        parts = [street_number, city, province, postal_code, "Canada"]
+        query = ", ".join([part for part in parts if part and part != "N/A"])
+
+        try:
+            geolocator = Nominatim(user_agent="housing_scraper_geocoder")
+            location = geolocator.geocode(query, timeout=10)
+            time.sleep(1)
+
+            if not location:
+                return None, None, None
+
+            return float(location.latitude), float(location.longitude), location.address
+        except Exception as exc:
+            print(f"Geocode failed for '{query}': {exc}")
+            return None, None, None
   
     def get_post_id(self,item):
         if item["post_id"]==None:
@@ -133,15 +182,20 @@ class CregslistSpiderPipeline:
 
         return int(digits)
 
-    def get_bed_bath(self,item):
-        if item["bed_and_bath"]==None:
-            return 0,0
+    def get_bed_bath(self, item):
+        raw = item.get("bed_and_bath")
+        if not raw:
+            return None, None
 
-        bed_bath=self.__strip_html(item["bed_and_bath"]).strip()
-        x=bed_bath.split("/")
+        text = self.__strip_html(raw)
+        if not text:
+            return None, None
 
-        bed=int(re.search(r'\d+',x[0]).group())
-        bath=int(re.search(r'\d+',x[1]).group())
+        bed_match = re.search(r'(\d+)\s*BR', text, re.IGNORECASE)
+        bath_match = re.search(r'(\d+)\s*Ba', text, re.IGNORECASE)
+
+        bed = int(bed_match.group(1)) if bed_match else None
+        bath = int(bath_match.group(1)) if bath_match else None
 
         return bed, bath
     
@@ -199,9 +253,9 @@ class CregslistSpiderPipeline:
         
         return street_number, city, province, postal_code
 
-    def __strip_extra_spaces(self, text) :
-        text=text.replace("     ",",").replace("   ","") #custom for cragslist prasing of data 
-        return text.split(",")
+    def __strip_extra_spaces(self, text):
+        text = text.replace("     ", ",").replace("   ", " ")
+        return [part.strip() for part in text.split(",") if part.strip()]
         
     def __strip_spaces(self, text):
         return text.strip()
@@ -213,4 +267,27 @@ class CregslistSpiderPipeline:
         # get all text, strip whitespace, filter empty strings
         parts = [t.strip() for t in soup.get_text().split("\n") if t.strip()]
         return ", ".join(parts)
+
+    def get_user_meta_tags(self, item):
+        if item["user_meta_tags"] is None:
+            return None
+
+        text = self.__strip_html(item["user_meta_tags"])
+        if not text:
+            return None
+
+        parts = self.__strip_extra_spaces(text)
+        return ", ".join(parts) if isinstance(parts, list) else str(parts)
+
+
+    def get_post_description(self, item):
+        if item["post_description"] is None:
+            return None
+
+        text = self.__strip_html(item["post_description"])
+        if not text:
+            return None
+
+        parts = self.__strip_extra_spaces(text)
+        return " ".join(parts) if isinstance(parts, list) else str(parts)
     

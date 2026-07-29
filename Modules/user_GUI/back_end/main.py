@@ -762,6 +762,47 @@ def get_housing_summary(user=Depends(get_logged_in_user)):
     finally:
         engine.close()
 
+@app.get("/reports/housing/trends")
+def get_housing_trends(user=Depends(get_logged_in_user)):
+    engine = AnalysisEngine()
+    try:
+        return {"trends": engine.get_price_trends()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load housing trend data: {str(e)}")
+    finally:
+        engine.close()
+
+
+@app.get("/reports/housing/regions")
+def get_housing_regions(user=Depends(get_logged_in_user)):
+    engine = AnalysisEngine()
+    try:
+        return {"regions": engine.get_region_distribution()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load housing region data: {str(e)}")
+    finally:
+        engine.close()
+
+
+@app.get("/reports/housing/map")
+def get_housing_map(user=Depends(get_logged_in_user)):
+    engine = AnalysisEngine()
+    try:
+        return {"points": engine.get_map_listings()}
+    except Exception as e:
+        print("MAP ENDPOINT ERROR:", repr(e))
+        raise HTTPException(status_code=500, detail=f"Failed to load housing map data: {str(e)}")
+    finally:
+        engine.close()
+
+@router.post("/reports/housing/map/backfill")
+def backfill_housing_map(limit: int = 200):
+    engine = AnalysisEngine()
+    try:
+        return engine.backfill_missing_coordinates(limit=limit)
+    finally:
+        engine.close()
+
 
 @app.get("/documents")
 def get_documents(user=Depends(get_logged_in_user)):

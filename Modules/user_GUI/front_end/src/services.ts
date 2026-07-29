@@ -9,6 +9,9 @@ import type {
   SpiderPayload,
   SpiderRunResponse,
   SpiderStatus,
+  HousingRegionPoint,
+  HousingTrendPoint,
+  HousingMapPoint,
 } from "./interfaces";
 
 const API_BASE = APP_CONFIG.apiBaseUrl;
@@ -233,14 +236,57 @@ export async function loadReportsCount() {
   });
 }
 
-export async function loadHousingTrends() {
-  return apiRequest("/reports/housing/trends", {
+export async function loadHousingTrends(): Promise<HousingTrendPoint[]> {
+  const data = await apiRequest<{ trends: HousingTrendPoint[] }>("/reports/housing/trends", {
     method: "GET",
   });
+
+  return Array.isArray(data.trends) ? data.trends : [];
 }
 
-export async function loadHousingRegions() {
-  return apiRequest("/reports/housing/regions", { method: "GET" });
+export async function loadHousingRegions(): Promise<HousingRegionPoint[]> {
+  const data = await apiRequest<{ regions: HousingRegionPoint[] }>("/reports/housing/regions", {
+    method: "GET",
+  });
+
+  return Array.isArray(data.regions) ? data.regions : [];
+}
+
+export async function loadHousingMapPoints(): Promise<HousingMapPoint[]> {
+  const data = await apiRequest<{ points: any[] }>("/reports/housing/map", {
+    method: "GET",
+  });
+
+  console.log("MAP API response:", data);
+  console.log("MAP API points:", data?.points);
+
+  if (!Array.isArray(data?.points)) {
+    return [];
+  }
+
+  const normalizedPoints = data.points
+    .map((point, index): HousingMapPoint => ({
+      id: point.id ?? point.listing_url ?? `map-point-${index}`,
+      user_post_title: point.user_post_title ?? point.title ?? "Listing",
+      post_url: point.post_url ?? point.listing_url ?? "",
+      price: point.price ?? null,
+      street_number: point.street_number ?? "",
+      address_osm: point.address_osm ?? point.address ?? "",
+      clean_general_area: point.clean_general_area ?? "",
+      general_area: point.general_area ?? point.neighbourhood ?? "",
+      city: point.city ?? "Vancouver",
+      province: point.province ?? "BC",
+      postal_code: point.postal_code ?? "",
+      latitude: Number(point.latitude),
+      longitude: Number(point.longitude),
+    }))
+    .filter(
+      (point) =>
+        Number.isFinite(point.latitude) &&
+        Number.isFinite(point.longitude)
+    );
+
+  return normalizedPoints;
 }
 
 // model actions

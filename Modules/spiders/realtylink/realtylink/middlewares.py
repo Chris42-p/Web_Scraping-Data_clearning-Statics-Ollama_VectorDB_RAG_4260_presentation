@@ -10,7 +10,6 @@ from itemadapter import ItemAdapter
 from pathlib import Path
 import sys
 
-<<<<<<< HEAD
 # walk up until we find the folder that contains 'Modules'
 current = Path(__file__).resolve()
 for parent in current.parents:
@@ -20,9 +19,6 @@ for parent in current.parents:
 
 from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
 #==========================
-=======
-from Modules.spiders.spider_default_obj.spider_user_agent_factor import UserAgentFactory
->>>>>>> ab6416e419e181b8d96a1250cd7b33ed8c696de5
 
 class UserAgentRotationMilleware:
     

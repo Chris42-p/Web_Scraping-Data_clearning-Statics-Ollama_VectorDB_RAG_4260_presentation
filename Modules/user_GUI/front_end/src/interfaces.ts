@@ -132,5 +132,33 @@ export interface SpiderRunResponse {
   };
 }
 
+export type HousingTrendPoint = {
+  day: string;
+  avg_price: number;
+  listing_count: number;
+};
+
+export type HousingRegionPoint = {
+  region: string;
+  listings: number;
+  avg_price: number;
+};
+
+export interface HousingMapPoint {
+  id: string | number;
+  user_post_title?: string;
+  post_url?: string;
+  price?: number | string | null;
+  street_number?: string;
+  address_osm?: string;
+  clean_general_area?: string;
+  general_area?: string;
+  city?: string;
+  province?: string;
+  postal_code?: string;
+  latitude: number | string;
+  longitude: number | string;
+}
+
 
 

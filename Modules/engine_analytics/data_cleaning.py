@@ -64,6 +64,7 @@ class Data_Cleaner():
 
      def clean_column_general_area(self,listings, display=False): #TODO: minimize count: rn 89/ 
 
+
      #--case:   ' vancouver',' Vancouver' 
                #Capitalise & strip of white space  
           listings["general_area"]= listings["general_area"].str.strip() 
@@ -282,7 +283,72 @@ class Data_Cleaner():
           self.__convert_csv_to_pd_df(tmp_write_location, )
           self.__delete_temp_csv_file(tmp_write_location)
 
+     def save_cleaned_listing(
+          self,
+          listing_id,
+          clean_general_area=None,
+          clean_street_number=None,
+          city=None,
+          province=None,
+          postal_code=None,
+          address_osm=None,
+          building_type=None,
+          latitude=None,
+          longitude=None,
+          bounding_box=None,
+          geocode_source="nominatim",
+          ):
+          post = Post_Data()
+          cursor, conn = post._Post_Data__conn_to_db()
 
+          cursor.execute("""
+               INSERT INTO cleaned_listings (
+                    listing_id,
+                    clean_general_area,
+                    clean_street_number,
+                    city,
+                    province,
+                    postal_code,
+                    address_osm,
+                    building_type,
+                    latitude,
+                    longitude,
+                    bounding_box,
+                    geocode_source,
+                    geocoded_at,
+                    updated_at
+               )
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+               ON CONFLICT(listing_id) DO UPDATE SET
+                    clean_general_area = excluded.clean_general_area,
+                    clean_street_number = excluded.clean_street_number,
+                    city = excluded.city,
+                    province = excluded.province,
+                    postal_code = excluded.postal_code,
+                    address_osm = excluded.address_osm,
+                    building_type = excluded.building_type,
+                    latitude = excluded.latitude,
+                    longitude = excluded.longitude,
+                    bounding_box = excluded.bounding_box,
+                    geocode_source = excluded.geocode_source,
+                    updated_at = CURRENT_TIMESTAMP
+          """, (
+               listing_id,
+               clean_general_area,
+               clean_street_number,
+               city,
+               province,
+               postal_code,
+               address_osm,
+               building_type,
+               latitude,
+               longitude,
+               bounding_box,
+               geocode_source,
+          ))
+
+          conn.commit()
+          conn.close()
 
 
 

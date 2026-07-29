@@ -18,6 +18,9 @@ import re
 from pathlib import Path
 import sys
 
+from geopy.geocoders import Nominatim
+import time
+
 # walk up until we find the folder that contains 'Modules'
 current = Path(__file__).resolve()
 for parent in current.parents:
@@ -33,30 +36,80 @@ class RealtylinkPipeline:
         if CONST["SHOW_TEXT"]:
             print(f"\n\n====== PARSING THE CRAWLED OBJECT ======\n\n {item} \n\n")
 
-        Post_Data().save_new_post_to_db(
+        street_number, general_area, city, province, postal_code = self._process_address(item.get("unit_address"))
+
+        latitude, longitude, address_osm = self._geocode_address(
+            street_number,
+            city,
+            province,
+            postal_code,
+        )
+        time.sleep(1)
+
+        post = Post_Data(
             post_id=self.get_post_id(item),
-            time_of_post=self.time_of_post(item) ,
-            user_post_title=self.user_post_title(item) ,
-            user_meta_tags=self.user_meta_tags(item) ,
-            post_url=self.post_url(item) ,
-            price_of_the_unit=self.price_of_the_unit(item) ,
-            sqr_feet_lot=self.sqr_feet_lot(item) ,
-            general_area=self.general_area(item) ,
-            street_number=self.street_number(item) ,
-            city=self.city(item) ,
-            province=self.province(item) ,
-            postal_code=self.postal_code(item) ,
+            time_of_post=self.time_of_post(item),
+            user_post_title=self.user_post_title(item),
+            user_meta_tags=self.user_meta_tags(item),
+            post_url=self.post_url(item),
+            price_of_the_unit=self.price_of_the_unit(item),
+            sqr_feet=self.sqr_feet_lot(item),
+            general_area=general_area,
+            street_number=street_number,
+            city=city,
+            province=province,
+            postal_code=postal_code,
+            latitude=latitude,
+            longitude=longitude,
+            address_osm=address_osm,
             bed=self.get_bed(item),
-            bath=self.bed_bath(item) ,
-            square_feet_unit=self.square_feet_unit(item) ,
-            post_description=self.post_description(item) ,
-            rent_period=self.rent_period(item) ,
+            bath=self.get_bath(item),
+            square_feet_unit=self.square_feet_unit(item),
+            post_description=self.post_description(item),
+            rent_period=self.rent_period(item),
             leasing_agent=self.leasing_agent(item),
-            first_img_url=self.first_img_url(item),
             source_spider=spider.name,
+            first_pic=self.first_img_url(item),
+            img_url=self.first_img_url(item),
         )
 
+        post.save_new_post_to_db()
+
+        item["latitude"] = latitude
+        item["longitude"] = longitude
+        item["address_osm"] = address_osm
+
         return item
+
+    def _geocode_address(self, street_number, city, province, postal_code):
+        parts = [street_number, city, province, postal_code, "Canada"]
+        query = ", ".join([part for part in parts if part and part != "N/A"])
+
+        try:
+            geolocator = Nominatim(user_agent="housing_scraper_geocoder")
+            location = geolocator.geocode(query, timeout=10)
+            if not location:
+                return None, None, None
+
+            return float(location.latitude), float(location.longitude), location.address
+        except Exception as exc:
+            print(f"Geocode failed for '{query}': {exc}")
+            return None, None, None
+
+    def _process_address(self, unit_address):
+        if not unit_address:
+            return None, None, "Vancouver", "BC", None
+
+        cleaned = re.sub(r"\s+", " ", unit_address).strip()
+        parts = [p.strip() for p in cleaned.split(",") if p.strip()]
+
+        street_number = parts[0] if len(parts) > 0 else None
+        general_area = parts[1] if len(parts) > 1 else None
+        city = parts[2] if len(parts) > 2 else "Vancouver"
+        province = "BC"
+        postal_code = None
+
+        return street_number, general_area, city, province, postal_code
     
     def sqr_feet_lot(self,item):
         return "RealtyLink dose not provide this"
@@ -96,9 +149,9 @@ class RealtylinkPipeline:
         return item["url"]
 
     def price_of_the_unit(self, item):
-        if item["first_pic"] ==None:
+        if item.get("unit_price") is None:
             return None
-        
+
         return item["unit_price"]
 
     def sqr_feet(self, item):
@@ -141,12 +194,13 @@ class RealtylinkPipeline:
 
         return int(bed)
         
-    def bed_bath(self, item):
-        bath=0
-        if item["bath"] ==None :
-            bath=0
+    def get_bath(self, item):
+        bath = 0
+        if item.get("bath") is None:
+            bath = 0
         else:
-            bath= re.search(r'\d+',item["bath"]).group()
+            match = re.search(r'\d+', item["bath"])
+            bath = match.group() if match else 0
 
         return int(bath)
     

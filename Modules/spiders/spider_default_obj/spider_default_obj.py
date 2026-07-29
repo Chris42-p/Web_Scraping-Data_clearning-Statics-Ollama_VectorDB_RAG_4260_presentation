@@ -46,6 +46,9 @@ class Post_Data():
           city="N/A",
           province="N/A",
           postal_code="N/A",
+          latitude=None,
+          longitude=None,
+          address_osm=None,
           bed="N/A",
           bath="N/A",
           square_feet_unit="N/A",
@@ -68,6 +71,9 @@ class Post_Data():
           self.city = city
           self.province = province
           self.postal_code = postal_code
+          self.latitude = latitude
+          self.longitude = longitude
+          self.address_osm = address_osm
           self.bed = bed
           self.bath = bath
           self.square_feet_unit = square_feet_unit
@@ -131,13 +137,16 @@ class Post_Data():
                self.city,
                self.province,
                self.postal_code,
+               self.latitude,
+               self.longitude,
+               self.address_osm,
                self.price_of_the_unit,
                self.square_feet_unit,
                self.bed,
                self.bath,
                self.rent_period,
                self.user_post_title,
-               self.first_pic,        
+               self.first_pic,
                self.user_meta_tags,
                self.post_description,
                self.img_url,
@@ -246,16 +255,19 @@ class Post_Data():
 
      def __get_current_time(self):
           return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-     
+
      @staticmethod
      def __get_days_on_market(scraped_at_previously):
-          # parse the stored date string back to datetime
-          posted_date = datetime.strptime(f"{scraped_at_previously}", "%Y-%m-%d %H:%M:%S")
+          raw = str(scraped_at_previously).strip()
 
-          # subtract from today
-          days_on_market = (datetime.now() - posted_date).days
+          if raw.isdigit():
+               return int(raw)
 
-          return days_on_market  # 0, 5, 30 etc
+          try:
+               posted_date = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
+               return (datetime.now() - posted_date).days
+          except Exception:
+               return None
 
      def get_all_listings(self):
           cursor, conn=self.__conn_to_db()
