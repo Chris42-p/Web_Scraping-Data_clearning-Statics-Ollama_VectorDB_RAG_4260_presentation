@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
 from secrets import token_urlsafe
+import sys
 
 from requests.exceptions import Timeout, RequestException
 from fastapi import FastAPI, Request, HTTPException, UploadFile, Depends, APIRouter
@@ -16,6 +17,11 @@ from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "Modules").exists():
+        sys.path.append(str(parent))
+        break
 
 from Modules.user_GUI.back_end.service import load_documents
 from Modules.user_GUI.back_end.session_store import create_session, SESSION_STORE

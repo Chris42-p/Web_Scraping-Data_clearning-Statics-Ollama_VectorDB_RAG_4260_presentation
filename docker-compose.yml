@@ -1,31 +1,24 @@
-version: '3.8'
+
 services:
-  ollama:
-    image: ollama/ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-
-  app:
-    build: .
-    depends_on:
-      - ollama
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-    volumes:
-      - ./__ingest_file:/app/__ingest_file
-      - ./__processed_file:/app/__processed_file
-
   backend:
-    build: .
-    command: uvicorn Modules.user_GUI.back_end.main:app --host 0.0.0.0 --port 8000
+    build:
+      context: .
+      dockerfile: Modules/user_GUI/back_end/Dockerfile
+    container_name: backend-app
     ports:
       - "8000:8000"
-    depends_on:
-      - ollama
     volumes:
-      - ./__ingest_file:/app/__ingest_file
+      - ./user_GUI/back_end:/app
 
-volumes:
-  ollama_data:
+  frontend:
+    build:
+      context: .
+      dockerfile: Modules/user_GUI/front_end/Dockerfile
+    container_name: frontend-app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./Modules/user_GUI/front_end:/app
+      - /app/node_modules
+    depends_on:
+      - backend
