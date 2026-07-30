@@ -10,24 +10,6 @@ This is a repo for Big Data class. We're going to demo a vector database.
 # Ollama install 
 curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION=0.3.14 sh
 
-# Todo 
-
-4260_presentation/Modules/engine_injesting/injest_engine.py: __read_a_document
-     - we should save change the output to an object to get more data out of the files. 
-
-4260_presentation/Modules/engine_injesting/injest_engine.py: __ocr_my_pdf    
-     - bug: documents are OCRed, then on rerun of object we need to check if the documents have a version called same title_ocr then we know they have been processed. 
-          -Optical Character Recognition: OCR: used to turn pictures of letters into letters that the computer can read/find. 
-
-The demo documents should be updated with tables, and images to ensure we can catch all the forms of data. 
-
-
-
-
-# todo: Refactor
-- in the __init__.py we need to change exporting of objects to exporting of interfaces, dont want the user calling class.objs ()
-
-
 # arch
 
      document needs to have a docker image to run this in, or a virtual env. 
